@@ -1,12 +1,12 @@
 import * as cmd from "./applicationCommand.ts";
-import { Command, Payload } from "./models.ts";
+import { Command, DiscodMessage, Payload } from "./models.ts";
+import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
     const m = text.match(reg);
     if (!m) throw Error(`failed to find ${reg} in provided sample of size:${text.length}`);
     return m[1];
 }
-
 
 const interactions = "https://discord.com/api/v9/interactions";
 let nonce: number = Date.now()
@@ -140,7 +140,7 @@ export class Midjourney {
     }
 
     async setSettingsRelax(): Promise<number> {
-        const payload = {
+        const payload: Payload = {
             type: 3,
             application_id: this.application_id,
             guild_id: this.guild_id,
@@ -156,7 +156,7 @@ export class Midjourney {
     }
 
     async setSettingsFast(): Promise<number> {
-        const payload = {
+        const payload: Payload = {
             type: 3,
             application_id: this.application_id,
             guild_id: this.guild_id,
@@ -171,7 +171,7 @@ export class Midjourney {
         return response.status;
     }
 
-    async doInteractions(payload: any): Promise<Response> {
+    async doInteractions(payload: Payload): Promise<Response> {
         const formData = new FormData();
         payload.nonce = (nonce++).toString();
         formData.append('payload_json', JSON.stringify(payload));
@@ -191,7 +191,7 @@ export class Midjourney {
         const { maxWait = 60, loading } = opts;
 
         for (let i = 0; i < maxWait; i++) {
-            const msg = await this.FilterMessages(prompt, { loading })
+            const msg = await this.FilterMessages(prompt, {}, { loading })
             if (msg !== null) {
                 return msg;
             }
@@ -200,10 +200,10 @@ export class Midjourney {
         return null;
     }
 
-    async FilterMessages(prompt: string, opts: { limit?: number, loading?: (uri: string) => void, options?: string } = {}): Promise<Message | null> {
-        const { limit = 100, loading, options = '' } = opts;
+    async FilterMessages(prompt: string, filter: RESTGetAPIChannelMessagesQuery = {}, opts: { loading?: (uri: string) => void, options?: string } = {}): Promise<Message | null> {
+        const { loading, options = '' } = opts;
 
-        const data = await this.RetrieveMessages(limit)
+        const data: DiscodMessage[] = await this.RetrieveMessages(filter)
         for (let i = 0; i < data.length; i++) {
             const item = data[i]
             if (item.author.id === this.application_id && item.content.includes(`**${prompt}**`)) {
@@ -242,14 +242,18 @@ export class Midjourney {
         return uri.split('_').pop()?.split('.')[0] ?? '';
     }
 
-    async RetrieveMessages(limit = 50): Promise<any[]> {
+    async RetrieveMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
         const headers = {
             authorization: this.auth,
             cookie: this.cookie,
         };
-        const response = await fetch(`https://discord.com/api/v10/channels/${this.channel_id}/messages?limit=${limit}`, {
-            headers
-        });
+        const url = new URL(`https://discord.com/api/v10/channels/${this.channel_id}/messages`);
+        const searchParams = new URLSearchParams(url.search);// generic import prev params
+        for (const [key, value] of Object.entries(params)) {
+            searchParams.set(key, value.toString());
+        }
+        url.search = searchParams.toString();
+        const response = await fetch(url.toString(), { headers });
         if (response.status === 200) {
             return response.json();
         }

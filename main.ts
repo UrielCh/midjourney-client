@@ -13,13 +13,13 @@ import Midjourney from './src/Midjourney.ts';
  */
 async function main() {
     const client = new Midjourney('interaction.txt');
-    console.log(client);
+    // console.log(client);
     // await client.settings();
     // await client.setSettingsFast();
     // const prompt = "Hall of a magnificent baroque palace filled with golden statues of skulls and paintings of skulls, beautiful staircase, Renaissance paintings, marble columns, high plants, large windows --ar 16:9 --s 1000";
     // await client.imagine(prompt);
     // await client.WaitMessage(prompt);
-    const msgs = await client.RetrieveMessages(3);
+    const msgs = await client.RetrieveMessages({limit: 1});
     console.log(JSON.stringify(msgs, null, 2));
     // const msg = await client.SettingsApi();
     // SettingsApi
