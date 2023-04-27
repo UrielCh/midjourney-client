@@ -117,7 +117,9 @@ export interface ComponentsSummary {
 }
 
 export class DiscodMessageHelper {
-    // msg: DiscodMessage;
+    /**
+     * content is only set if the message was not prtoperly parsed
+     */
     public content?: string;
     public prompt?: { prompt: string; name: string; id: string; note?: string; mode?: string };
 
@@ -135,6 +137,13 @@ export class DiscodMessageHelper {
             if (m)
                 this.prompt = { prompt: m[1], name: m[2], id: m[3] };
         }
+        // single () is mode
+        if (!this.prompt) {
+            const m = msg.content.match(/^\*\*(.+)\*\* - <@(\d+)> \((.+)\)$/);
+            if (m)
+                this.prompt = { prompt: m[1], name: "", id: m[2], note: "", mode: m[3] };
+        }
+        // dual () is note, mode
         if (!this.prompt) {
             const m = msg.content.match(/^\*\*(.+)\*\* - <@(\d+)> \((.+)\) \((.+)\)$/);
             if (m)

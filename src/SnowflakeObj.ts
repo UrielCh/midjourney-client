@@ -29,7 +29,7 @@ export class SnowflakeObj {
     }
 
     public toString(): Snowflake {
-        return `this.date worker:${this.workerId} process:${this.processId} increment:${this.increment}`;
+        return `date:${this.date} worker:${this.workerId} process:${this.processId} increment:${this.increment}`;
     }
 }
 

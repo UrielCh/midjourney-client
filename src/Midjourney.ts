@@ -1,5 +1,5 @@
 import * as cmd from "./applicationCommand.ts";
-import { Command, ComponentsSummary, DiscodMessage, Payload, Snowflake } from "./models.ts";
+import { Command, ComponentsSummary, DiscodMessage, DiscodMessageHelper, Payload, Snowflake } from "./models.ts";
 import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
 import { ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
@@ -47,7 +47,7 @@ export class Midjourney {
         // this.x_discord_locale = getExistinggroup(sample, / "x-discord-locale":\s?"([^"]+)"/);
     }
 
-    buildPayload(cmd: Command): Payload {
+    private buildPayload(cmd: Command): Payload {
         const payload: Payload = {
             type: 2,
             application_id: this.application_id,
@@ -214,7 +214,7 @@ export class Midjourney {
         const { maxWait = 60, loading } = opts;
 
         for (let i = 0; i < maxWait; i++) {
-            const msg = await this.FilterMessages(prompt, {}, { loading })
+            const msg = await this.FilterMessages(prompt, {limit: 10}, { loading })
             if (msg !== null) {
                 return msg;
             }
@@ -228,13 +228,18 @@ export class Midjourney {
 
         const data: DiscodMessage[] = await this.retrieveMessages(filter)
         for (let i = 0; i < data.length; i++) {
-            const item = data[i]
-            if (item.author.id === this.application_id && item.content.includes(`**${prompt}**`)) {
+            const item = new DiscodMessageHelper(data[i]);
+            if (!item.prompt)
+                continue;
+            const author = item.author.id;
+            const itemPrompt = item.prompt.prompt;
+            // console.log(item.prompt);
+            if (author === this.application_id && (itemPrompt === prompt || itemPrompt.startsWith(`${prompt} -`))) {
                 this.log('FilterMessages:', JSON.stringify(item))
-                if (options && !item.content.includes(options)) {
-                    this.log("no options")
-                    continue
-                }
+                // if (options && !item.content.includes(options)) {
+                //     this.log("no options")
+                //     continue
+                // }
                 if (item.attachments.length === 0) {
                     this.log("no attachment")
                     break
@@ -247,13 +252,13 @@ export class Midjourney {
                 }
 
                 // content: '**A little pink elephant** - <@1017020769332637730> (fast, stealth)'
-                const content = item.content.split('**')[1]
+                // const content = item.content.split('**')[1]
 
                 const msg: Message = {
                     id: item.id,
                     uri: imageUrl,
                     hash: this.UriToHash(imageUrl),
-                    content: content
+                    content: item.prompt.prompt
                 }
                 return msg
             }
@@ -273,7 +278,7 @@ export class Midjourney {
         const url = new URL(`https://discord.com/api/v10/channels/${this.channel_id}/messages`);
         const searchParams = new URLSearchParams(url.search);// generic import prev params
         for (const [key, value] of Object.entries(params)) {
-            searchParams.set(key, value.toString());
+            searchParams.set(key, (value as Object).toString());
         }
         url.search = searchParams.toString();
         const response = await fetch(url.toString(), { headers });
