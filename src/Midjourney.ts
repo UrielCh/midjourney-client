@@ -104,39 +104,16 @@ export class Midjourney {
     }
 
     async imagine(prompt: string): Promise<number> {
-        const payload: Payload = {
-            type: 2,
-            application_id: this.application_id,
-            guild_id: this.guild_id,
-            channel_id: this.channel_id,
-            session_id: this.session_id,
-            data: {
-                version: cmd.imagine.version,
-                id: cmd.imagine.id,
-                name: cmd.imagine.name,
-                type: 1,
-                options: [
-                    {
-                        type: 3,
-                        name: "prompt",
-                        value: prompt,
-                    }
-                ],
-                application_command: cmd.imagine,
-                attachments: [],
-            },
-        };
+        const payload: Payload = this.buildPayload(cmd.imagine);
+        payload.data.options = [{ type: 3, name: "prompt", value: prompt }];
         const response = await this.doInteractions(payload);
         if (response.status === 204) {
             // no content;
             return response.status;
         }
-        console.log('status:', response.status);
-        console.log('statusText:', response.statusText);
+        console.log('status:', response.status, response.statusText);
         const body = await response.json();
         console.log('statusText:', JSON.stringify(body, null, 2));
-        // Expected "Content-Type" header to be one of
-        // {'multipart/form-data', 'application/json', 'application/x-www-form-urlencoded'}.
         return response.status;
     }
 
@@ -214,7 +191,7 @@ export class Midjourney {
         const { maxWait = 60, loading } = opts;
 
         for (let i = 0; i < maxWait; i++) {
-            const msg = await this.FilterMessages(prompt, {limit: 10}, { loading })
+            const msg = await this.FilterMessages(prompt, { limit: 10 }, { loading })
             if (msg !== null) {
                 return msg;
             }
