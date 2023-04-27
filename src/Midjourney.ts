@@ -1,7 +1,8 @@
+import { SnowflakeObj } from "./SnowflakeObj.ts";
 import * as cmd from "./applicationCommand.ts";
 import { Command, ComponentsSummary, DiscodMessage, DiscodMessageHelper, Payload, Snowflake } from "./models.ts";
 import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
-import { ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import { ApplicationCommandType, MessageFlags } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
     const m = text.match(reg);
@@ -10,7 +11,6 @@ function getExistinggroup(text: string, reg: RegExp): string {
 }
 
 const interactions = "https://discord.com/api/v9/interactions";
-let nonce: number = Date.now()
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -100,42 +100,21 @@ export class Midjourney {
         return response.status;
     }
 
-    async setSettingsRelax(): Promise<number> {
-        const payload: Payload = {
-            type: 3,
-            application_id: this.application_id,
-            guild_id: this.guild_id,
-            channel_id: this.channel_id,
-            session_id: this.session_id,
-            message_flags: 64,
-            message_id: "1100387668698877972",
-            data: { component_type: 2, custom_id: "MJ::Settings::RelaxMode::on" },
-        }
-        const response = await this.doInteractions(payload);
-        console.log(await response.text());
-        return response.status;
+    setSettingsRelax(): Promise<number> {
+        // the messageId should be update
+        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::on", MessageFlags.Ephemeral );
     }
 
-    async setSettingsFast(): Promise<number> {
-        const payload: Payload = {
-            type: ApplicationCommandType.Message, // 3
-            application_id: this.application_id,
-            guild_id: this.guild_id,
-            message_flags: 64,
-            message_id: "1100387668698877972", //1100389303844081664",
-            channel_id: this.channel_id,
-            session_id: this.session_id,
-            data: { component_type: 2, custom_id: "MJ::Settings::RelaxMode::off" },
-        };
-        const response = await this.doInteractions(payload);
-        console.log(await response.text());
-        return response.status;
+    setSettingsFast(): Promise<number> {
+        // the messageId should be update
+        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::off", MessageFlags.Ephemeral );
     }
 
-    async callCustom2(button: ComponentsSummary): Promise<number> {
+    callCustom2(button: ComponentsSummary): Promise<number> {
         return this.callCustom(button.parentId, button.custom_id);
     }
-    async callCustom(messageId: Snowflake, custom_id: string): Promise<number> {
+
+    async callCustom(messageId: Snowflake, custom_id: string, message_flags = 0): Promise<number> {
         if (!custom_id)
             throw Error("custom_id is empty")
         const payload: Payload = {
@@ -144,7 +123,7 @@ export class Midjourney {
             guild_id: this.guild_id,
             channel_id: this.channel_id,
             session_id: this.session_id,
-            message_flags: 0,
+            message_flags,
             message_id: messageId,
             data: { component_type: 2, custom_id: custom_id },
         };
@@ -153,10 +132,9 @@ export class Midjourney {
         return response.status;
     }
 
-
     async doInteractions(payload: Payload): Promise<Response> {
         const formData = new FormData();
-        payload.nonce = (nonce++).toString();
+        payload.nonce = new SnowflakeObj().encode();
         formData.append('payload_json', JSON.stringify(payload));
         const headers = {
             authorization: this.auth,

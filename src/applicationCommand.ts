@@ -38,4 +38,23 @@ export const settings: Command = {
     contexts: null
 };
 
-
+export const describe: Command = {
+    id: "1092492867185950852",
+    application_id: "936929561302675456",
+    version: "1092492867185950853",
+    default_member_permissions: null,
+    type: 1,
+    nsfw: false,
+    name: "describe",
+    description: "Writes a prompt based on your image.",
+    dm_permission: true,
+    contexts: null,
+    options: [
+        {
+            type: 11,
+            name: "image",
+            description: "The image to describe",
+            required: true
+        }
+    ]
+};
