@@ -20,7 +20,7 @@ async function main() {
   // const prompt = "Hall of a magnificent baroque palace filled with golden statues of skulls and paintings of skulls, beautiful staircase, Renaissance paintings, marble columns, high plants, large windows --ar 16:9 --s 1000";
   // await client.imagine(prompt);
   // await client.WaitMessage(prompt);
-  const msgs = await client.RetrieveMessages({ limit: 10 });
+  const msgs = await client.retrieveMessages({ limit: 10 });
   const msgs2 = msgs.map((m) => new DiscodMessageHelper(m));
 
   for (const msg of msgs2) {
@@ -29,7 +29,7 @@ async function main() {
       if (todo.length > 0) {
         console.log(todo[0].custom_id);
         break;
-        //await client.callCustom(msg.id, todo[0].custom_id);
+        // await client.callCustom2(todo[0]);
       }
     }
   }

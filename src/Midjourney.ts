@@ -1,6 +1,7 @@
 import * as cmd from "./applicationCommand.ts";
 import { Command, ComponentsSummary, DiscodMessage, Payload, Snowflake } from "./models.ts";
 import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
+import { ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
     const m = text.match(reg);
@@ -157,7 +158,7 @@ export class Midjourney {
 
     async setSettingsFast(): Promise<number> {
         const payload: Payload = {
-            type: 3,
+            type: ApplicationCommandType.Message, // 3
             application_id: this.application_id,
             guild_id: this.guild_id,
             message_flags: 64,
@@ -178,7 +179,7 @@ export class Midjourney {
         if (!custom_id)
             throw Error("custom_id is empty")
         const payload: Payload = {
-            type: 3, // COMMAND_TYPE.MESSAGE,
+            type: ApplicationCommandType.Message, // 3
             application_id: this.application_id,
             guild_id: this.guild_id,
             channel_id: this.channel_id,
@@ -225,7 +226,7 @@ export class Midjourney {
     async FilterMessages(prompt: string, filter: RESTGetAPIChannelMessagesQuery = {}, opts: { loading?: (uri: string) => void, options?: string } = {}): Promise<Message | null> {
         const { loading, options = '' } = opts;
 
-        const data: DiscodMessage[] = await this.RetrieveMessages(filter)
+        const data: DiscodMessage[] = await this.retrieveMessages(filter)
         for (let i = 0; i < data.length; i++) {
             const item = data[i]
             if (item.author.id === this.application_id && item.content.includes(`**${prompt}**`)) {
@@ -264,7 +265,7 @@ export class Midjourney {
         return uri.split('_').pop()?.split('.')[0] ?? '';
     }
 
-    async RetrieveMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
+    async retrieveMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
         const headers = {
             authorization: this.auth,
             cookie: this.cookie,

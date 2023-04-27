@@ -1,6 +1,7 @@
 import { type APIMessage, type APIMessageReference, type APIMessageActionRowComponent, type APIApplicationCommand, type APIUser } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 // import { type Snowflake, type APIAttachment, type  APIButtonComponentWithCustomId, type APIActionRowComponent}  from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent, APIButtonComponentWithURL } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import { ButtonStyle, ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 export type { Snowflake } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
 
@@ -18,7 +19,7 @@ export interface Command extends APIApplicationCommand {
 }
 
 export interface Payload extends APIMessageReference {
-    type: 1 | 2 | 3 | 4;
+    type: ApplicationCommandType;
     application_id: string,
     // message_id: Snowflake,
     // channel_id: Snowflake,
@@ -77,7 +78,7 @@ export class componentData {
     public url: string;
 
     constructor(public readonly parentId: Snowflake, src: APIButtonComponentWithCustomId | APIButtonComponentWithURL) {
-        this.processed = src.style === 1; // 1 is primary button means that it had already been click
+        this.processed = src.style === ButtonStyle.Primary; // 1 is primary button means that it had already been click
         this.label = src.label || src.emoji?.name || "N/A";
         if ('custom_id' in src) {
             this.custom_id = src.custom_id || "";
