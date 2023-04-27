@@ -21,6 +21,12 @@ export type Message = {
     content: string;
 }
 
+export type UploadSlot = {
+    id: number;
+    upload_filename: string;
+    upload_url: string;
+}
+
 export class Midjourney {
     readonly auth: string;
     readonly application_id: string;
@@ -67,7 +73,6 @@ export class Midjourney {
         return payload;
     }
 
-
     protected log(...args: unknown[]) {
         console.log(new Date().toISOString(), ...args)
     }
@@ -102,12 +107,12 @@ export class Midjourney {
 
     setSettingsRelax(): Promise<number> {
         // the messageId should be update
-        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::on", MessageFlags.Ephemeral );
+        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::on", MessageFlags.Ephemeral);
     }
 
     setSettingsFast(): Promise<number> {
         // the messageId should be update
-        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::off", MessageFlags.Ephemeral );
+        return this.callCustom("1101102102157205574", "MJ::Settings::RelaxMode::off", MessageFlags.Ephemeral);
     }
 
     callCustom2(button: ComponentsSummary): Promise<number> {
@@ -226,6 +231,36 @@ export class Midjourney {
         throw new Error(response.statusText + ' ' + await response.text());
     }
 
+    // 	XHRscience	XHRscience	XHRscience	XHRsearch?type=1&query=d&limit=7&include_applications=false	XHRscience	XHRsearch?type=1&query=de&limit=7&include_applications=false	XHRscience	XHRattachments	XHR0_1.png?upload_id=ADPycdsKxYT59eG_6VKbIeXSeFr8EyIu…ExL-CZheZ66YwWh0dAXF9GTgHr_dtZMTIK36XGdRAcKhXAIcu	XHRinteractions	XHRack	XHRversion.stable.json?_=5608652	
+    // {"files":[{"filename":"0_1.png","file_size":1775802,"id":"13"}]}
+    async attachments(...files: {filename: string, file_size: number, id: number | string}[]): Promise<{attachments: UploadSlot[]}> {
+        const headers = {
+            authorization: this.auth,
+            'content-type': 'application/json',
+            cookie: this.cookie,
+        };
+        const url = new URL(`https://discord.com/api/v9/channels/${this.channel_id}/attachments`);
+        const body = { files }; //  [{ filename, file_size, id }]
+        // filename: "aaaa.jpeg", file_size: 66618, id: "16"
+        const response = await fetch(url.toString(), {
+            headers,
+            method: "POST",
+            body: JSON.stringify(body),
+        });
+        if (response.status === 200) {
+            return response.json();
+        }
+        throw new Error(response.statusText + ' ' + await response.text());
+    }
+
+    ///**
+    // * 
+    // * @param slot use uploadUrl to put the image
+    // * @returns 
+    // */
+    //async uploadImage(slot: UploadSlot): Promise<number> {
+    //    return 0;
+    //}
 }
 
 export default Midjourney;
