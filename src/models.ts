@@ -1,8 +1,7 @@
 import { type APIMessage, type APIMessageReference, type APIMessageActionRowComponent, type APIApplicationCommand, type APIUser } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 // import { type Snowflake, type APIAttachment, type  APIButtonComponentWithCustomId, type APIActionRowComponent}  from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-
-
+import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent, APIButtonComponentWithURL } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+export type { Snowflake } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
 
 // export interface CommandOpt {
@@ -75,11 +74,20 @@ export class componentData {
     public processed: boolean;
     public label: string;
     public custom_id: string;
+    public url: string;
 
-    constructor(src: APIButtonComponentWithCustomId) {
+    constructor(src: APIButtonComponentWithCustomId | APIButtonComponentWithURL) {
         this.processed = src.style === 1; // 1 is primary button means that it had already been click
         this.label = src.label || src.emoji?.name || "N/A";
-        this.custom_id = src.custom_id || "";
+        if ('custom_id' in src) {
+            this.custom_id = src.custom_id || "";
+            this.url = "";
+        } else  {
+            this.custom_id = "";
+            this.url = src.url || "";
+            if (this.url)
+                this.processed = true;
+        }
     }
 }
 
@@ -89,6 +97,8 @@ function getDataFromComponents(srcs: APIActionRowComponent<APIMessageActionRowCo
         for (const c of src.components) {
             if ("custom_id" in c && ("label" in c || "emoji" in c)) {
                 out.push(new componentData(c)); //  as APIButtonComponentWithCustomId
+            } else if ("label" in c && "url" in c) {
+                out.push(new componentData(c)); //  as APIButtonComponentWithURL
             } else {
                 console.log(c);
             }
@@ -97,6 +107,12 @@ function getDataFromComponents(srcs: APIActionRowComponent<APIMessageActionRowCo
     return out;
 }
 
+
+export interface ComponentsSummary {
+    processed: boolean;
+    label: string;
+    custom_id: string;
+}
 
 export class DiscodMessageHelper {
     // msg: DiscodMessage;
@@ -107,9 +123,11 @@ export class DiscodMessageHelper {
     public mentions: { id: Snowflake, username: string }[];
 
     public attachments: APIAttachment[];
-    public components: { processed: boolean, label: string, custom_id: string }[];
+    public components: ComponentsSummary[];
+    public id: Snowflake;
 
     constructor(msg: DiscodMessage) {
+        this.id = msg.id
         if (!this.prompt) {
             const m = msg.content.match(/^\*\*(.+)\*\* - (.+) <@(\d+)>$/);
             if (m)
@@ -128,4 +146,29 @@ export class DiscodMessageHelper {
         this.attachments = msg.attachments;
         this.components = getDataFromComponents(msg.components || []);
     }
+
+    isImagineResult(): boolean {
+        if (!this.prompt)
+            return false;
+        if (!this.prompt.note)
+            return false;
+        return true;
+    }
+
+    isUpscaleResult(): boolean {
+        if (!this.prompt)
+            return false;
+        if (!this.prompt.name) // name is empty when it is a prompt
+            return false;
+        return true;
+    }
+
+    getComponents(processed: boolean, name?: string): ComponentsSummary[] {
+        let list = this.components.filter(a => a.processed === processed);
+        if (name) {
+            list = list.filter(a => a.label === name);
+        }
+        return list;
+    }
+
 }

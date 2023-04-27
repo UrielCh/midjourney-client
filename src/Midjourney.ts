@@ -1,5 +1,5 @@
 import * as cmd from "./applicationCommand.ts";
-import { Command, DiscodMessage, Payload } from "./models.ts";
+import { Command, DiscodMessage, Payload, Snowflake } from "./models.ts";
 import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
@@ -170,6 +170,23 @@ export class Midjourney {
         console.log(await response.text());
         return response.status;
     }
+
+    async callCustom(messageId: Snowflake, custom_id: string): Promise<number> {
+        const payload: Payload = {
+            type: 3, // COMMAND_TYPE.MESSAGE,
+            application_id: this.application_id,
+            guild_id: this.guild_id,
+            channel_id: this.channel_id,
+            session_id: this.session_id,
+            message_flags: 0,
+            message_id: messageId,
+            data: { component_type: 2, custom_id: custom_id },
+        };
+        const response = await this.doInteractions(payload);
+        console.log(await response.text());
+        return response.status;
+    }
+
 
     async doInteractions(payload: Payload): Promise<Response> {
         const formData = new FormData();
