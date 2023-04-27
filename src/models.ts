@@ -1,5 +1,9 @@
 import { type APIMessage, type APIMessageReference, type APIMessageActionRowComponent, type APIApplicationCommand, type APIUser } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import { type Snowflake }  from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+// import { type Snowflake, type APIAttachment, type  APIButtonComponentWithCustomId, type APIActionRowComponent}  from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+
+
+
 
 // export interface CommandOpt {
 //     type: 3,
@@ -19,7 +23,7 @@ export interface Payload extends APIMessageReference {
     application_id: string,
     // message_id: Snowflake,
     // channel_id: Snowflake,
-    // guild_id: string,
+    // guild_id: Snowflake,
     session_id: string,
     message_flags?: number,
     data: {
@@ -29,9 +33,9 @@ export interface Payload extends APIMessageReference {
         component_type?: number,
         custom_id?: string,
         type?: 1,
-        options?: any[],
+        options?: unknown[],
         application_command?: Command,
-        attachments?: any[],
+        attachments?: unknown[],
     },
     nonce?: string,
 }
@@ -45,7 +49,7 @@ export interface UserReference extends APIUser {
 
 export interface Comment {
     type: 1,
-    components: { type: number, style: number, label?: string, emoji?: { name: string}, custom_id?: string, url?: string }[];
+    components: { type: number, style: number, label?: string, emoji?: { name: string }, custom_id?: string, url?: string }[];
 }
 
 export interface DiscodMessage extends APIMessage {
@@ -58,11 +62,70 @@ export interface DiscodMessage extends APIMessage {
     // tts: boolean;
     // timestamp: string; // "2023-04-25T15:41:11.318000+00:00",
     // edited_timestamp: string | null;
-    // flags: number;
+    flags?: number; // set of MessageFlags
     // components: Comment[];
     // components?: APIActionRowComponent<APIMessageActionRowComponent>[];
     // message_reference?: { channel_id: string, guild_id: string, message_id: string },
     // referenced_message: DiscodMessage; // Exclude<DiscodMessage, "referenced_message" >;
     // referenced_message: Pick<DiscodMessage, "id" | "type" | "content" | "channel_id" | "author" | "attachments" | "embeds" | "mentions" | "mention_roles" | "pinned">; // Exclude<DiscodMessage, "referenced_message" >;
     referenced_message?: DiscodMessage; // Exclude<DiscodMessage, "message_reference" | "referenced_message">;
+}
+
+export class componentData {
+    public processed: boolean;
+    public label: string;
+    public custom_id: string;
+
+    constructor(src: APIButtonComponentWithCustomId) {
+        this.processed = src.style === 1; // 1 is primary button means that it had already been click
+        this.label = src.label || src.emoji?.name || "N/A";
+        this.custom_id = src.custom_id || "";
+    }
+}
+
+function getDataFromComponents(srcs: APIActionRowComponent<APIMessageActionRowComponent>[]): componentData[] {
+    const out: componentData[] = [];
+    for (const src of srcs) {
+        for (const c of src.components) {
+            if ("custom_id" in c && ("label" in c || "emoji" in c)) {
+                out.push(new componentData(c)); //  as APIButtonComponentWithCustomId
+            } else {
+                console.log(c);
+            }
+        }
+    }
+    return out;
+}
+
+
+export class DiscodMessageHelper {
+    // msg: DiscodMessage;
+    public content?: string;
+    public prompt?: { prompt: string; name: string; id: string; note?: string; mode?: string };
+
+    public author: { id: Snowflake, username: string }
+    public mentions: { id: Snowflake, username: string }[];
+
+    public attachments: APIAttachment[];
+    public components: { processed: boolean, label: string, custom_id: string }[];
+
+    constructor(msg: DiscodMessage) {
+        if (!this.prompt) {
+            const m = msg.content.match(/^\*\*(.+)\*\* - (.+) <@(\d+)>$/);
+            if (m)
+                this.prompt = { prompt: m[1], name: m[2], id: m[3] };
+        }
+        if (!this.prompt) {
+            const m = msg.content.match(/^\*\*(.+)\*\* - <@(\d+)> \((.+)\) \((.+)\)$/);
+            if (m)
+                this.prompt = { prompt: m[1], name: "", id: m[2], note: m[3], mode: m[4] };
+        }
+        if (!this.prompt) {
+            this.content = msg.content;
+        }
+        this.author = { id: msg.author.id, username: msg.author.username };
+        this.mentions = msg.mentions.map(u => ({ id: u.id, username: u.username }))
+        this.attachments = msg.attachments;
+        this.components = getDataFromComponents(msg.components || []);
+    }
 }

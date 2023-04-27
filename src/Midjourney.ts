@@ -67,7 +67,7 @@ export class Midjourney {
     }
 
 
-    protected log(...args: any[]) {
+    protected log(...args: unknown[]) {
         console.log(new Date().toISOString(), ...args)
     }
 
