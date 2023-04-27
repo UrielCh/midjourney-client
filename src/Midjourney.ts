@@ -141,7 +141,7 @@ export class Midjourney {
             data: { component_type: 2, custom_id: custom_id },
         };
         const response = await this.doInteractions(payload);
-        console.log(await response.text());
+        // console.log(await response.text());
         return response.status;
     }
 
@@ -180,27 +180,28 @@ export class Midjourney {
     }
 
     async waitMessage(prompt: string, opts: { maxWait?: number, loading?: (uri: string) => void } = {}): Promise<DiscodMessageHelper | null> {
-        let { maxWait = 300 } = opts;
+        let { maxWait = 1000 } = opts;
         let lastid = '';
 
         const follow = async (msg: DiscodMessageHelper): Promise<DiscodMessageHelper | null> => {
             const msgid = msg.id;
-            console.log('follow', msg);
+            // console.log('follow', msg.id);
             while (true) {
                 if (!msg.prompt)
                     throw new Error(`failed to extract prompt from ${msg.content}`);
                 if (msg.prompt.completion === 1) {
                     return msg;
                 }
-                if (msg.attachments.length && msg.attachments[0].url) {
-                    console.log(msg.attachments[0]);
-                }
+                // if (msg.attachments.length && msg.attachments[0].url) {
+                //     // console.log(msg.attachments[0]);
+                // }
 
                 if (maxWait-- < 0)
                     return null;
-                await wait(1000);
+                await wait(2000);
                 msg = await this.getMessageById(msgid);
-                console.log('follow', msg);
+                console.log('follow1', msg.prompt?.source);
+                console.log('follow2', msg.prompt?.completion);
             }
         }
 
@@ -208,11 +209,11 @@ export class Midjourney {
             const messages = msgs.map(m => new DiscodMessageHelper(m));
             for (const item of messages) {
                 if (item.content)
-                    console.log('tem.content:', item.content)
+                    console.log('item.content not parsed:', item.content)
 
                 if (item.id > lastid) {
                     lastid = item.id;
-                    this.log(`last item is ${lastid}`)
+                    // this.log(`last item is ${lastid}`)
                 }
                 if (!item.prompt)
                     continue;
@@ -228,14 +229,14 @@ export class Midjourney {
         }
 
         // initial request
-        const msg = lookFor(await this.retrieveMessages({ limit: 50 }))
+        const msg = await lookFor(await this.retrieveMessages({ limit: 50 }))
         if (msg)
             return msg;
         for (let i = 0; i < maxWait; i++) {
             if (maxWait-- < 0)
             return null;
             await wait(1000)
-            lookFor(await this.retrieveMessages({ after: lastid }));
+            const msg =await lookFor(await this.retrieveMessages({ after: lastid }));
             if (msg)
                 return msg;
         }

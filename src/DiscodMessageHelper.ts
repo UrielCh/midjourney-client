@@ -11,11 +11,13 @@ export interface ComponentsSummary {
 }
 
 export interface SplitedPrompt {
+    source: string;
     prompt: string;
     id?: string;
     // notes?: string[];
     mode?: 'fast' | 'relaxed';
-    type?: 'variations' | 'grid';
+    type?: 'variations' | 'grid' | 'upscale';
+    name?: string;
     completion?: number; // 0..1
 };
 
@@ -47,6 +49,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
 
     const prompt: SplitedPrompt = {
         prompt: m[1],
+        source: content,
     }
     let extra = m[2];
     if (extra.endsWith(" (fast)")) {
@@ -71,9 +74,35 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
         prompt.type = "variations";
         return prompt;
     }
+
+    m = extra.match(/^Image #(\d) <@(\d+)>$/);
+    if (m) {
+        prompt.id = m[2];
+        prompt.completion = 1;
+        prompt.type = "upscale";
+        prompt.name = `Image #${m[1]}`;
+        return prompt;
+    }
+
+    m = extra.match(/^<@(\d+)> \((\d+)%\)$/)
+    if (m) {
+        prompt.id = m[1];
+        prompt.completion = parseInt(m[2]) / 100;
+        prompt.type = "grid";
+        return prompt;
+    }
+
+    m = extra.match(/^<@(\d+)> \(Waiting to start\)$/)
+    if (m) {
+        prompt.id = m[1];
+        prompt.completion = 0;
+        prompt.type = "grid";
+        return prompt;
+    }
     m = extra.match(/^<@(\d+)>$/)
     if (m) {
         prompt.id = m[1];
+        prompt.completion = 1;
         return prompt;
     }
 
