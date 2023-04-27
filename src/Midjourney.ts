@@ -73,22 +73,7 @@ export class Midjourney {
     }
 
     async settings(): Promise<number> {
-        const payload: Payload = {
-            type: 2,
-            application_id: this.application_id,
-            guild_id: this.guild_id,
-            channel_id: this.channel_id,
-            session_id: this.session_id,
-            data: {
-                version: cmd.settings.version,
-                id: cmd.settings.id,
-                name: cmd.settings.name,
-                type: 1,
-                options: [],
-                application_command: cmd.settings,
-                attachments: [],
-            },
-        };
+        const payload: Payload = this.buildPayload(cmd.settings);
         const response = await this.doInteractions(payload);
         if (response.status === 204) {
             // no content;
@@ -98,8 +83,6 @@ export class Midjourney {
         console.log('statusText:', response.statusText);
         const body = await response.json();
         console.log('statusText:', JSON.stringify(body, null, 2));
-        // Expected "Content-Type" header to be one of
-        // {'multipart/form-data', 'application/json', 'application/x-www-form-urlencoded'}.
         return response.status;
     }
 
