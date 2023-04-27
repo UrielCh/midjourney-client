@@ -15,12 +15,6 @@ const interactions = "https://discord.com/api/v9/interactions";
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export type Message = {
-    id: string;
-    uri: string;
-    hash: string;
-    content: string;
-}
 
 export type UploadSlot = {
     id: number;
@@ -179,8 +173,24 @@ export class Midjourney {
         return response;
     }
 
-    async waitMessage(prompt: string, opts: { maxWait?: number, loading?: (uri: string) => void } = {}): Promise<DiscodMessageHelper | null> {
+    async waitMessage(prompt: string, opts: {
+        maxWait?: number
+        type?: 'variations' | 'grid' | 'upscale',
+        imgId?: 1 | 2 | 3 | 4 | string,
+    } = {}): Promise<DiscodMessageHelper | null> {
         let { maxWait = 1000 } = opts;
+        const { type = 'grid' } = opts;
+        let imgId = 0;
+        if (opts.imgId) {
+            if (typeof opts.imgId === "number") {
+                imgId = opts.imgId as 1 | 2 | 3 | 4;
+            } else {
+                imgId = Number(opts.imgId.replace(/[^0-9]+/g, '')) as 1 | 2 | 3 | 4;
+            }
+        }
+
+
+
         let lastid = '';
 
         const follow = async (msg: DiscodMessageHelper): Promise<DiscodMessageHelper | null> => {
@@ -200,8 +210,8 @@ export class Midjourney {
                     return null;
                 await wait(2000);
                 msg = await this.getMessageById(msgid);
-                console.log('follow1', msg.prompt?.source);
-                console.log('follow2', msg.prompt?.completion);
+                // console.log('follow1', msg.prompt?.source);
+                // console.log('follow2', msg.prompt?.completion);
             }
         }
 
@@ -213,15 +223,21 @@ export class Midjourney {
 
                 if (item.id > lastid) {
                     lastid = item.id;
-                    // this.log(`last item is ${lastid}`)
                 }
                 if (!item.prompt)
                     continue;
                 const itemPrompt = item.prompt.prompt;
                 if (item.author.id !== this.application_id)
                     continue;
+                // drop last option
+                const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, '');
                 //console.log('view prompt:', itemPrompt)
-                if (itemPrompt !== prompt && !itemPrompt.startsWith(`${prompt} -`))
+                if (itemPrompt !== prompt && prompt !== itemPromptLt) // .startsWith(`${prompt} -`)
+                    continue;
+
+                if (item.prompt.type !== type)
+                    continue;
+                if (imgId && !item.prompt.name.includes(`#${imgId}`))
                     continue;
                 return await follow(item);
             }
@@ -234,53 +250,13 @@ export class Midjourney {
             return msg;
         for (let i = 0; i < maxWait; i++) {
             if (maxWait-- < 0)
-            return null;
+                return null;
             await wait(1000)
-            const msg =await lookFor(await this.retrieveMessages({ after: lastid }));
+            const msg = await lookFor(await this.retrieveMessages({ after: lastid }));
             if (msg)
                 return msg;
         }
         return null;
-    }
-
-    async FilterMessages(prompt: string, filter: RESTGetAPIChannelMessagesQuery = {}, opts: { loading?: (uri: string) => void, options?: string } = {}): Promise<Message | null> {
-        const { loading } = opts;
-        const data: DiscodMessage[] = await this.retrieveMessages(filter)
-        for (let i = 0; i < data.length; i++) {
-            const item = new DiscodMessageHelper(data[i]);
-            if (!item.prompt)
-                continue;
-            const author = item.author.id;
-            const itemPrompt = item.prompt.prompt;
-            // console.log(item.prompt);
-            if (author === this.application_id && (itemPrompt === prompt || itemPrompt.startsWith(`${prompt} -`))) {
-                this.log('FilterMessages:', JSON.stringify(item))
-                // if (options && !item.content.includes(options)) {
-                //     this.log("no options")
-                //     continue
-                // }
-                if (item.attachments.length === 0) {
-                    this.log("no attachment")
-                    break
-                }
-                const imageUrl = item.attachments[0].url
-                if (item.prompt.completion !== 1) {
-                    this.log(imageUrl);
-                    loading && loading(imageUrl)
-                    break
-                }
-                // content: '**A little pink elephant** - <@1017020769332637730> (fast, stealth)'
-                // const content = item.content.split('**')[1]
-                const msg: Message = {
-                    id: item.id,
-                    uri: imageUrl,
-                    hash: this.UriToHash(imageUrl),
-                    content: item.prompt.prompt
-                }
-                return msg
-            }
-        }
-        return null
     }
 
     protected UriToHash(uri: string) {

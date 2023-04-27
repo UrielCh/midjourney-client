@@ -17,7 +17,7 @@ export interface SplitedPrompt {
     // notes?: string[];
     mode?: 'fast' | 'relaxed';
     type?: 'variations' | 'grid' | 'upscale';
-    name?: string;
+    name: string;
     completion?: number; // 0..1
 };
 
@@ -50,6 +50,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     const prompt: SplitedPrompt = {
         prompt: m[1],
         source: content,
+        name: '',
     }
     let extra = m[2];
     if (extra.endsWith(" (fast)")) {
@@ -79,7 +80,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     if (m) {
         prompt.id = m[2];
         prompt.completion = 1;
-        prompt.type = "upscale";
+        prompt.type = "upscale"; // or variations
         prompt.name = `Image #${m[1]}`;
         return prompt;
     }
@@ -103,6 +104,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     if (m) {
         prompt.id = m[1];
         prompt.completion = 1;
+        prompt.type = "grid";
         return prompt;
     }
 
@@ -183,7 +185,7 @@ export class DiscodMessageHelper {
     getComponents(processed: boolean, name?: string): ComponentsSummary[] {
         let list = this.components.filter(a => a.processed === processed);
         if (name) {
-            list = list.filter(a => a.label === name);
+            list = list.filter(a => a.label.startsWith(name));
         }
         return list;
     }

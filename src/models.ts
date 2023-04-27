@@ -1,7 +1,7 @@
-import { type APIMessage, type APIMessageReference, type APIMessageActionRowComponent, type APIApplicationCommand, type APIUser } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import { type APIMessage, type APIMessageReference, type APIApplicationCommand, type APIUser } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 // import { type Snowflake, type APIAttachment, type  APIButtonComponentWithCustomId, type APIActionRowComponent}  from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent, APIButtonComponentWithURL } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import { ButtonStyle, ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import type { Snowflake } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import { ApplicationCommandType } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 export type { Snowflake } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
 
