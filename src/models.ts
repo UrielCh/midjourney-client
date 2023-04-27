@@ -76,7 +76,7 @@ export class componentData {
     public custom_id: string;
     public url: string;
 
-    constructor(src: APIButtonComponentWithCustomId | APIButtonComponentWithURL) {
+    constructor(public readonly parentId: Snowflake, src: APIButtonComponentWithCustomId | APIButtonComponentWithURL) {
         this.processed = src.style === 1; // 1 is primary button means that it had already been click
         this.label = src.label || src.emoji?.name || "N/A";
         if ('custom_id' in src) {
@@ -91,14 +91,14 @@ export class componentData {
     }
 }
 
-function getDataFromComponents(srcs: APIActionRowComponent<APIMessageActionRowComponent>[]): componentData[] {
+function getDataFromComponents(parentId: Snowflake, srcs: APIActionRowComponent<APIMessageActionRowComponent>[]): componentData[] {
     const out: componentData[] = [];
     for (const src of srcs) {
         for (const c of src.components) {
             if ("custom_id" in c && ("label" in c || "emoji" in c)) {
-                out.push(new componentData(c)); //  as APIButtonComponentWithCustomId
+                out.push(new componentData(parentId, c)); //  as APIButtonComponentWithCustomId
             } else if ("label" in c && "url" in c) {
-                out.push(new componentData(c)); //  as APIButtonComponentWithURL
+                out.push(new componentData(parentId, c)); //  as APIButtonComponentWithURL
             } else {
                 console.log(c);
             }
@@ -109,6 +109,7 @@ function getDataFromComponents(srcs: APIActionRowComponent<APIMessageActionRowCo
 
 
 export interface ComponentsSummary {
+    parentId: Snowflake;
     processed: boolean;
     label: string;
     custom_id: string;
@@ -144,7 +145,7 @@ export class DiscodMessageHelper {
         this.author = { id: msg.author.id, username: msg.author.username };
         this.mentions = msg.mentions.map(u => ({ id: u.id, username: u.username }))
         this.attachments = msg.attachments;
-        this.components = getDataFromComponents(msg.components || []);
+        this.components = getDataFromComponents(msg.id, msg.components || []);
     }
 
     isImagineResult(): boolean {
