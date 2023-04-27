@@ -1,6 +1,7 @@
+import { ComponentsSummary, DiscodMessageHelper } from "./DiscodMessageHelper.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 import * as cmd from "./applicationCommand.ts";
-import { Command, ComponentsSummary, DiscodMessage, DiscodMessageHelper, Payload, Snowflake } from "./models.ts";
+import { Command, DiscodMessage, Payload, Snowflake } from "./models.ts";
 import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
 import { ApplicationCommandType, MessageFlags } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 
@@ -51,6 +52,13 @@ export class Midjourney {
         this.cookie = getExistinggroup(sample, / "cookie":\s?"([^"]+)"/);
         // this.x_super_properties = getExistinggroup(sample, / "x-super-properties":\s?"([^"]+)"/);
         // this.x_discord_locale = getExistinggroup(sample, / "x-discord-locale":\s?"([^"]+)"/);
+    }
+
+    private get headers() {
+        return {
+            authorization: this.auth,
+            cookie: this.cookie,
+        };
     }
 
     private buildPayload(cmd: Command): Payload {
@@ -137,38 +145,105 @@ export class Midjourney {
         return response.status;
     }
 
+
+    async getMessageById(id: string): Promise<DiscodMessageHelper> {
+        // "Only bots can use this endpoint"
+        if (false) {
+            const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: this.headers,
+            });
+            if (response.status === 200) {
+                return response.json();
+            }
+            throw new Error(response.statusText + ' ' + await response.text());
+        } else {
+            // use retrieveMessages instead of get messages
+            const data: DiscodMessage[] = await this.retrieveMessages({ around: id, limit: 1 });
+            if (!data.length)
+                throw new Error("no message found, around " + id);
+            return new DiscodMessageHelper(data[0]);
+        }
+    }
+
     async doInteractions(payload: Payload): Promise<Response> {
         const formData = new FormData();
         payload.nonce = new SnowflakeObj().encode();
         formData.append('payload_json', JSON.stringify(payload));
-        const headers = {
-            authorization: this.auth,
-            cookie: this.cookie,
-        };
         const response = await fetch(interactions, {
             method: "POST",
             body: formData,
-            headers
+            headers: this.headers,
         });
         return response;
     }
 
-    async WaitMessage(prompt: string, opts: { maxWait?: number, loading?: (uri: string) => void } = {}): Promise<Message | null> {
-        const { maxWait = 60, loading } = opts;
+    async waitMessage(prompt: string, opts: { maxWait?: number, loading?: (uri: string) => void } = {}): Promise<DiscodMessageHelper | null> {
+        let { maxWait = 300 } = opts;
+        let lastid = '';
 
-        for (let i = 0; i < maxWait; i++) {
-            const msg = await this.FilterMessages(prompt, { limit: 10 }, { loading })
-            if (msg !== null) {
-                return msg;
+        const follow = async (msg: DiscodMessageHelper): Promise<DiscodMessageHelper | null> => {
+            const msgid = msg.id;
+            console.log('follow', msg);
+            while (true) {
+                if (!msg.prompt)
+                    throw new Error(`failed to extract prompt from ${msg.content}`);
+                if (msg.prompt.completion === 1) {
+                    return msg;
+                }
+                if (msg.attachments.length && msg.attachments[0].url) {
+                    console.log(msg.attachments[0]);
+                }
+
+                if (maxWait-- < 0)
+                    return null;
+                await wait(1000);
+                msg = await this.getMessageById(msgid);
+                console.log('follow', msg);
             }
-            await wait(1000 * 2)
+        }
+
+        const lookFor = async (msgs: DiscodMessage[]) => {
+            const messages = msgs.map(m => new DiscodMessageHelper(m));
+            for (const item of messages) {
+                if (item.content)
+                    console.log('tem.content:', item.content)
+
+                if (item.id > lastid) {
+                    lastid = item.id;
+                    this.log(`last item is ${lastid}`)
+                }
+                if (!item.prompt)
+                    continue;
+                const itemPrompt = item.prompt.prompt;
+                if (item.author.id !== this.application_id)
+                    continue;
+                //console.log('view prompt:', itemPrompt)
+                if (itemPrompt !== prompt && !itemPrompt.startsWith(`${prompt} -`))
+                    continue;
+                return await follow(item);
+            }
+            return null;
+        }
+
+        // initial request
+        const msg = lookFor(await this.retrieveMessages({ limit: 50 }))
+        if (msg)
+            return msg;
+        for (let i = 0; i < maxWait; i++) {
+            if (maxWait-- < 0)
+            return null;
+            await wait(1000)
+            lookFor(await this.retrieveMessages({ after: lastid }));
+            if (msg)
+                return msg;
         }
         return null;
     }
 
     async FilterMessages(prompt: string, filter: RESTGetAPIChannelMessagesQuery = {}, opts: { loading?: (uri: string) => void, options?: string } = {}): Promise<Message | null> {
-        const { loading, options = '' } = opts;
-
+        const { loading } = opts;
         const data: DiscodMessage[] = await this.retrieveMessages(filter)
         for (let i = 0; i < data.length; i++) {
             const item = new DiscodMessageHelper(data[i]);
@@ -188,15 +263,13 @@ export class Midjourney {
                     break
                 }
                 const imageUrl = item.attachments[0].url
-                if (!imageUrl.endsWith(".png")) {
+                if (item.prompt.completion !== 1) {
                     this.log(imageUrl);
                     loading && loading(imageUrl)
                     break
                 }
-
                 // content: '**A little pink elephant** - <@1017020769332637730> (fast, stealth)'
                 // const content = item.content.split('**')[1]
-
                 const msg: Message = {
                     id: item.id,
                     uri: imageUrl,
@@ -214,17 +287,13 @@ export class Midjourney {
     }
 
     async retrieveMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
-        const headers = {
-            authorization: this.auth,
-            cookie: this.cookie,
-        };
         const url = new URL(`https://discord.com/api/v10/channels/${this.channel_id}/messages`);
         const searchParams = new URLSearchParams(url.search);// generic import prev params
         for (const [key, value] of Object.entries(params)) {
             searchParams.set(key, (value as Object).toString());
         }
         url.search = searchParams.toString();
-        const response = await fetch(url.toString(), { headers });
+        const response = await fetch(url.toString(), { headers: this.headers });
         if (response.status === 200) {
             return response.json();
         }
@@ -233,12 +302,8 @@ export class Midjourney {
 
     // 	XHRscience	XHRscience	XHRscience	XHRsearch?type=1&query=d&limit=7&include_applications=false	XHRscience	XHRsearch?type=1&query=de&limit=7&include_applications=false	XHRscience	XHRattachments	XHR0_1.png?upload_id=ADPycdsKxYT59eG_6VKbIeXSeFr8EyIu…ExL-CZheZ66YwWh0dAXF9GTgHr_dtZMTIK36XGdRAcKhXAIcu	XHRinteractions	XHRack	XHRversion.stable.json?_=5608652	
     // {"files":[{"filename":"0_1.png","file_size":1775802,"id":"13"}]}
-    async attachments(...files: {filename: string, file_size: number, id: number | string}[]): Promise<{attachments: UploadSlot[]}> {
-        const headers = {
-            authorization: this.auth,
-            'content-type': 'application/json',
-            cookie: this.cookie,
-        };
+    async attachments(...files: { filename: string, file_size: number, id: number | string }[]): Promise<{ attachments: UploadSlot[] }> {
+        const headers = { ...this.headers, 'content-type': 'application/json' };
         const url = new URL(`https://discord.com/api/v9/channels/${this.channel_id}/attachments`);
         const body = { files }; //  [{ filename, file_size, id }]
         // filename: "aaaa.jpeg", file_size: 66618, id: "16"
