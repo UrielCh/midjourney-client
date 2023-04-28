@@ -139,9 +139,6 @@ export class Midjourney {
     payload.data.options = [ { type: 11, name: "image", value: id }];    
     const filename = uploaded_filename.replace(/.+\//, '');
     payload.data.attachments = [{ id, filename, uploaded_filename}]
-    console.log('---------------');
-    console.log(payload);
-    console.log('---------------');
 
     const response = await this.doInteractions(payload);
     if (response.status === 204) {
@@ -152,9 +149,7 @@ export class Midjourney {
     const body = await response.json();
     logger.error("statusText:", JSON.stringify(body, null, 2));
     throw Error(`imagine failed with: ${response.statusText}`);
-
   }
-
 
   setSettingsRelax(): Promise<number> {
     // the messageId should be update
