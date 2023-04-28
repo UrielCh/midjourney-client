@@ -353,7 +353,7 @@ export class Midjourney {
       maxWait = 1;
     }
     for (let i = 0; i < maxWait; i++) {
-      let msg: DiscodMessage[] = await this.getMessages({
+      const msg: DiscodMessage[] = await this.getMessages({
         limit,
         after: startId,
       });

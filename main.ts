@@ -1,7 +1,7 @@
+// deno-lint-ignore-file
 import Midjourney from "./src/Midjourney.ts";
 import { SnowflakeObj } from "./src/SnowflakeObj.ts";
 import { logger } from "./deps.ts";
-import { UploadSlot } from "./mod.ts";
 
 async function download(
   url: string,
@@ -48,6 +48,7 @@ async function imaginVariantUpscal() {
   prompt =
     "an ice cream cone with chocolate fudge coming out of it, in the style of rendered in cinema4d, dreamy symbolism, dimitry roulland, soft color blending, swirling vortexes, photo-realistic techniques, dotted";
   prompt = "the coast near a boat and a city, in the style of neogeo, richly detailed backgrounds, david welker, 32k uhd, detailed ship sails, arcadian landscapes, ps1 graphics --ar 51:91"
+  prompt = "a pixel art, traditional escapist scene in the mountains, in the style of captivating harbor views, david welker, 32k uhd, tropical baroque, ps1 graphics, detailed ship sails, rubén maya --ar 51:91";
   // prompt = "ice creams in clouds with an ice cream with chocolate shavings, yum, in the style of rendered in cinema4d, photo-realistic techniques, pinkcore, organic forms blending with geometric shapes, dotted, smooth curves, minimalist backgrounds";
   // prompt = "a man in a superman costume falling out of the sky, in the style of fisheye lens, lo-fi aesthetics, zack snyder, strong facial expression, space art, captivating gaze, andrzej sykut --ar 2:3";
   // prompt = "a person with glasses wearing a blue shirt, in the style of circular shapes, womancore, grandparentcore, light white and light bronze, photo taken with provia, portrait, nonrepresentational --ar 70:69";

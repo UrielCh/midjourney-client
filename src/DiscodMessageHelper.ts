@@ -86,6 +86,14 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     return prompt;
   }
 
+  m = extra.match(/^Variations by <@(\d+)> \(Open on website for full quality\)$/);
+  if (m) {
+    prompt.id = m[1];
+    prompt.completion = 1;
+    prompt.type = "variations";
+    return prompt;
+  }
+
   m = extra.match(/^Image #(\d) <@(\d+)>$/);
   if (m) {
     prompt.id = m[2];
