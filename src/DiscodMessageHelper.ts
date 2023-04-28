@@ -138,12 +138,8 @@ function getDataFromComponents(parentId: Snowflake, srcs: APIActionRowComponent<
     return out;
 }
 
-
 export class DiscodMessageHelper {
-    /**
-     * content is only set if the message was not prtoperly parsed
-     */
-    public content?: string;
+    public content: string;
     public prompt?: SplitedPrompt;
 
     public author: { id: Snowflake, username: string }
@@ -153,16 +149,15 @@ export class DiscodMessageHelper {
     public components: ComponentsSummary[];
     public id: Snowflake;
 
-    constructor(msg: DiscodMessage) {
-        this.id = msg.id
-        this.prompt = extractPrompt(msg.content);
-        if (!this.prompt) {
-            this.content = msg.content;
-        }
-        this.author = { id: msg.author.id, username: msg.author.username };
-        this.mentions = msg.mentions.map(u => ({ id: u.id, username: u.username }))
-        this.attachments = msg.attachments;
-        this.components = getDataFromComponents(msg.id, msg.components || []);
+    constructor(public source: DiscodMessage) {
+        this.id = source.id
+        this.prompt = extractPrompt(source.content);
+        this.content = source.content;
+        this.author = { id: source.author.id, username: source.author.username };
+        this.mentions = source.mentions.map(u => ({ id: u.id, username: u.username }))
+        this.attachments = source.attachments;
+        this.components = getDataFromComponents(source.id, source.components || []);
+        // const labels = this.components.map(a => a.label).join('');
     }
 
     // isImagineResult(): boolean {

@@ -144,28 +144,6 @@ export class Midjourney {
         return response.status;
     }
 
-
-    async getMessageById(id: string): Promise<DiscodMessageHelper> {
-        // "Only bots can use this endpoint"
-        //if (false) {
-        //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
-        //    const response = await fetch(url, {
-        //        method: "GET",
-        //        headers: this.headers,
-        //    });
-        //    if (response.status === 200) {
-        //        return response.json();
-        //    }
-        //    throw new Error(response.statusText + ' ' + await response.text());
-        //} else {
-            // use retrieveMessages instead of get messages
-            const data: DiscodMessage[] = await this.retrieveMessages({ around: id, limit: 1 });
-            if (!data.length)
-                throw new Error("no message found, around " + id);
-            return new DiscodMessageHelper(data[0]);
-        // }
-    }
-
     async doInteractions(payload: Payload): Promise<Response> {
         const formData = new FormData();
         payload.nonce = new SnowflakeObj().encode();
@@ -248,25 +226,26 @@ export class Midjourney {
         }
 
         // initial request
-        const msg = await lookFor(await this.retrieveMessages({ limit: 50 }))
+        const msg = await lookFor(await this.getMessages({ limit: 50 }))
         if (msg)
             return msg;
         for (let i = 0; i < maxWait; i++) {
             if (maxWait-- < 0)
                 return null;
             await wait(1000)
-            const msg = await lookFor(await this.retrieveMessages({ after: lastid }));
+            const msg = await lookFor(await this.getMessages({ after: lastid }));
             if (msg)
                 return msg;
         }
         return null;
     }
 
-    protected UriToHash(uri: string) {
-        return uri.split('_').pop()?.split('.')[0] ?? '';
+    async getMessagesHelper(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessageHelper[]> {
+        const messages = await this.getMessages(params);
+        return messages.map(m => new DiscodMessageHelper(m));
     }
-
-    async retrieveMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
+    
+    async getMessages(params: RESTGetAPIChannelMessagesQuery = {}): Promise<DiscodMessage[]> {
         const url = new URL(`https://discord.com/api/v10/channels/${this.channel_id}/messages`);
         const searchParams = new URLSearchParams(url.search);// generic import prev params
         for (const [key, value] of Object.entries(params)) {
@@ -278,6 +257,32 @@ export class Midjourney {
             return response.json();
         }
         throw new Error(response.statusText + ' ' + await response.text());
+    }
+
+    /**
+     * retrive a single message by id using the discord api get messages V10
+     * @param id 
+     * @returns 
+     */    
+    async getMessageById(id: string): Promise<DiscodMessageHelper> {
+        // "Only bots can use this endpoint"
+        //if (false) {
+        //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
+        //    const response = await fetch(url, {
+        //        method: "GET",
+        //        headers: this.headers,
+        //    });
+        //    if (response.status === 200) {
+        //        return response.json();
+        //    }
+        //    throw new Error(response.statusText + ' ' + await response.text());
+        //} else {
+            // use retrieveMessages instead of get messages
+            const data: DiscodMessage[] = await this.getMessages({ around: id, limit: 1 });
+            if (!data.length)
+                throw new Error("no message found, around " + id);
+            return new DiscodMessageHelper(data[0]);
+        // }
     }
 
     // 	XHRscience	XHRscience	XHRscience	XHRsearch?type=1&query=d&limit=7&include_applications=false	XHRscience	XHRsearch?type=1&query=de&limit=7&include_applications=false	XHRscience	XHRattachments	XHR0_1.png?upload_id=ADPycdsKxYT59eG_6VKbIeXSeFr8EyIu…ExL-CZheZ66YwWh0dAXF9GTgHr_dtZMTIK36XGdRAcKhXAIcu	XHRinteractions	XHRack	XHRversion.stable.json?_=5608652	
