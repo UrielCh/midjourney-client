@@ -1,5 +1,4 @@
-import { type Snowflake } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-
+import { type Snowflake } from "../deps.ts";
 
 let prevTimestamp = 0;
 let prevIncrement = 0;

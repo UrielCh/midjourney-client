@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.184.0/testing/asserts.ts";
+import { assertEquals } from "../dev_deps.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 
 Deno.test(function SnowflakeTest() {

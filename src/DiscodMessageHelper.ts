@@ -1,6 +1,5 @@
-import { type APIMessageActionRowComponent } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent, APIButtonComponentWithURL } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
-import { ButtonStyle } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import type { Snowflake, APIAttachment, APIButtonComponentWithCustomId, APIActionRowComponent, APIButtonComponentWithURL, APIMessageActionRowComponent } from "../deps.ts";
+import { ButtonStyle } from "../deps.ts";
 import { DiscodMessage } from "./models.ts";
 
 export interface ComponentsSummary {
@@ -121,7 +120,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     // if (m)
     //     return { prompt: m[1], name: "", id: m[2], note: "", mode: m[3] };
     // return prompt;
-}  
+}
 
 function getDataFromComponents(parentId: Snowflake, srcs: APIActionRowComponent<APIMessageActionRowComponent>[]): componentData[] {
     const out: componentData[] = [];
@@ -173,7 +172,7 @@ export class DiscodMessageHelper {
     //         return false;
     //     return true;
     // }
-// 
+    // 
     // isUpscaleResult(): boolean {
     //     if (!this.prompt)
     //         return false;

@@ -1,9 +1,14 @@
 import { ComponentsSummary, DiscodMessageHelper } from "./DiscodMessageHelper.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 import * as cmd from "./applicationCommand.ts";
-import { Command, DiscodMessage, Payload, Snowflake } from "./models.ts";
-import { type RESTGetAPIChannelMessagesQuery } from "https://deno.land/x/discord_api_types@0.37.40/v10.ts";
-import { ApplicationCommandType, MessageFlags } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+import { Command, DiscodMessage, Payload } from "./models.ts";
+
+import { ApplicationCommandType, MessageFlags } from "../deps.ts";
+import type {
+    RESTGetAPIChannelMessagesQuery,
+    Snowflake,
+} from "../deps.ts";
+
 
 function getExistinggroup(text: string, reg: RegExp): string {
     const m = text.match(reg);
@@ -142,23 +147,23 @@ export class Midjourney {
 
     async getMessageById(id: string): Promise<DiscodMessageHelper> {
         // "Only bots can use this endpoint"
-        if (false) {
-            const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
-            const response = await fetch(url, {
-                method: "GET",
-                headers: this.headers,
-            });
-            if (response.status === 200) {
-                return response.json();
-            }
-            throw new Error(response.statusText + ' ' + await response.text());
-        } else {
+        //if (false) {
+        //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
+        //    const response = await fetch(url, {
+        //        method: "GET",
+        //        headers: this.headers,
+        //    });
+        //    if (response.status === 200) {
+        //        return response.json();
+        //    }
+        //    throw new Error(response.statusText + ' ' + await response.text());
+        //} else {
             // use retrieveMessages instead of get messages
             const data: DiscodMessage[] = await this.retrieveMessages({ around: id, limit: 1 });
             if (!data.length)
                 throw new Error("no message found, around " + id);
             return new DiscodMessageHelper(data[0]);
-        }
+        // }
     }
 
     async doInteractions(payload: Payload): Promise<Response> {
@@ -188,8 +193,6 @@ export class Midjourney {
                 imgId = Number(opts.imgId.replace(/[^0-9]+/g, '')) as 1 | 2 | 3 | 4;
             }
         }
-
-
 
         let lastid = '';
 
@@ -267,7 +270,7 @@ export class Midjourney {
         const url = new URL(`https://discord.com/api/v10/channels/${this.channel_id}/messages`);
         const searchParams = new URLSearchParams(url.search);// generic import prev params
         for (const [key, value] of Object.entries(params)) {
-            searchParams.set(key, (value as Object).toString());
+            searchParams.set(key, value.toString());
         }
         url.search = searchParams.toString();
         const response = await fetch(url.toString(), { headers: this.headers });

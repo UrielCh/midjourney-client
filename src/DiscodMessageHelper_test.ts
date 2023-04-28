@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "https://deno.land/std@0.184.0/testing/asserts.ts";
+import { assertEquals, assertExists } from "../dev_deps.ts";
 import { extractPrompt } from "./DiscodMessageHelper.ts";
 
 Deno.test(function ParseMidJourneyVariationsFast() {
