@@ -106,10 +106,9 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    console.log("status:", response.status);
-    console.log("statusText:", response.statusText);
+    logger.error("status:", response.status, response.statusText);
     const body = await response.json();
-    console.log("statusText:", JSON.stringify(body, null, 2));
+    logger.error("statusText:", JSON.stringify(body, null, 2));
     return response.status;
   }
 
@@ -121,9 +120,9 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    console.log("status:", response.status, response.statusText);
+    logger.error("status:", response.status, response.statusText);
     const body = await response.json();
-    console.log("statusText:", JSON.stringify(body, null, 2));
+    logger.error("statusText:", JSON.stringify(body, null, 2));
     throw Error(`imagine failed with: ${response.statusText}`);
   }
 
@@ -196,7 +195,7 @@ export class Midjourney {
     let imgId = comp.label;
     if (comp.label.startsWith("V")) {
       type = "variations";
-      imgId = ''; // image Id is not specified in title for variations. 
+      imgId = ""; // image Id is not specified in title for variations.
     } else if (comp.label.startsWith("U")) {
       type = "upscale";
     } else {
@@ -243,18 +242,25 @@ export class Midjourney {
       const msgid = msg.id;
       let prevCompletion = -2;
       logger.info(`waitMessage for prompt message found`, msgid, msg.content);
-      for (let i=0; i < maxWait; i++) {
+      for (let i = 0; i < maxWait; i++) {
         if (!msg.prompt) {
           throw new Error(`failed to extract prompt from ${msg.content}`);
         }
-        if (msg.prompt.completion !== undefined && prevCompletion !== msg.prompt.completion) {
-          prevCompletion = msg.prompt.completion
+        if (
+          msg.prompt.completion !== undefined &&
+          prevCompletion !== msg.prompt.completion
+        ) {
+          prevCompletion = msg.prompt.completion;
           if (prevCompletion == -1) {
             logger.info(`wait for prompt in Queue`);
           } else if (prevCompletion === 1) {
             logger.info(`follow message completion ready`);
           } else {
-            logger.info(`follow message completion: (${(prevCompletion * 100).toFixed(0)}%)`);
+            logger.info(
+              `follow message completion: (${
+                (prevCompletion * 100).toFixed(0)
+              }%)`,
+            );
           }
         }
         if (msg.prompt.completion === 1) return msg;
@@ -292,7 +298,9 @@ export class Midjourney {
           item.reference && item.reference.id === opts.parent
         );
       }
-      if (opts.type) matches = matches.filter((item) => item.prompt!.type === opts.type);
+      if (opts.type) {
+        matches = matches.filter((item) => item.prompt!.type === opts.type);
+      }
       if (opts.imgId) {
         matches = matches.filter((item) =>
           item.prompt!.name.includes(`#${imgId}`)
@@ -300,7 +308,10 @@ export class Midjourney {
       }
       if (!matches.length) return null;
       if (matches.length > 1) {
-        logger.error("warning multiple message match your waiting request! review your cryteria:", opts);
+        logger.error(
+          "warning multiple message match your waiting request! review your cryteria:",
+          opts,
+        );
       }
       return await follow(matches[0]);
     };
@@ -313,7 +324,7 @@ export class Midjourney {
         limit,
         after: startId,
       });
-      if (i==0 && startId) {
+      if (i == 0 && startId) {
         logger.info(`First request in waitMessage get ${msg.length} messages`);
       }
       // if (msg.length === 0) {
