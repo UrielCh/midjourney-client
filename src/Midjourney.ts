@@ -8,6 +8,7 @@ import { Command, DiscodMessage, Payload } from "./models.ts";
 import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
+import { logger } from "../deps.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
   const m = text.match(reg);
@@ -28,6 +29,15 @@ export type UploadSlot = {
   upload_filename: string;
   upload_url: string;
 };
+
+export interface WaitOptions {
+  prompt?: string;
+  maxWait?: number;
+  type?: "variations" | "grid" | "upscale";
+  imgId?: 1 | 2 | 3 | 4 | string;
+  startId?: Snowflake;
+  parent?: Snowflake;
+}
 
 export class Midjourney {
   readonly auth: string;
@@ -190,40 +200,30 @@ export class Midjourney {
     } else {
       throw Error("waitComponents onlu support upscale and variations");
     }
-    const msg = await this.waitMessage({
+    const msg = await this.waitMessageOrThrow({
       maxWait,
       type,
       startId: comp.parentId,
       imgId: comp.label,
       parent: comp.parentId,
-      onError: "throw",
     });
-    if (!msg) {
-      throw Error("waitComponents failed");
-    }
     return msg;
   }
 
-  // async waitMessage(opts: {
-  //   prompt?: string;
-  //   maxWait?: number;
-  //   type?: "variations" | "grid" | "upscale";
-  //   imgId?: 1 | 2 | 3 | 4 | string;
-  //   startId?: Snowflake;
-  //   parent?: Snowflake;
-  //   onError: 'throw';
-  // }): Promise<DiscodMessageHelper>
-  async waitMessage(opts: {
-    prompt?: string;
-    maxWait?: number;
-    type?: "variations" | "grid" | "upscale";
-    imgId?: 1 | 2 | 3 | 4 | string;
-    startId?: Snowflake;
-    parent?: Snowflake;
-    onError?: "null" | "throw";
-  } = {}): Promise<DiscodMessageHelper | null> {
+  async waitMessageOrThrow(
+    opts: WaitOptions = {},
+  ): Promise<DiscodMessageHelper> {
+    const msgs = await this.waitMessage(opts);
+    if (!msgs) {
+      throw Error("Failed to wait for Message");
+    }
+    return msgs;
+  }
+
+  async waitMessage(
+    opts: WaitOptions = {},
+  ): Promise<DiscodMessageHelper | null> {
     let { maxWait = 1000 } = opts;
-    const onError = opts.onError || "null";
     let imgId = 0;
     if (opts.imgId) {
       if (typeof opts.imgId === "number") {
@@ -240,9 +240,19 @@ export class Midjourney {
     ): Promise<DiscodMessageHelper | null> => {
       const msgid = msg.id;
       // console.log('follow', msg.id);
+      let prevCompletion = -2;
+      logger.info(`waitMessage for prompt message found`);
       while (true) {
         if (!msg.prompt) {
           throw new Error(`failed to extract prompt from ${msg.content}`);
+        }
+        if (msg.prompt.completion !== undefined && prevCompletion !== msg.prompt.completion) {
+          prevCompletion = msg.prompt.completion
+          if (prevCompletion == -1) {
+            logger.info(`wait for prompt in Queue`);
+          } else {
+            logger.info(`wait for prompt done (${(prevCompletion * 100).toFixed(0)}%)`);
+          }
         }
         if (msg.prompt.completion === 1) {
           return msg;
@@ -302,7 +312,10 @@ export class Midjourney {
       }
       return await follow(matches[0]);
     };
-    const limit = 50;
+    const limit = startId ? 100 : 50;
+    if (maxWait === 0) {
+      maxWait = 1;
+    }
     for (let i = 0; i < maxWait; i++) {
       const msg: DiscodMessage[] = await this.getMessages({
         limit,
@@ -314,9 +327,6 @@ export class Midjourney {
         if (maxWait-- < 0) break;
         await wait(1000);
       }
-    }
-    if (onError === "throw") {
-      throw Error("Timeout getting message");
     }
     return null;
   }

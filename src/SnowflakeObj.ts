@@ -30,7 +30,7 @@ export class SnowflakeObj {
       this.increment = prevIncrement;
     } else if (typeof snowflake === "number") {
       if (snowflake < 0) {
-        snowflake = Date.now() - snowflake;
+        snowflake = Date.now() + snowflake;
       }
       this.timestamp = snowflake;
       this.workerId = 0;

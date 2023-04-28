@@ -106,7 +106,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   m = extra.match(/^<@(\d+)> \(Waiting to start\)$/);
   if (m) {
     prompt.id = m[1];
-    prompt.completion = 0;
+    prompt.completion = -1;
     prompt.type = "grid";
     return prompt;
   }

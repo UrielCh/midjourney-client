@@ -1,9 +1,9 @@
 {
-    "deno.codeLens.implementations": true,
-    "deno.codeLens.references": false,
-    "deno.codeLens.referencesAllFunctions": true,
-    "deno.codeLens.test": true,
-    "deno.enable": true,
-    "deno.suggest.completeFunctionCalls": true,
-    "deno.unstable": true
+  "deno.codeLens.implementations": true,
+  "deno.codeLens.references": false,
+  "deno.codeLens.referencesAllFunctions": true,
+  "deno.codeLens.test": true,
+  "deno.enable": true,
+  "deno.suggest.completeFunctionCalls": true,
+  "deno.unstable": true
 }
