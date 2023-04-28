@@ -193,8 +193,10 @@ export class Midjourney {
     maxWait = 360,
   ): Promise<DiscodMessageHelper> {
     let type: "variations" | "grid" | "upscale" | undefined;
+    let imgId = comp.label;
     if (comp.label.startsWith("V")) {
       type = "variations";
+      imgId = ''; // image Id is not specified in title for variations. 
     } else if (comp.label.startsWith("U")) {
       type = "upscale";
     } else {
@@ -204,7 +206,7 @@ export class Midjourney {
       maxWait,
       type,
       startId: comp.parentId,
-      imgId: comp.label,
+      imgId,
       parent: comp.parentId,
     });
     return msg;
@@ -239,10 +241,9 @@ export class Midjourney {
       msg: DiscodMessageHelper,
     ): Promise<DiscodMessageHelper | null> => {
       const msgid = msg.id;
-      // console.log('follow', msg.id);
       let prevCompletion = -2;
-      logger.info(`waitMessage for prompt message found`);
-      while (true) {
+      logger.info(`waitMessage for prompt message found`, msgid, msg.content);
+      for (let i=0; i < maxWait; i++) {
         if (!msg.prompt) {
           throw new Error(`failed to extract prompt from ${msg.content}`);
         }
@@ -250,25 +251,20 @@ export class Midjourney {
           prevCompletion = msg.prompt.completion
           if (prevCompletion == -1) {
             logger.info(`wait for prompt in Queue`);
+          } else if (prevCompletion === 1) {
+            logger.info(`follow message completion ready`);
           } else {
-            logger.info(`wait for prompt done (${(prevCompletion * 100).toFixed(0)}%)`);
+            logger.info(`follow message completion: (${(prevCompletion * 100).toFixed(0)}%)`);
           }
         }
-        if (msg.prompt.completion === 1) {
-          return msg;
-        }
-        // if (msg.attachments.length && msg.attachments[0].url) {
-        //     // console.log(msg.attachments[0]);
-        // }
-
-        if (maxWait-- < 0) {
-          return null;
-        }
+        if (msg.prompt.completion === 1) return msg;
+        // if (msg.attachments.length && msg.attachments[0].url) { console.log(msg.attachments[0]); }
         await wait(2000);
         msg = await this.getMessageById(msgid);
         // console.log('follow1', msg.prompt?.source);
         // console.log('follow2', msg.prompt?.completion);
       }
+      return null;
     };
 
     const lookFor = async (
@@ -296,19 +292,15 @@ export class Midjourney {
           item.reference && item.reference.id === opts.parent
         );
       }
-      if (opts.type) {
-        matches = matches.filter((item) => item.prompt!.type === opts.type);
-      }
+      if (opts.type) matches = matches.filter((item) => item.prompt!.type === opts.type);
       if (opts.imgId) {
         matches = matches.filter((item) =>
           item.prompt!.name.includes(`#${imgId}`)
         );
       }
-      if (!matches.length) {
-        return null;
-      }
+      if (!matches.length) return null;
       if (matches.length > 1) {
-        console.error("warning multiple message match your waiting request!");
+        logger.error("warning multiple message match your waiting request! review your cryteria:", opts);
       }
       return await follow(matches[0]);
     };
@@ -317,16 +309,22 @@ export class Midjourney {
       maxWait = 1;
     }
     for (let i = 0; i < maxWait; i++) {
-      const msg: DiscodMessage[] = await this.getMessages({
+      let msg: DiscodMessage[] = await this.getMessages({
         limit,
         after: startId,
       });
+      if (i==0 && startId) {
+        logger.info(`First request in waitMessage get ${msg.length} messages`);
+      }
+      // if (msg.length === 0) {
+      //   msg = await this.getMessages({
+      //     limit: 1,
+      //   });
+      //   console.log(new DiscodMessageHelper(msg[0]));
+      // }
       const results = await lookFor(msg);
       if (results) return results;
-      if (msg.length < limit) {
-        if (maxWait-- < 0) break;
-        await wait(1000);
-      }
+      await wait(1000);
     }
     return null;
   }
