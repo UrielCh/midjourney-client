@@ -1,4 +1,5 @@
 interaction.txt
 src/list.json
 list.ts
-pixelSample.webp
+*.webp
+

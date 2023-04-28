@@ -18,11 +18,24 @@ async function download(
   }
 }
 
-async function describeRegen() {
-  const url =
-    "https://cdn.midjourney.com/c6052a4e-324e-4f15-8f93-79da700f9f21/0_0.webp";
-  const filename = "pixelSample.webp";
-  const image = await download(url, filename);
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function describe(imageUrl: string) {
+  const url = new URL(imageUrl);
+  const filename = url.pathname.replaceAll(/\//g, '_');// "pixelSample.webp";
+  let contentType = '';
+  if (filename.endsWith('.webp'))
+    contentType = 'image/webp';
+  else if (filename.endsWith('.jpeg'))
+    contentType = 'image/jpeg';
+  else if (filename.endsWith('.jpg'))
+    contentType = 'image/jpeg';
+  else if (filename.endsWith('.png'))
+    contentType = 'image/png';
+  else {
+    throw Error(`unknown extention in ${filename}`);
+  }
+  const image = await download(imageUrl, filename);
 
   const client = new Midjourney("interaction.txt");
   const id = Date.now();
@@ -32,8 +45,17 @@ async function describeRegen() {
     id,
   });
   const [attachment] = attachments;
-  await client.uploadImage(attachment, image, 'image/webp');
+  await client.uploadImage(attachment, image, contentType);
   await client.describe(attachment);
+  const [ msg ] = await client.getMessages({limit: 1});
+  await wait(1000);
+  console.log(msg);
+  await wait(3000);
+  console.log('-----');
+  console.log(msg);
+  await wait(10000);
+  console.log('-----');
+  console.log(msg);
 }
 
 /**
@@ -42,20 +64,8 @@ async function describeRegen() {
  * npx tsx example/imagine.ts
  * ```
  */
-async function imaginVariantUpscal() {
+async function imaginVariantUpscal(prompt: string) {
   const client = new Midjourney("interaction.txt");
-  let prompt = "";
-  prompt =
-    "an ice cream cone with chocolate fudge coming out of it, in the style of rendered in cinema4d, dreamy symbolism, dimitry roulland, soft color blending, swirling vortexes, photo-realistic techniques, dotted";
-  prompt = "the coast near a boat and a city, in the style of neogeo, richly detailed backgrounds, david welker, 32k uhd, detailed ship sails, arcadian landscapes, ps1 graphics --ar 51:91"
-  prompt = "a pixel art, traditional escapist scene in the mountains, in the style of captivating harbor views, david welker, 32k uhd, tropical baroque, ps1 graphics, detailed ship sails, rubén maya --ar 51:91";
-  // prompt = "ice creams in clouds with an ice cream with chocolate shavings, yum, in the style of rendered in cinema4d, photo-realistic techniques, pinkcore, organic forms blending with geometric shapes, dotted, smooth curves, minimalist backgrounds";
-  // prompt = "a man in a superman costume falling out of the sky, in the style of fisheye lens, lo-fi aesthetics, zack snyder, strong facial expression, space art, captivating gaze, andrzej sykut --ar 2:3";
-  // prompt = "a person with glasses wearing a blue shirt, in the style of circular shapes, womancore, grandparentcore, light white and light bronze, photo taken with provia, portrait, nonrepresentational --ar 70:69";
-  // prompt = "superman takes a selfie while flying in space, in the style of intense portraiture, environmental portraiture --ar 2:3";
-  // prompt = "superman in space taking a selfie, in the style of environmental portraiture, high-angle --ar 2:3"
-  // prompt =
-  //   "person's profile on the website, in the style of barbara stauffacher solomon, sky-blue and navy, grandparentcore, photo taken with provia, jeannette guichard-bunel, optical, tondo --ar 70:69";
   // await client.setSettingsFast();
   // await client.setSettingsRelax();
   // await client.imagine(prompt);
@@ -86,7 +96,7 @@ async function imaginVariantUpscal() {
       await client.callCustom2(variant[0]); // ex: MJ::JOB::variation::1::12345678-abcd-1234-1234-1234567890ab
       logger.info(`Waiting result to be issued`);
       const msg2 = await client.waitComponents(variant[0]); // {prompt, imgId: variant[0].label, type: "variations"}
-      logger.info(`variant Ready from`, msg2?.attachments[0]);
+      logger.info(`variant Ready from`, msg2?.attachments[0].url);
     } else {
       logger.warn(
         `No move variant available in result label:`,
@@ -96,16 +106,16 @@ async function imaginVariantUpscal() {
   }
   {
     const upscale = msg.getComponents(false, "U");
-    logger.info(`${upscale.length} Variant can be generated`);
+    logger.info(`${upscale.length} Upscale can be generated`);
     if (upscale.length > 0) {
       logger.info(`Generating Variant ${upscale[0].label}`);
       await client.callCustom2(upscale[0]); // ex: MJ::JOB::variation::1::12345678-abcd-1234-1234-1234567890ab
       logger.info(`Waiting result to be issued`);
       const msg2 = await client.waitComponents(upscale[0]); // {prompt, imgId: variant[0].label, type: "variations"}
-      logger.info(`variant Ready from`, msg2?.attachments[0]);
+      logger.info(`upscale Ready from`, msg2?.attachments[0].url);
     } else {
       logger.warn(
-        `No move variant available in result label:`,
+        `No move upscale available in result label:`,
         msg.components.map((a) => a.label).join(", "),
       );
     }
@@ -115,8 +125,11 @@ async function imaginVariantUpscal() {
 
 if (import.meta.main) {
   try {
-    // await describeRegen();
-    await imaginVariantUpscal();
+    let url = '';
+    url = "https://cdn.midjourney.com/c6052a4e-324e-4f15-8f93-79da700f9f21/0_0.webp";
+    url = "https://cdn.midjourney.com/5a2120ca-d9e1-46a5-9784-a7fb7026768e/0_3_32_N.webp";
+    await describe(url);
+    // await imaginVariantUpscal();
   } catch (err) {
     console.error(err);
   }
