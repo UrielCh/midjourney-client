@@ -1,6 +1,40 @@
 import Midjourney from "./src/Midjourney.ts";
 import { SnowflakeObj } from "./src/SnowflakeObj.ts";
 import { logger } from "./deps.ts";
+import { UploadSlot } from "./mod.ts";
+
+async function download(
+  url: string,
+  filename: string,
+): Promise<ArrayBufferLike> {
+  try {
+    const content: Uint8Array = await Deno.readFile(filename);
+    return content.buffer;
+  } catch (_e) {
+    const data = await (await fetch(url)).arrayBuffer();
+    logger.info("saving downloaded file to ", filename);
+    Deno.writeFile(filename, new Uint8Array(data));
+    return data;
+  }
+}
+
+async function describeRegen() {
+  const url =
+    "https://cdn.midjourney.com/c6052a4e-324e-4f15-8f93-79da700f9f21/0_0.webp";
+  const filename = "pixelSample.webp";
+  const image = await download(url, filename);
+
+  const client = new Midjourney("interaction.txt");
+  const id = Date.now();
+  const { attachments } = await client.attachments({
+    filename,
+    file_size: image.byteLength,
+    id,
+  });
+  const [attachment] = attachments;
+  await client.uploadImage(attachment, image, 'image/webp');
+  await client.describe(attachment);
+}
 
 /**
  * a simple example of how to use the imagine command
@@ -8,11 +42,12 @@ import { logger } from "./deps.ts";
  * npx tsx example/imagine.ts
  * ```
  */
-async function main() {
+async function imaginVariantUpscal() {
   const client = new Midjourney("interaction.txt");
   let prompt = "";
   prompt =
     "an ice cream cone with chocolate fudge coming out of it, in the style of rendered in cinema4d, dreamy symbolism, dimitry roulland, soft color blending, swirling vortexes, photo-realistic techniques, dotted";
+  prompt = "the coast near a boat and a city, in the style of neogeo, richly detailed backgrounds, david welker, 32k uhd, detailed ship sails, arcadian landscapes, ps1 graphics --ar 51:91"
   // prompt = "ice creams in clouds with an ice cream with chocolate shavings, yum, in the style of rendered in cinema4d, photo-realistic techniques, pinkcore, organic forms blending with geometric shapes, dotted, smooth curves, minimalist backgrounds";
   // prompt = "a man in a superman costume falling out of the sky, in the style of fisheye lens, lo-fi aesthetics, zack snyder, strong facial expression, space art, captivating gaze, andrzej sykut --ar 2:3";
   // prompt = "a person with glasses wearing a blue shirt, in the style of circular shapes, womancore, grandparentcore, light white and light bronze, photo taken with provia, portrait, nonrepresentational --ar 70:69";
@@ -74,12 +109,14 @@ async function main() {
       );
     }
   }
-
   console.log("done");
 }
+
 if (import.meta.main) {
-  main().catch((err) => {
+  try {
+    // await describeRegen();
+    await imaginVariantUpscal();
+  } catch (err) {
     console.error(err);
-    Deno.exit(1);
-  });
+  }
 }
