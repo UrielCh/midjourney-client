@@ -9,13 +9,12 @@ Deno.test(function SnowflakeTest() {
   assertEquals(snowflake.increment, 52);
 });
 
-
 Deno.test(function SnowflakeUniq() {
   const snowflakes: SnowflakeObj[] = [];
-  for (let i=0; i<10; i++) {
+  for (let i = 0; i < 10; i++) {
     snowflakes.push(new SnowflakeObj());
   }
-  const list: string[] = snowflakes.map(a=> a.encode());
+  const list: string[] = snowflakes.map((a) => a.encode());
   const set = new Set(list);
-  assertEquals(set.size,10);
+  assertEquals(set.size, 10);
 });
