@@ -8,7 +8,15 @@ export class SnowflakeObj {
   processId: number;
   increment: number;
 
-  constructor(snowflake?: Snowflake) {
+  /**
+   * build a snowflake:
+   * if no arg passed return a new unique snowflake timestampted now.
+   * if an negative number is passed, return snowflake timestampted passed value ms ago.
+   * if an positive number is passed, return snowflake timestampted with the given value.
+   * if a string is passed, the strind will be read as a snowflake string.
+   * @param snowflake
+   */
+  constructor(snowflake?: Snowflake | number) {
     if (!snowflake) {
       this.timestamp = Date.now();
       this.workerId = 0;
@@ -20,6 +28,14 @@ export class SnowflakeObj {
         prevIncrement++;
       }
       this.increment = prevIncrement;
+    } else if (typeof snowflake === "number") {
+      if (snowflake < 0) {
+        snowflake = Date.now() - snowflake;
+      }
+      this.timestamp = snowflake;
+      this.workerId = 0;
+      this.processId = 0;
+      this.increment = 0;
     } else {
       const snowflakeInt = BigInt(snowflake);
       this.timestamp = Number((snowflakeInt >> 22n) + 1420070400000n);

@@ -7,6 +7,7 @@ import * as cmd from "./applicationCommand.ts";
 import { Command, DiscodMessage, Payload } from "./models.ts";
 import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
+// import MsgsCache from "./MsgsCache.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
   const m = text.match(reg);
@@ -113,7 +114,7 @@ export class Midjourney {
     console.log("status:", response.status, response.statusText);
     const body = await response.json();
     console.log("statusText:", JSON.stringify(body, null, 2));
-    return response.status;
+    throw Error(`imagine failed with: ${response.statusText}`);
   }
 
   setSettingsRelax(): Promise<number> {
@@ -173,13 +174,56 @@ export class Midjourney {
     return response;
   }
 
-  async waitMessage(prompt: string, opts: {
+  /**
+   * wait for an upscale or a Variant
+   * @param comp
+   */
+  async waitComponents(
+    comp: ComponentsSummary,
+    maxWait = 360,
+  ): Promise<DiscodMessageHelper> {
+    let type: "variations" | "grid" | "upscale" | undefined;
+    if (comp.label.startsWith("V")) {
+      type = "variations";
+    } else if (comp.label.startsWith("U")) {
+      type = "upscale";
+    } else {
+      throw Error("waitComponents onlu support upscale and variations");
+    }
+    const msg = await this.waitMessage({
+      maxWait,
+      type,
+      startId: comp.parentId,
+      imgId: comp.label,
+      parent: comp.parentId,
+      onError: "throw",
+    });
+    if (!msg) {
+      throw Error("waitComponents failed");
+    }
+    return msg;
+  }
+
+  // async waitMessage(opts: {
+  //   prompt?: string;
+  //   maxWait?: number;
+  //   type?: "variations" | "grid" | "upscale";
+  //   imgId?: 1 | 2 | 3 | 4 | string;
+  //   startId?: Snowflake;
+  //   parent?: Snowflake;
+  //   onError: 'throw';
+  // }): Promise<DiscodMessageHelper>
+  async waitMessage(opts: {
+    prompt?: string;
     maxWait?: number;
     type?: "variations" | "grid" | "upscale";
     imgId?: 1 | 2 | 3 | 4 | string;
+    startId?: Snowflake;
+    parent?: Snowflake;
+    onError?: "null" | "throw";
   } = {}): Promise<DiscodMessageHelper | null> {
     let { maxWait = 1000 } = opts;
-    const { type = "grid" } = opts;
+    const onError = opts.onError || "null";
     let imgId = 0;
     if (opts.imgId) {
       if (typeof opts.imgId === "number") {
@@ -189,7 +233,7 @@ export class Midjourney {
       }
     }
 
-    let lastid = "";
+    let startId = opts.startId || "";
 
     const follow = async (
       msg: DiscodMessageHelper,
@@ -217,55 +261,62 @@ export class Midjourney {
       }
     };
 
-    const lookFor = async (msgs: DiscodMessage[]) => {
+    const lookFor = async (
+      msgs: DiscodMessage[],
+    ): Promise<DiscodMessageHelper | null> => {
       const messages = msgs.map((m) => new DiscodMessageHelper(m));
-      for (const item of messages) {
-        if (item.content) {
-          console.log("item.content not parsed:", item.content);
-        }
-
-        if (item.id > lastid) {
-          lastid = item.id;
-        }
-        if (!item.prompt) {
-          continue;
-        }
-        const itemPrompt = item.prompt.prompt;
-        if (item.author.id !== this.application_id) {
-          continue;
-        }
-        // drop last option
-        const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, "");
-        //console.log('view prompt:', itemPrompt)
-        if (itemPrompt !== prompt && prompt !== itemPromptLt) { // .startsWith(`${prompt} -`)
-          continue;
-        }
-
-        if (item.prompt.type !== type) {
-          continue;
-        }
-        if (imgId && !item.prompt.name.includes(`#${imgId}`)) {
-          continue;
-        }
-        return await follow(item);
+      // maintain the last message Id;
+      messages.forEach((item) => {
+        if (item.id > startId) startId = item.id;
+      });
+      let matches = messages;
+      matches = matches.filter((item) => item.prompt); // keep only parssable messages;
+      matches = matches.filter((item) =>
+        item.author.id === this.application_id
+      ); // keep only message from discod bot
+      if (opts.prompt) { // filter by prompt
+        matches = matches.filter((item) => {
+          const itemPrompt = item.prompt!.prompt;
+          const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, "");
+          return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
+        });
       }
-      return null;
-    };
-
-    // initial request
-    const msg = await lookFor(await this.getMessages({ limit: 50 }));
-    if (msg) {
-      return msg;
-    }
-    for (let i = 0; i < maxWait; i++) {
-      if (maxWait-- < 0) {
+      if (opts.parent) {
+        matches = matches.filter((item) =>
+          item.reference && item.reference.id === opts.parent
+        );
+      }
+      if (opts.type) {
+        matches = matches.filter((item) => item.prompt!.type === opts.type);
+      }
+      if (opts.imgId) {
+        matches = matches.filter((item) =>
+          item.prompt!.name.includes(`#${imgId}`)
+        );
+      }
+      if (!matches.length) {
         return null;
       }
-      await wait(1000);
-      const msg = await lookFor(await this.getMessages({ after: lastid }));
-      if (msg) {
-        return msg;
+      if (matches.length > 1) {
+        console.error("warning multiple message match your waiting request!");
       }
+      return await follow(matches[0]);
+    };
+    const limit = 50;
+    for (let i = 0; i < maxWait; i++) {
+      const msg: DiscodMessage[] = await this.getMessages({
+        limit,
+        after: startId,
+      });
+      const results = await lookFor(msg);
+      if (results) return results;
+      if (msg.length < limit) {
+        if (maxWait-- < 0) break;
+        await wait(1000);
+      }
+    }
+    if (onError === "throw") {
+      throw Error("Timeout getting message");
     }
     return null;
   }
@@ -285,12 +336,17 @@ export class Midjourney {
     );
     const searchParams = new URLSearchParams(url.search); // generic import prev params
     for (const [key, value] of Object.entries(params)) {
-      searchParams.set(key, value.toString());
+      const strValue = value.toString();
+      if (strValue) {
+        searchParams.set(key, strValue);
+      }
     }
     url.search = searchParams.toString();
     const response = await fetch(url.toString(), { headers: this.headers });
     if (response.status === 200) {
-      return response.json();
+      const msgs: DiscodMessage[] = await response.json();
+      // msgs.forEach((msg) => MsgsCache.set(msg.id, msg));
+      return msgs;
     }
     throw new Error(response.statusText + " " + await response.text());
   }

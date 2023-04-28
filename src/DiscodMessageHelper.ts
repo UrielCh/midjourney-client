@@ -20,7 +20,6 @@ export interface SplitedPrompt {
   source: string;
   prompt: string;
   id?: string;
-  // notes?: string[];
   mode?: "fast" | "relaxed";
   type?: "variations" | "grid" | "upscale";
   name: string;
@@ -157,6 +156,7 @@ function getDataFromComponents(
 export class DiscodMessageHelper {
   public content: string;
   public prompt?: SplitedPrompt;
+  public reference?: DiscodMessageHelper;
 
   public author: { id: Snowflake; username: string };
   public mentions: { id: Snowflake; username: string }[];
@@ -176,6 +176,9 @@ export class DiscodMessageHelper {
     }));
     this.attachments = source.attachments;
     this.components = getDataFromComponents(source.id, source.components || []);
+    if (source.referenced_message) {
+      this.reference = new DiscodMessageHelper(source.referenced_message);
+    }
     // const labels = this.components.map(a => a.label).join('');
   }
 
