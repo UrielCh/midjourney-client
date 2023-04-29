@@ -5,7 +5,12 @@ import {
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
-import type { Command, DiscodMessage, Payload, ResponseType } from "./models.ts";
+import type {
+  Command,
+  DiscodMessage,
+  Payload,
+  ResponseType,
+} from "./models.ts";
 import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
@@ -19,6 +24,21 @@ function getExistinggroup(text: string, reg: RegExp): string {
     );
   }
   return m[1];
+}
+
+async function download(
+  url: string,
+  filename: string,
+): Promise<ArrayBufferLike> {
+  try {
+    const content: Uint8Array = await Deno.readFile(filename);
+    return content.buffer;
+  } catch (_e) {
+    const data = await (await fetch(url)).arrayBuffer();
+    logger.info("saving downloaded file to ", filename);
+    Deno.writeFile(filename, new Uint8Array(data));
+    return data;
+  }
 }
 
 const interactions = "https://discord.com/api/v9/interactions";
@@ -307,7 +327,7 @@ export class Midjourney {
     ): Promise<DiscodMessageHelper | null> => {
       const messages = msgs.map((m) => new DiscodMessageHelper(m));
       // maintain the last message Id;
-      messages.forEach((item) => { // 
+      messages.forEach((item) => { //
         if (item.id > startId) startId = item.id;
       });
       let matches = messages;
@@ -472,6 +492,59 @@ export class Midjourney {
     if (!response.ok) {
       throw new Error(`Failed to upload ArrayBuffer: ${response.statusText}`);
     }
+  }
+
+  async describeUrl(imageUrl: string): Promise<string[]> {
+    const url = new URL(imageUrl);
+    const filename = url.pathname.replaceAll(/\//g, "_"); // "pixelSample.webp";
+    const imageData = await download(imageUrl, filename);
+    return this.describeImage(filename, imageData);
+  }
+
+  async describeImage(
+    filename: string,
+    imageData: ArrayBufferLike,
+    contentType?: string,
+  ): Promise<string[]> {
+    if (!contentType) {
+      if (filename.endsWith(".webp")) {
+        contentType = "image/webp";
+      } else if (filename.endsWith(".jpeg")) {
+        contentType = "image/jpeg";
+      } else if (filename.endsWith(".jpg")) {
+        contentType = "image/jpeg";
+      } else if (filename.endsWith(".png")) {
+        contentType = "image/png";
+      } else {
+        throw Error(`unknown extention in ${filename}`);
+      }
+    }
+
+    const id = Date.now();
+    // accept up to 5 sec offset
+    const startId = new SnowflakeObj(-5 * 1000).encode();
+    const { attachments } = await this.attachments({
+      filename,
+      file_size: imageData.byteLength,
+      id,
+    });
+    const [attachment] = attachments;
+    await this.uploadImage(attachment, imageData, contentType);
+    await this.describe(attachment);
+    const realfilename = filename.replace(/^_/, "");
+    for (let i = 0; i < 5; i++) {
+      const msg = await this.waitMessage({
+        type: "describe",
+        name: realfilename,
+        maxWait: 1,
+        startId,
+      });
+      if (msg && msg.prompt) {
+        console.log(msg);
+        return msg.prompt.prompt.split(/\n+/g).map((p) => p.slice(4));
+      }
+    }
+    throw Error('Wait for describe response failed');
   }
 }
 

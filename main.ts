@@ -3,61 +3,7 @@ import Midjourney from "./src/Midjourney.ts";
 import { SnowflakeObj } from "./src/SnowflakeObj.ts";
 import { logger } from "./deps.ts";
 
-async function download(
-  url: string,
-  filename: string,
-): Promise<ArrayBufferLike> {
-  try {
-    const content: Uint8Array = await Deno.readFile(filename);
-    return content.buffer;
-  } catch (_e) {
-    const data = await (await fetch(url)).arrayBuffer();
-    logger.info("saving downloaded file to ", filename);
-    Deno.writeFile(filename, new Uint8Array(data));
-    return data;
-  }
-}
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function describe(imageUrl: string) {
-  const url = new URL(imageUrl);
-  const filename = url.pathname.replaceAll(/\//g, "_"); // "pixelSample.webp";
-  let contentType = "";
-  if (filename.endsWith(".webp")) {
-    contentType = "image/webp";
-  } else if (filename.endsWith(".jpeg")) {
-    contentType = "image/jpeg";
-  } else if (filename.endsWith(".jpg")) {
-    contentType = "image/jpeg";
-  } else if (filename.endsWith(".png")) {
-    contentType = "image/png";
-  } else {
-    throw Error(`unknown extention in ${filename}`);
-  }
-  const image = await download(imageUrl, filename);
-  const client = new Midjourney("interaction.txt");
-  const id = Date.now();
-  // accept up to 5 sec offset
-  const startId = new SnowflakeObj(-5 * 1000).encode();
-  const { attachments } = await client.attachments({
-    filename,
-    file_size: image.byteLength,
-    id,
-  });
-  const [attachment] = attachments;
-  await client.uploadImage(attachment, image, contentType);
-  await client.describe(attachment);
-  const realfilename = filename.replace(/^_/, '');
-  for (let i=0;i< 5; i++) {
-    const msg = await client.waitMessage({type: "describe", name: realfilename, maxWait: 1, startId});
-    if (msg && msg.prompt) {
-      console.log(msg);
-      return msg.prompt.prompt.split(/\n+/g).map(p => p.slice(4));
-    }
-  }
-  console.log('failed');
-}
+// const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * a simple example of how to use the imagine command
@@ -65,8 +11,7 @@ async function describe(imageUrl: string) {
  * npx tsx example/imagine.ts
  * ```
  */
-async function imaginVariantUpscal(prompt: string) {
-  const client = new Midjourney("interaction.txt");
+async function imaginVariantUpscal(client: Midjourney, prompt: string) {
   // await client.setSettingsFast();
   // await client.setSettingsRelax();
   // await client.imagine(prompt);
@@ -177,8 +122,12 @@ if (import.meta.main) {
     //   "https://cdn.midjourney.com/c6052a4e-324e-4f15-8f93-79da700f9f21/0_0.webp";
     // url =
     //   "https://cdn.midjourney.com/5a2120ca-d9e1-46a5-9784-a7fb7026768e/0_3_32_N.webp";
-    await describe(urls[9]);
-    // await imaginVariantUpscal();
+    const client = new Midjourney("interaction.txt");
+    const prompts = await client.describeUrl(urls[10]);
+    for (const prompt of prompts) {
+     await imaginVariantUpscal(client, prompt);
+    }
+  
   } catch (err) {
     console.error(err);
   }
