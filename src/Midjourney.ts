@@ -4,8 +4,8 @@ import {
 } from "./DiscodMessageHelper.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
-import { CommandCache } from './CommandCache.ts';
-import { Command, DiscodMessage, Payload } from "./models.ts";
+import { CommandCache } from "./CommandCache.ts";
+import type { Command, DiscodMessage, Payload, ResponseType } from "./models.ts";
 import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
@@ -33,8 +33,9 @@ export type UploadSlot = {
 
 export interface WaitOptions {
   prompt?: string;
+  name?: string;
   maxWait?: number;
-  type?: "variations" | "grid" | "upscale";
+  type?: ResponseType;
   imgId?: 1 | 2 | 3 | 4 | string;
   startId?: Snowflake;
   parent?: Snowflake;
@@ -50,7 +51,7 @@ export class Midjourney {
   // readonly cookie: string;
   //readonly x_super_properties: string;
   //readonly x_discord_locale: string;
-  
+
   constructor(sample: string) {
     if (!sample.includes("{")) {
       // use sample as a filename
@@ -103,7 +104,7 @@ export class Midjourney {
   }
 
   async settings(): Promise<number> {
-    const cmd = await this.commandCache.getCommand('settings');
+    const cmd = await this.commandCache.getCommand("settings");
 
     const payload: Payload = this.buildPayload(cmd);
     const response = await this.doInteractions(payload);
@@ -118,7 +119,7 @@ export class Midjourney {
   }
 
   async imagine(prompt: string): Promise<number> {
-    const cmd = await this.commandCache.getCommand('imagine');
+    const cmd = await this.commandCache.getCommand("imagine");
     const payload: Payload = this.buildPayload(cmd);
     payload.data.options = [{ type: 3, name: "prompt", value: prompt }];
     const response = await this.doInteractions(payload);
@@ -133,12 +134,12 @@ export class Midjourney {
   }
 
   async describe(attachment: UploadSlot): Promise<number> {
-    const cmd = await this.commandCache.getCommand('describe');
+    const cmd = await this.commandCache.getCommand("describe");
     const payload: Payload = this.buildPayload(cmd);
-    const {id, upload_filename: uploaded_filename} = attachment;
-    payload.data.options = [ { type: 11, name: "image", value: id }];    
-    const filename = uploaded_filename.replace(/.+\//, '');
-    payload.data.attachments = [{ id, filename, uploaded_filename}]
+    const { id, upload_filename: uploaded_filename } = attachment;
+    payload.data.options = [{ type: 11, name: "image", value: id }];
+    const filename = uploaded_filename.replace(/.+\//, "");
+    payload.data.attachments = [{ id, filename, uploaded_filename }];
 
     const response = await this.doInteractions(payload);
     if (response.status === 204) {
@@ -216,7 +217,7 @@ export class Midjourney {
     comp: ComponentsSummary,
     maxWait = 360,
   ): Promise<DiscodMessageHelper> {
-    let type: "variations" | "grid" | "upscale" | undefined;
+    let type: ResponseType | undefined;
     let imgId = comp.label;
     if (comp.label.startsWith("V")) {
       type = "variations";
@@ -269,9 +270,9 @@ export class Midjourney {
       logger.info(`waitMessage for prompt message found`, msgid, msg.content);
       for (let i = 0; i < maxWait; i++) {
         if (!msg.prompt) {
-          console.log('----');
+          console.log("----");
           console.log(msg);
-          console.log('----');
+          console.log("----");
           throw new Error(`failed to extract prompt from ${msg.content}`);
         }
         if (
@@ -306,7 +307,7 @@ export class Midjourney {
     ): Promise<DiscodMessageHelper | null> => {
       const messages = msgs.map((m) => new DiscodMessageHelper(m));
       // maintain the last message Id;
-      messages.forEach((item) => {
+      messages.forEach((item) => { // 
         if (item.id > startId) startId = item.id;
       });
       let matches = messages;
@@ -328,6 +329,9 @@ export class Midjourney {
       }
       if (opts.type) {
         matches = matches.filter((item) => item.prompt!.type === opts.type);
+      }
+      if (opts.name) {
+        matches = matches.filter((item) => item.prompt!.name === opts.name);
       }
       if (opts.imgId) {
         matches = matches.filter((item) =>
@@ -451,17 +455,20 @@ export class Midjourney {
   }
 
   /**
-   *
    * @param slot use uploadUrl to put the image
    * @returns
    */
-  async uploadImage(slot: UploadSlot, data: ArrayBufferLike, contentType: string): Promise<void> {
+  async uploadImage(
+    slot: UploadSlot,
+    data: ArrayBufferLike,
+    contentType: string,
+  ): Promise<void> {
     const headers = { "content-type": contentType };
     const response = await fetch(slot.upload_url, {
       method: "PUT",
       headers,
       body: new Uint8Array(data),
-    })
+    });
     if (!response.ok) {
       throw new Error(`Failed to upload ArrayBuffer: ${response.statusText}`);
     }
@@ -469,4 +476,3 @@ export class Midjourney {
 }
 
 export default Midjourney;
-

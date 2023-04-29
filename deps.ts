@@ -5,6 +5,7 @@ export type {
   APIAttachment,
   APIButtonComponentWithCustomId,
   APIButtonComponentWithURL,
+  APIEmbed,
   APIMessage,
   APIMessageActionRowComponent,
   APIMessageReference,

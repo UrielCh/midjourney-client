@@ -74,7 +74,6 @@ Deno.test(function ParseMidJourneyImagineRelaxedProgress() {
   assertEquals(p1.type, "grid");
 });
 
-
 Deno.test(function ParseMidJourneyWebsiteFullQuality() {
   const p1 = extractPrompt(
     "**a view of Paris drawn by Kanagawa --v 5** - Variations by <@1097074882203303911> (Open on website for full quality) (relaxed)",

@@ -47,7 +47,9 @@ export class CommandCache {
     }
     // get from discord
     if (!command) {
-      logger.info(`CommandCache: ${name} not in cache, requesting Discord server.`);
+      logger.info(
+        `CommandCache: ${name} not in cache, requesting Discord server.`,
+      );
       const url =
         `https://discord.com/api/v9/channels/${this.channel_id}/application-commands/search?type=1&query=${name}&limit=1&include_applications=false`;
       const response = await fetch(url, {

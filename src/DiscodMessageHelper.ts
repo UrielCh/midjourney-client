@@ -3,11 +3,12 @@ import type {
   APIAttachment,
   APIButtonComponentWithCustomId,
   APIButtonComponentWithURL,
+  APIEmbed,
   APIMessageActionRowComponent,
   Snowflake,
 } from "../deps.ts";
 import { ButtonStyle } from "../deps.ts";
-import { DiscodMessage } from "./models.ts";
+import type { DiscodMessage, ResponseType } from "./models.ts";
 
 export interface ComponentsSummary {
   parentId: Snowflake;
@@ -21,7 +22,7 @@ export interface SplitedPrompt {
   prompt: string;
   id?: string;
   mode?: "fast" | "relaxed";
-  type?: "variations" | "grid" | "upscale";
+  type?: ResponseType;
   name: string;
   completion?: number; // 0..1
 }
@@ -86,7 +87,9 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     return prompt;
   }
 
-  m = extra.match(/^Variations by <@(\d+)> \(Open on website for full quality\)$/);
+  m = extra.match(
+    /^Variations by <@(\d+)> \(Open on website for full quality\)$/,
+  );
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
@@ -187,7 +190,40 @@ export class DiscodMessageHelper {
     if (source.referenced_message) {
       this.reference = new DiscodMessageHelper(source.referenced_message);
     }
+    // labels: '1️⃣2️⃣3️⃣4️⃣🔄'
     // const labels = this.components.map(a => a.label).join('');
+    // const custom_ids = this.components.map((a) => a.custom_id).join("");
+    if (source.interaction) {
+      const name = source.interaction.name;
+      if (name === "describe") {
+        if (source.embeds && source.embeds[0]) {
+          const embeds: APIEmbed = source.embeds[0];
+          if (embeds.image) {
+            const description: string = embeds.description || "";
+            this.prompt = {
+              source: description,
+              type: "describe",
+              name: embeds.image.url.replace(/.+\//, ""),
+              prompt: description,
+              completion: 1,
+            };
+          }
+        } else {
+          // embeds not available yet.
+          this.prompt = {
+            source: '',
+            type: "describe",
+            name: '',
+            prompt: '',
+            completion: -1,
+          };
+        }
+      } else {
+        console.log("interaction Name: ", name);
+        console.log("interaction source.embeds: ", source.embeds);
+      }
+    }
+    //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
   // isImagineResult(): boolean {
