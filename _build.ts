@@ -19,7 +19,7 @@ async function buildDnt() {
         deno: true,
         // webSocket: false,
         // undici: true,
-        // custom: [
+        custom: [
         //   {
         //     package: {
         //       name: "stream/web",
@@ -32,7 +32,7 @@ async function buildDnt() {
         //       name: "ws",
         //     },
         //   }
-        // ],
+        ],
       },
       compilerOptions: {
         lib: ["dom", "esnext"],

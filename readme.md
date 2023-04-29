@@ -8,31 +8,33 @@ Midjourney bot using your web development tools.
 
 ## Features
 
-| feature     | Status             |
-| ----------- | ------------------ |
-| `ask`       | :x:                |
-| `blend`     | :x:                |
-| `describe`  | :white_check_mark: |
-| `fast`      | :x:                |
-| `help`      | :wavy_dash:        |
-| `imagine`   | :white_check_mark: |
-| `info`      | :x:                |
-| `invite`    | :wavy_dash:        |
-| `prefer`    | :x:                |
-| `private`   | :x:                |
-| `public`    | :x:                |
-| `relax`     | :x:                |
-| `settings`  | :white_check_mark: |
-| `show`      | :x:                |
-| `stealth`   | :x:                |
-| `subscribe` | :wavy_dash:        |
+| feature     | Status             | feature     | Status             |
+| ----------- | ------------------ | ----------- | ------------------ |
+| `ask`       | :x:                | `private`   | :x:                |
+| `blend`     | :x:                | `public`    | :x:                |
+| `describe`  | :white_check_mark: | `relax`     | :x:                |
+| `fast`      | :x:                | `settings`  | :white_check_mark: |
+| `help`      | :wavy_dash:        | `show`      | :x:                |
+| `imagine`   | :white_check_mark: | `stealth`   | :x:                |
+| `info`      | :x:                | `subscribe` | :wavy_dash:        |
+| `invite`    | :wavy_dash:        | `prefer`    | :x:                |
 
 ## Installation
 
-### NodeJS
+### NodeJS ESM or CJS
 
 ```sh
 npm install midjourney-discord-api
+```
+
+### ESM nodeJS
+
+```js
+import Midjourney from "midjourney-discord-api";
+
+const cli = new Midjourney('interaction.txt');
+const msgs = await cli.getMessages();
+console.log(msgs.length + ' messages visibles'); // by default get 50 messages
 ```
 
 ### Deno
