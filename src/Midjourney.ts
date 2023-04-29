@@ -138,14 +138,19 @@ export class Midjourney {
     return response.status;
   }
 
-  async imagine(prompt: string): Promise<number> {
+  async imagine(prompt: string): Promise<DiscodMessageHelper> {
+    const startId = new SnowflakeObj(-5 * 1000).encode();
     const cmd = await this.commandCache.getCommand("imagine");
     const payload: Payload = this.buildPayload(cmd);
     payload.data.options = [{ type: 3, name: "prompt", value: prompt }];
     const response = await this.doInteractions(payload);
     if (response.status === 204) {
-      // no content;
-      return response.status;
+      const msg = await this.waitMessageOrThrow({
+        prompt,
+        startId,
+        maxWait: 3000,
+      });
+      return msg;
     }
     logger.error("status:", response.status, response.statusText);
     const body = await response.json();
@@ -190,8 +195,9 @@ export class Midjourney {
     );
   }
 
-  callCustom2(button: ComponentsSummary): Promise<number> {
-    return this.callCustom(button.parentId, button.custom_id);
+  async callCustom2(button: ComponentsSummary): Promise<DiscodMessageHelper> {
+    await this.callCustom(button.parentId, button.custom_id);
+    return await this.waitComponents(button);
   }
 
   async callCustom(
@@ -544,7 +550,7 @@ export class Midjourney {
         return msg.prompt.prompt.split(/\n+/g).map((p) => p.slice(4));
       }
     }
-    throw Error('Wait for describe response failed');
+    throw Error("Wait for describe response failed");
   }
 }
 

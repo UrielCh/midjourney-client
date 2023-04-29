@@ -7,7 +7,6 @@ import type {
 } from "../deps.ts";
 import { ApplicationCommandType } from "../deps.ts";
 
-
 export type ResponseType = "variations" | "grid" | "upscale" | "describe";
 
 export interface Command extends APIApplicationCommand {

@@ -12,12 +12,8 @@ import { logger } from "./deps.ts";
  * ```
  */
 async function imaginVariantUpscal(client: Midjourney, prompt: string) {
-  // await client.setSettingsFast();
-  // await client.setSettingsRelax();
-  // await client.imagine(prompt);
-  //   console.log("-=-=-=-=-=-=-=-");
   // 5 second back in time
-  const startId = new SnowflakeObj(-3 * 60 * 60 * 1000).encode();
+  const startId = new SnowflakeObj(-5 * 1000).encode();
   let msg = await client.waitMessage({
     prompt,
     startId,
@@ -26,12 +22,7 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
   });
   if (!msg) {
     logger.info("Failed to find existing prompt result");
-    await client.imagine(prompt);
-    msg = await client.waitMessageOrThrow({
-      prompt,
-      startId,
-      maxWait: 3000,
-    });
+    msg = await client.imagine(prompt);
   }
   logger.info("Prompt result available", { id: msg.id });
   {
@@ -39,10 +30,8 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     logger.info(`${variant.length} Variant can be generated`);
     if (variant.length > 0) {
       logger.info(`Generating Variant ${variant[0].label}`);
-      await client.callCustom2(variant[0]); // ex: MJ::JOB::variation::1::12345678-abcd-1234-1234-1234567890ab
-      logger.info(`Waiting result to be issued`);
-      const msg2 = await client.waitComponents(variant[0]); // {prompt, imgId: variant[0].label, type: "variations"}
-      logger.info(`variant Ready from`, msg2?.attachments[0].url);
+      const msg2 = await client.callCustom2(variant[0]);
+      logger.info(`variant Ready from`, msg2.attachments[0].url);
     } else {
       logger.warn(
         `No move variant available in result label:`,
@@ -55,10 +44,8 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     logger.info(`${upscale.length} Upscale can be generated`);
     if (upscale.length > 0) {
       logger.info(`Generating Variant ${upscale[0].label}`);
-      await client.callCustom2(upscale[0]); // ex: MJ::JOB::variation::1::12345678-abcd-1234-1234-1234567890ab
-      logger.info(`Waiting result to be issued`);
-      const msg2 = await client.waitComponents(upscale[0]); // {prompt, imgId: variant[0].label, type: "variations"}
-      logger.info(`upscale Ready from`, msg2?.attachments[0].url);
+      const msg2 = await client.callCustom2(upscale[0]);
+      logger.info(`upscale Ready from`, msg2.attachments[0].url);
     } else {
       logger.warn(
         `No move upscale available in result label:`,
@@ -125,9 +112,8 @@ if (import.meta.main) {
     const client = new Midjourney("interaction.txt");
     const prompts = await client.describeUrl(urls[10]);
     for (const prompt of prompts) {
-     await imaginVariantUpscal(client, prompt);
+      await imaginVariantUpscal(client, prompt);
     }
-  
   } catch (err) {
     console.error(err);
   }

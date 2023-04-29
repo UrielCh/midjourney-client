@@ -211,16 +211,16 @@ export class DiscodMessageHelper {
         } else {
           // embeds not available yet.
           this.prompt = {
-            source: '',
+            source: "",
             type: "describe",
-            name: '',
-            prompt: '',
+            name: "",
+            prompt: "",
             completion: -1,
           };
         }
       } else {
-        console.log("interaction Name: ", name);
-        console.log("interaction source.embeds: ", source.embeds);
+        // console.log("interaction Name: ", name);
+        // console.log("interaction source.embeds: ", source.embeds);
       }
     }
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
