@@ -1,27 +1,82 @@
 import { Command } from "./models.ts";
+import { logger, path } from "../deps.ts";
 
-export const KNOWN_METHODS = ["ask", "blend", "describe", "fast", "help", "imagine", "info", "invite", "prefer", "private", "public", "relax", "settings", "show", "stealth", "subscribe" ] as const;
+export const KNOWN_METHODS = [
+  "ask",
+  "blend",
+  "describe",
+  "fast",
+  "help",
+  "imagine",
+  "info",
+  "invite",
+  "prefer",
+  "private",
+  "public",
+  "relax",
+  "settings",
+  "show",
+  "stealth",
+  "subscribe",
+] as const;
 export type KnownMethods = typeof KNOWN_METHODS[number];
 
 export class CommandCache {
-    cache: Partial<Record<KnownMethods, Command>> = {};
+  cacheDirectory?: string;
+  cache: Partial<Record<KnownMethods, Command>> = {};
 
-    constructor(private channel_id: string, private authorization: string) {
+  constructor(private channel_id: string, private authorization: string) {
+    this.cacheDirectory = "cmdCache";
+    Deno.mkdirSync(this.cacheDirectory, { recursive: true });
+  }
+
+  async getCommand(name: KnownMethods): Promise<Command> {
+    // try from memory cache
+    if (this.cache[name]) {
+      return this.cache[name] as Command;
     }
-
-    async getCommand(name: KnownMethods): Promise<Command> {
-        if (this.cache[name])
-            return this.cache[name] as Command;
-        const url = `https://discord.com/api/v9/channels/${this.channel_id}/application-commands/search?type=1&query=${name}&limit=1&include_applications=false`;
-        const response = await fetch(url, { headers: { authorization: this.authorization }});
-        const data = await response.json();
-        if ('application_commands' in data) {
-            const { application_commands } = data;
-            if (application_commands[0]) {
-                this.cache[name] = application_commands[0] as Command;
-                return application_commands[0] as Command;
-            }
+    let command: Command | undefined;
+    // try from disk cache
+    const cacheFile = this.getcacheFile(name);
+    if (cacheFile) {
+      try {
+        command = JSON.parse(await Deno.readTextFile(cacheFile));
+      } catch (_e) {
+        // failed to load command from cache.
+      }
+    }
+    // get from discord
+    if (!command) {
+      logger.info(`CommandCache: ${name} not in cache, requesting Discord server.`);
+      const url =
+        `https://discord.com/api/v9/channels/${this.channel_id}/application-commands/search?type=1&query=${name}&limit=1&include_applications=false`;
+      const response = await fetch(url, {
+        headers: { authorization: this.authorization },
+      });
+      const data = await response.json();
+      if ("application_commands" in data) {
+        const { application_commands } = data;
+        if (application_commands[0]) {
+          command = application_commands[0] as Command;
+          if (cacheFile) {
+            await Deno.writeTextFile(
+              cacheFile,
+              JSON.stringify(application_commands[0], undefined, 2),
+            );
+          }
         }
-        throw Error(`Failed to get application_commands for command ${name}`);
+      }
     }
+    // save in memory
+    if (command) {
+      this.cache[name] = command;
+      return command;
+    }
+    throw Error(`Failed to get application_commands for command ${name}`);
+  }
+
+  getcacheFile(name: KnownMethods): string {
+    if (!this.cacheDirectory) return "";
+    return path.join(this.cacheDirectory, `${name}.json`);
+  }
 }
