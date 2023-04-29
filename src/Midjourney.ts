@@ -15,6 +15,7 @@ import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
+import { download, wait } from "./utils.ts";
 
 function getExistinggroup(text: string, reg: RegExp): string {
   const m = text.match(reg);
@@ -26,24 +27,7 @@ function getExistinggroup(text: string, reg: RegExp): string {
   return m[1];
 }
 
-async function download(
-  url: string,
-  filename: string,
-): Promise<ArrayBufferLike> {
-  try {
-    const content: Uint8Array = await Deno.readFile(filename);
-    return content.buffer;
-  } catch (_e) {
-    const data = await (await fetch(url)).arrayBuffer();
-    logger.info("saving downloaded file to ", filename);
-    Deno.writeFile(filename, new Uint8Array(data));
-    return data;
-  }
-}
-
 const interactions = "https://discord.com/api/v9/interactions";
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export type UploadSlot = {
   id: number;

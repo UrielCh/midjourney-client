@@ -17,8 +17,8 @@ async function buildDnt() {
       shims: {
         // see JS docs for overview and more options
         deno: true,
-        webSocket: false,
-        undici: true,
+        // webSocket: false,
+        // undici: true,
         // custom: [
         //   {
         //     package: {

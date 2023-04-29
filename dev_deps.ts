@@ -3,5 +3,4 @@ export {
   assertExists,
 } from "https://deno.land/std@0.184.0/testing/asserts.ts";
 
-export { existsSync } from "https://deno.land/std@0.185.0/fs/mod.ts";
 export { join } from "https://deno.land/std@0.185.0/path/mod.ts";

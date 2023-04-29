@@ -3,8 +3,6 @@ import Midjourney from "./src/Midjourney.ts";
 import { SnowflakeObj } from "./src/SnowflakeObj.ts";
 import { logger } from "./deps.ts";
 
-// const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 /**
  * a simple example of how to use the imagine command
  * ```
