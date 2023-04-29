@@ -1,9 +1,9 @@
 import { assertEquals } from "../dev_deps.ts";
-import Midjourney from "./Midjourney.ts";
 import { KNOWN_METHODS } from "./CommandCache.ts";
+import { getMidjourney } from "./Midjourney_test.ts";
 
 Deno.test(async function LoadAllCmds() {
-  const client = new Midjourney("interaction.txt");
+  const client = getMidjourney();
   const { commandCache } = client;
 
   for (const mtd of KNOWN_METHODS) {

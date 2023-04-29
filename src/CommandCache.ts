@@ -55,15 +55,17 @@ export class CommandCache {
       const response = await fetch(url, {
         headers: { authorization: this.authorization },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        application_commands: Command[];
+      };
       if ("application_commands" in data) {
-        const { application_commands } = data;
+        const application_commands = data.application_commands;
         if (application_commands[0]) {
-          command = application_commands[0] as Command;
+          command = application_commands[0];
           if (cacheFile) {
             await Deno.writeTextFile(
               cacheFile,
-              JSON.stringify(application_commands[0], undefined, 2),
+              JSON.stringify(command, undefined, 2),
             );
           }
         }

@@ -56,7 +56,7 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
   console.log("done");
 }
 
-if (import.meta.main) {
+async function mainSample() {
   // go to https://www.midjourney.com/app/feed/
   // pick some iamges URL
   // $$('img[data-job-id]').map(a => a.getAttribute('src'))
@@ -117,4 +117,7 @@ if (import.meta.main) {
   } catch (err) {
     console.error(err);
   }
+}
+if (import.meta.main) {
+  mainSample();
 }

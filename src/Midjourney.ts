@@ -453,7 +453,8 @@ export class Midjourney {
     url.search = searchParams.toString();
     const response = await fetch(url.toString(), { headers: this.headers });
     if (response.status === 200) {
-      const msgs: DiscordMessage[] = await response.json();
+      const msgs: DiscordMessage[] =
+        (await response.json()) as DiscordMessage[];
       // msgs.forEach((msg) => MsgsCache.set(msg.id, msg));
       return msgs;
     }
@@ -508,7 +509,8 @@ export class Midjourney {
       body: JSON.stringify(body),
     });
     if (response.status === 200) {
-      return response.json();
+      const atts = (await response.json()) as { attachments: UploadSlot[] };
+      return atts;
     }
     throw new Error(response.statusText + " " + await response.text());
   }
