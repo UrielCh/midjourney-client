@@ -55,22 +55,22 @@ Deno.test(function ParseMidJourneyImagineRelaxedProgress() {
   const p1 = extractPrompt(
     "**a view of Paris drawn by Kanagawa --v 5** - <@1097074882203303911> (62%) (relaxed)",
   );
-  assertExists(p1);
-  assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5");
-  assertEquals(p1.id, "1097074882203303911");
-  assertEquals(p1.completion, 0.62);
-  assertEquals(p1.type, "grid");
-  assertEquals(p1.mode, "relaxed");
+  assertExists(p1, 'extractPrompt should return a prompt object');
+  assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5", 'should extract the correct prompt');
+  assertEquals(p1.id, "1097074882203303911", 'should extract the correct user id');
+  assertEquals(p1.completion, 0.62, 'should collect progression percent');
+  assertEquals(p1.type, "grid", "should collect type as grid");
+  assertEquals(p1.mode, "relaxed", 'should collect mode as relax');
 });
 
-Deno.test(function ParseMidJourneyImagineRelaxedProgress() {
+Deno.test(function ParseMidJourneyImagineRelaxedQueue() {
   const p1 = extractPrompt(
     "**a view of Paris drawn by Kanagawa --v 5** - <@1097074882203303911> (Waiting to start)",
   );
-  assertExists(p1);
-  assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5");
-  assertEquals(p1.id, "1097074882203303911");
-  assertEquals(p1.completion, 0);
+  assertExists(p1, 'extractPrompt should return a prompt object');
+  assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5", 'should extract the correct prompt');
+  assertEquals(p1.id, "1097074882203303911", 'should extract the correct user id');
+  assertEquals(p1.completion, -1);
   assertEquals(p1.type, "grid");
 });
 
