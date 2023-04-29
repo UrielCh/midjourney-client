@@ -27,3 +27,18 @@ export function getExistinggroup(text: string, reg: RegExp): string {
   }
   return m[1];
 }
+
+export function filename2Mime(filename: string): string {
+  filename = filename.toLowerCase();
+  if (filename.endsWith(".webp")) {
+    return "image/webp";
+  } else if (filename.endsWith(".jpeg")) {
+    return "image/jpeg";
+  } else if (filename.endsWith(".jpg")) {
+    return "image/jpeg";
+  } else if (filename.endsWith(".png")) {
+    return "image/png";
+  } else {
+    throw Error(`unknown extention in ${filename}`);
+  }
+}

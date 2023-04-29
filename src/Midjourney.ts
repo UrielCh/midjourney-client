@@ -11,11 +11,11 @@ import type {
   Payload,
   ResponseType,
 } from "./models.ts";
-import { ApplicationCommandType, MessageFlags } from "../deps.ts";
+import { ApplicationCommandType } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import { download, getExistinggroup, wait } from "./utils.ts";
+import { download, filename2Mime, getExistinggroup, wait } from "./utils.ts";
 
 // import * as DiscordJs from "npm:discord.js";
 
@@ -84,7 +84,7 @@ export class Midjourney {
   //   if (!this.DISCORD_TOKEN) {
   //     throw Error("no DISCORD_TOKEN available");
   //   }
-// 
+  //
   //   const client = new DiscordJs.Client({
   //     intents: [ DiscordJs.GatewayIntentBits.Guilds], // , DiscordJs.GatewayIntentBits.GuildMessages
   //   });
@@ -98,7 +98,7 @@ export class Midjourney {
   //   // });
   //   client.on('interactionCreate', async interaction => {
   //     if (!interaction.isChatInputCommand()) return;
-  //   
+  //
   //     if (interaction.commandName === 'ping') {
   //       await interaction.reply('Pong!');
   //     }
@@ -193,7 +193,6 @@ export class Midjourney {
     return response.status;
   }
 
-
   async imagine(prompt: string): Promise<DiscordMessageHelper> {
     const startId = new SnowflakeObj(-5 * 1000).encode();
     const cmd = await this.commandCache.getCommand("imagine");
@@ -214,7 +213,7 @@ export class Midjourney {
     throw Error(`imagine failed with: ${response.statusText}`);
   }
 
-  async describe(attachment: UploadSlot): Promise<number> {
+  private async describe(attachment: UploadSlot): Promise<number> {
     const cmd = await this.commandCache.getCommand("describe");
     const payload: Payload = this.buildPayload(cmd);
     const { id, upload_filename: uploaded_filename } = attachment;
@@ -233,6 +232,34 @@ export class Midjourney {
     throw Error(`imagine failed with: ${response.statusText}`);
   }
 
+  private async blend(attachments: UploadSlot[], dimensions?: `${number}:${number}`): Promise<number> {
+    const cmd = await this.commandCache.getCommand("blend");
+    const payload: Payload = this.buildPayload(cmd);
+    payload.data.attachments = [];
+    payload.data.options = [];
+    for (let i=1; i<=attachments.length; i++) {
+      const { id, upload_filename: uploaded_filename } = attachments[i-1];
+      const filename = uploaded_filename.replace(/.+\//, "");
+      payload.data.options.push({ type: 11, name: `image${i}`, value: id });
+      payload.data.attachments.push({ id, filename, uploaded_filename });
+    }
+
+    if (dimensions)
+      payload.data.options.push({ type: 3, name: `dimensions`, value: `--ar ${dimensions}` });
+
+    const response = await this.doInteractions(payload);
+    if (response.status === 204) {
+      // no content;
+      return response.status;
+    }
+    logger.error("status:", response.status, response.statusText);
+    const body = await response.json();
+    logger.error("statusText:", JSON.stringify(body, null, 2));
+    throw Error(`imagine failed with: ${response.statusText}`);
+  }
+
+
+
   // setSettingsRelax(): Promise<number> {
   //   // the messageId should be update
   //   return this.callCustom(
@@ -241,7 +268,7 @@ export class Midjourney {
   //     MessageFlags.Ephemeral,
   //   );
   // }
-// 
+  //
   // setSettingsFast(): Promise<number> {
   //   // the messageId should be update
   //   return this.callCustom(
@@ -605,20 +632,7 @@ export class Midjourney {
     imageData: ArrayBufferLike,
     contentType?: string,
   ): Promise<string[]> {
-    if (!contentType) {
-      if (filename.endsWith(".webp")) {
-        contentType = "image/webp";
-      } else if (filename.endsWith(".jpeg")) {
-        contentType = "image/jpeg";
-      } else if (filename.endsWith(".jpg")) {
-        contentType = "image/jpeg";
-      } else if (filename.endsWith(".png")) {
-        contentType = "image/png";
-      } else {
-        throw Error(`unknown extention in ${filename}`);
-      }
-    }
-
+    contentType = contentType || filename2Mime(filename);
     const id = Date.now();
     // accept up to 5 sec offset
     const startId = new SnowflakeObj(-5 * 1000).encode();
@@ -644,6 +658,47 @@ export class Midjourney {
       }
     }
     throw Error("Wait for describe response failed");
+  }
+
+  public async blendImage(
+    images: {
+      filename: string;
+      imageData: ArrayBufferLike;
+      contentType?: string;
+    }[], dimensions?: `${number}:${number}`
+  ): Promise<void> {
+    images.forEach(image => image.contentType = image.contentType || filename2Mime(image.filename))
+    const id0 = Date.now();
+    // accept up to 5 sec offset
+    const startId = new SnowflakeObj(-5 * 1000).encode();
+    
+    const { attachments } = await this.attachments(...images.map((img, id) => ({
+      filename: img.filename,
+      file_size: img.imageData.byteLength,
+      id: id0 + id,
+    })));
+
+    for (let i=0; i< images.length; i++) {
+      await this.uploadImage(attachments[i], images[i].imageData, images[i].contentType || '');
+    }
+
+    // const [attachment] = attachments;
+    await this.blend(attachments, dimensions);
+    // TODO implements wait
+    // const realfilename = filename.replace(/^_/, "");
+    // for (let i = 0; i < 5; i++) {
+    //   const msg = await this.waitMessage({
+    //     type: "describe",
+    //     name: realfilename,
+    //     maxWait: 1,
+    //     startId,
+    //   });
+    //   if (msg && msg.prompt) {
+    //     console.log(msg);
+    //     return msg.prompt.prompt.split(/\n+/g).map((p) => p.slice(4));
+    //   }
+    // }
+    // throw Error("Wait for describe response failed");
   }
 }
 
