@@ -10,14 +10,14 @@ Midjourney bot using your web development tools.
 
 | feature     | Status             | feature     | Status             |
 | ----------- | ------------------ | ----------- | ------------------ |
-| `ask`       | :x:                | `private`   | :x:                |
+| `ask`       | :see_no_evil:      | `private`   | :x:                |
 | `blend`     | :x:                | `public`    | :x:                |
-| `describe`  | :white_check_mark: | `relax`     | :x:                |
-| `fast`      | :x:                | `settings`  | :white_check_mark: |
-| `help`      | :wavy_dash:        | `show`      | :x:                |
+| `describe`  | :white_check_mark: | `relax`     | :white_check_mark: |
+| `fast`      | :white_check_mark: | `settings`  | :white_check_mark: |
+| `help`      | :see_no_evil:      | `show`      | :x:                |
 | `imagine`   | :white_check_mark: | `stealth`   | :x:                |
-| `info`      | :x:                | `subscribe` | :wavy_dash:        |
-| `invite`    | :wavy_dash:        | `prefer`    | :x:                |
+| `info`      | :x:                | `subscribe` | :see_no_evil:      |
+| `invite`    | :see_no_evil:      | `prefer`    | :x:                |
 
 ## Installation
 

@@ -159,6 +159,41 @@ export class Midjourney {
     return response.status;
   }
 
+  /**
+   * enable relax mode
+   */
+  async relax(): Promise<number> {
+    const cmd = await this.commandCache.getCommand("relax");
+    const payload: Payload = this.buildPayload(cmd);
+    const response = await this.doInteractions(payload);
+    if (response.status === 204) {
+      // no content;
+      return response.status;
+    }
+    logger.error("status:", response.status, response.statusText);
+    const body = await response.json();
+    logger.error("statusText:", JSON.stringify(body, null, 2));
+    return response.status;
+  }
+
+  /**
+   * enable fast mode
+   */
+  async fast(): Promise<number> {
+    const cmd = await this.commandCache.getCommand("fast");
+    const payload: Payload = this.buildPayload(cmd);
+    const response = await this.doInteractions(payload);
+    if (response.status === 204) {
+      // no content;
+      return response.status;
+    }
+    logger.error("status:", response.status, response.statusText);
+    const body = await response.json();
+    logger.error("statusText:", JSON.stringify(body, null, 2));
+    return response.status;
+  }
+
+
   async imagine(prompt: string): Promise<DiscordMessageHelper> {
     const startId = new SnowflakeObj(-5 * 1000).encode();
     const cmd = await this.commandCache.getCommand("imagine");
@@ -198,23 +233,23 @@ export class Midjourney {
     throw Error(`imagine failed with: ${response.statusText}`);
   }
 
-  setSettingsRelax(): Promise<number> {
-    // the messageId should be update
-    return this.callCustom(
-      "1101102102157205574",
-      "MJ::Settings::RelaxMode::on",
-      MessageFlags.Ephemeral,
-    );
-  }
-
-  setSettingsFast(): Promise<number> {
-    // the messageId should be update
-    return this.callCustom(
-      "1101102102157205574",
-      "MJ::Settings::RelaxMode::off",
-      MessageFlags.Ephemeral,
-    );
-  }
+  // setSettingsRelax(): Promise<number> {
+  //   // the messageId should be update
+  //   return this.callCustom(
+  //     "1101102102157205574",
+  //     "MJ::Settings::RelaxMode::on",
+  //     MessageFlags.Ephemeral,
+  //   );
+  // }
+// 
+  // setSettingsFast(): Promise<number> {
+  //   // the messageId should be update
+  //   return this.callCustom(
+  //     "1101102102157205574",
+  //     "MJ::Settings::RelaxMode::off",
+  //     MessageFlags.Ephemeral,
+  //   );
+  // }
 
   async callCustomComponents(
     button: ComponentsSummary,
