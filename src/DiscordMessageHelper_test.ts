@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "../dev_deps.ts";
-import { extractPrompt } from "./DiscodMessageHelper.ts";
+import { extractPrompt } from "./DiscordMessageHelper.ts";
 
 Deno.test(function ParseMidJourneyVariationsFast() {
   const p1 = extractPrompt(

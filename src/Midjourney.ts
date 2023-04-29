@@ -1,13 +1,13 @@
 import {
   ComponentsSummary,
-  DiscodMessageHelper,
-} from "./DiscodMessageHelper.ts";
+  DiscordMessageHelper,
+} from "./DiscordMessageHelper.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type {
   Command,
-  DiscodMessage,
+  DiscordMessage,
   Payload,
   ResponseType,
 } from "./models.ts";
@@ -138,7 +138,7 @@ export class Midjourney {
     return response.status;
   }
 
-  async imagine(prompt: string): Promise<DiscodMessageHelper> {
+  async imagine(prompt: string): Promise<DiscordMessageHelper> {
     const startId = new SnowflakeObj(-5 * 1000).encode();
     const cmd = await this.commandCache.getCommand("imagine");
     const payload: Payload = this.buildPayload(cmd);
@@ -195,7 +195,7 @@ export class Midjourney {
     );
   }
 
-  async callCustom2(button: ComponentsSummary): Promise<DiscodMessageHelper> {
+  async callCustom2(button: ComponentsSummary): Promise<DiscordMessageHelper> {
     await this.callCustom(button.parentId, button.custom_id);
     return await this.waitComponents(button);
   }
@@ -242,7 +242,7 @@ export class Midjourney {
   async waitComponents(
     comp: ComponentsSummary,
     maxWait = 360,
-  ): Promise<DiscodMessageHelper> {
+  ): Promise<DiscordMessageHelper> {
     let type: ResponseType | undefined;
     let imgId = comp.label;
     if (comp.label.startsWith("V")) {
@@ -265,7 +265,7 @@ export class Midjourney {
 
   async waitMessageOrThrow(
     opts: WaitOptions = {},
-  ): Promise<DiscodMessageHelper> {
+  ): Promise<DiscordMessageHelper> {
     const msgs = await this.waitMessage(opts);
     if (!msgs) {
       throw Error("Failed to wait for Message");
@@ -275,7 +275,7 @@ export class Midjourney {
 
   async waitMessage(
     opts: WaitOptions = {},
-  ): Promise<DiscodMessageHelper | null> {
+  ): Promise<DiscordMessageHelper | null> {
     let { maxWait = 1000 } = opts;
     let imgId = 0;
     if (opts.imgId) {
@@ -289,8 +289,8 @@ export class Midjourney {
     let startId = opts.startId || "";
 
     const follow = async (
-      msg: DiscodMessageHelper,
-    ): Promise<DiscodMessageHelper | null> => {
+      msg: DiscordMessageHelper,
+    ): Promise<DiscordMessageHelper | null> => {
       const msgid = msg.id;
       let prevCompletion = -2;
       logger.info(`waitMessage for prompt message found`, msgid, msg.content);
@@ -329,9 +329,9 @@ export class Midjourney {
     };
 
     const lookFor = async (
-      msgs: DiscodMessage[],
-    ): Promise<DiscodMessageHelper | null> => {
-      const messages = msgs.map((m) => new DiscodMessageHelper(m));
+      msgs: DiscordMessage[],
+    ): Promise<DiscordMessageHelper | null> => {
+      const messages = msgs.map((m) => new DiscordMessageHelper(m));
       // maintain the last message Id;
       messages.forEach((item) => { //
         if (item.id > startId) startId = item.id;
@@ -340,7 +340,7 @@ export class Midjourney {
       matches = matches.filter((item) => item.prompt); // keep only parssable messages;
       matches = matches.filter((item) =>
         item.author.id === this.application_id
-      ); // keep only message from discod bot
+      ); // keep only message from Discord bot
       if (opts.prompt) { // filter by prompt
         matches = matches.filter((item) => {
           const itemPrompt = item.prompt!.prompt;
@@ -378,7 +378,7 @@ export class Midjourney {
       maxWait = 1;
     }
     for (let i = 0; i < maxWait; i++) {
-      const msg: DiscodMessage[] = await this.getMessages({
+      const msg: DiscordMessage[] = await this.getMessages({
         limit,
         after: startId,
       });
@@ -389,7 +389,7 @@ export class Midjourney {
       //   msg = await this.getMessages({
       //     limit: 1,
       //   });
-      //   console.log(new DiscodMessageHelper(msg[0]));
+      //   console.log(new DiscordMessageHelper(msg[0]));
       // }
       const results = await lookFor(msg);
       if (results) return results;
@@ -400,14 +400,14 @@ export class Midjourney {
 
   async getMessagesHelper(
     params: RESTGetAPIChannelMessagesQuery = {},
-  ): Promise<DiscodMessageHelper[]> {
+  ): Promise<DiscordMessageHelper[]> {
     const messages = await this.getMessages(params);
-    return messages.map((m) => new DiscodMessageHelper(m));
+    return messages.map((m) => new DiscordMessageHelper(m));
   }
 
   async getMessages(
     params: RESTGetAPIChannelMessagesQuery = {},
-  ): Promise<DiscodMessage[]> {
+  ): Promise<DiscordMessage[]> {
     const url = new URL(
       `https://discord.com/api/v10/channels/${this.channel_id}/messages`,
     );
@@ -421,7 +421,7 @@ export class Midjourney {
     url.search = searchParams.toString();
     const response = await fetch(url.toString(), { headers: this.headers });
     if (response.status === 200) {
-      const msgs: DiscodMessage[] = await response.json();
+      const msgs: DiscordMessage[] = await response.json();
       // msgs.forEach((msg) => MsgsCache.set(msg.id, msg));
       return msgs;
     }
@@ -433,7 +433,7 @@ export class Midjourney {
    * @param id
    * @returns
    */
-  async getMessageById(id: string): Promise<DiscodMessageHelper> {
+  async getMessageById(id: string): Promise<DiscordMessageHelper> {
     // "Only bots can use this endpoint"
     //if (false) {
     //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
@@ -447,14 +447,14 @@ export class Midjourney {
     //    throw new Error(response.statusText + ' ' + await response.text());
     //} else {
     // use retrieveMessages instead of get messages
-    const data: DiscodMessage[] = await this.getMessages({
+    const data: DiscordMessage[] = await this.getMessages({
       around: id,
       limit: 1,
     });
     if (!data.length) {
       throw new Error("no message found, around " + id);
     }
-    return new DiscodMessageHelper(data[0]);
+    return new DiscordMessageHelper(data[0]);
     // }
   }
 

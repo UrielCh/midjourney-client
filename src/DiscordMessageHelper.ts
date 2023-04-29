@@ -8,7 +8,7 @@ import type {
   Snowflake,
 } from "../deps.ts";
 import { ButtonStyle } from "../deps.ts";
-import type { DiscodMessage, ResponseType } from "./models.ts";
+import type { DiscordMessage, ResponseType } from "./models.ts";
 
 export interface ComponentsSummary {
   parentId: Snowflake;
@@ -164,10 +164,10 @@ function getDataFromComponents(
   return out;
 }
 
-export class DiscodMessageHelper {
+export class DiscordMessageHelper {
   public content: string;
   public prompt?: SplitedPrompt;
-  public reference?: DiscodMessageHelper;
+  public reference?: DiscordMessageHelper;
 
   public author: { id: Snowflake; username: string };
   public mentions: { id: Snowflake; username: string }[];
@@ -176,7 +176,7 @@ export class DiscodMessageHelper {
   public components: ComponentsSummary[];
   public id: Snowflake;
 
-  constructor(public source: DiscodMessage) {
+  constructor(public source: DiscordMessage) {
     this.id = source.id;
     this.prompt = extractPrompt(source.content);
     this.content = source.content;
@@ -188,7 +188,7 @@ export class DiscodMessageHelper {
     this.attachments = source.attachments;
     this.components = getDataFromComponents(source.id, source.components || []);
     if (source.referenced_message) {
-      this.reference = new DiscodMessageHelper(source.referenced_message);
+      this.reference = new DiscordMessageHelper(source.referenced_message);
     }
     // labels: '1️⃣2️⃣3️⃣4️⃣🔄'
     // const labels = this.components.map(a => a.label).join('');
