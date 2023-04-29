@@ -1,6 +1,6 @@
-# Midjourney-Client
+# midjourney-discord-api
 
-`midjourney-client` is a library designed to connect to a Discord channel and
+`midjourney-discord-api` is a library designed to connect to a Discord channel and
 send messages to be processed by the Midjourney bot. It utilizes the same
 requests as the Discord web client, allowing seamless communication with the
 bot. To configure the library, extract an authenticated request sent to the
@@ -8,47 +8,114 @@ Midjourney bot using your web development tools.
 
 ## Features
 
-- Connects to a Discord channel
-- Posts messages to be handled by the Midjourney bot
-- Extracts necessary tokens from authenticated requests
+|   feature    | Status |
+|--------------|--------|
+|  `ask`       |   :x:  |
+|  `blend`     |   :x:  |
+|  `describe`  | :white_check_mark: |
+|  `fast`      |   :x:  |
+|  `help`      | :wavy_dash: |
+|  `imagine`   | :white_check_mark: |
+|  `info`      |   :x:  |
+|  `invite`    | :wavy_dash: |
+|  `prefer`    |   :x:  |
+|  `private`   |   :x:  |
+|  `public`    |   :x:  |
+|  `relax`     |   :x:  |
+|  `settings`  | :white_check_mark: |
+|  `show`      |   :x:  |
+|  `stealth`   |   :x:  |
+|  `subscribe` | :wavy_dash: |
+
 
 ## Installation
 
-To add `midjourney-client` to your project, run:
+### NodeJS
 
-```bash
-npm install midjourney-client
+```sh
+npm install midjourney-discord-api
 ```
+
+### Deno
+
+```ts
+import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
+```
+
+
+## Token / ids extraction.
+
+- Open your webbrowser
+- Go to your discord channel
+- Open the developent bar
+- Go to network
+- Send a request to discordBot, like /settings
+- Left click on the `https://discord.com/api/v9/interactions` request. 
+- Click `Copy`
+- Click `Copy as fetch`
+- Save this request in a file, that you will provide to the `Midjourney` constructor. (for my Test I name this file `interaction.txt`)
 
 ## Usage
 
-To use the library, follow these steps:
+Here are some examples of how to use the `Midjourney` class:
 
-1. Extract an authenticated request sent to the Midjourney bot using your web
-   development tools.
-1. Save the request as a text file, e.g., request.txt.
-1. Use the following code sample to send a prompt request to the Midjourney bot:
+### Describe URL
 
-```typescript
-import { Midjourney } from "midjourney-client";
+```ts
+import Midjourney from "midjourney-discord-api";
 
-const client = new Midjourney("request.txt");
-const prompt =
-  "Hall of a magnificent baroque palace filled with golden statues of skulls and paintings of skulls, beautiful staircase, Renaissance paintings, marble columns, high plants, large windows --ar 16:9 --s 1000";
-
-await client.imagine(prompt);
-await client.waitMessage(prompt);
+const client = new Midjourney("interaction.txt");
+const prompts: string[] = await client.describeUrl('https://cdn.midjourney.com/95e2c8fd-255c-4982-9065-83051143570c/0_0_640_N.webp');
+console.log('reversed prompt: ', prompts);
 ```
 
-## API
+### Imagine
 
-`Midjourney`
+```ts
+import Midjourney from "midjourney-discord-api";
 
-- constructor(requestFile: string): Initializes the Midjourney client with the
-  provided request file.
-- imagine(prompt: string): Sends a message to the Discord channel with the given
-  prompt.
-- waitMessage(prompt: string): Awaits the bot's response to the sent prompt.
+const client = new Midjourney("interaction.txt");
+const msg: DiscordMessageHelper = await client.imagine("A photo of an astronaut riding a horse");
+console.log('you can your result here: ', msg.attachments[0].url);
+```
+
+### Upscale
+
+```ts
+import Midjourney from "midjourney-discord-api";
+
+const client = new Midjourney("interaction.txt");
+const msg: DiscordMessageHelper = await client.imagine("A photo of an astronaut riding a horse");
+// get all Upscale button
+const upscale = msg.getComponents(false, "U");
+console.log(`${upscale.length} Upscales can be generated`);
+console.log(`Generating upscale ${upscale[0].label}`);
+const msg2 = await client.callCustomComponents(upscale[0]);
+console.log(`upscale Ready from`, msg2.attachments[0].url);
+```
+
+### Variant
+
+```ts
+import Midjourney from "midjourney-discord-api";
+
+const client = new Midjourney("interaction.txt");
+const msg: DiscordMessageHelper = await client.imagine("A photo of an astronaut riding a horse");
+// get all Upscale button
+const variant = msg.getComponents(false, "V");
+console.log(`${variant.length} Variants can be generated`);
+console.log(`Generating Variant ${variant[0].label}`);
+const msg2 = await client.callCustomComponents(variant[0]);
+console.log(`variant Ready from`, msg2.attachments[0].url);
+```
+
+## API Documentation
+
+Refer to the provided method signatures and samples in the original post for detailed information on how to use each method and interface.
+
+## Contributing
+
+We welcome contributions to the midjourney-discord-api project. Please feel free to submit issues, feature requests, and pull requests to improve the project.
 
 ## reference
 
@@ -56,4 +123,4 @@ await client.waitMessage(prompt);
 
 ## License
 
-MIT License.
+This project is licensed under the MIT License.

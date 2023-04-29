@@ -30,7 +30,7 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     logger.info(`${variant.length} Variant can be generated`);
     if (variant.length > 0) {
       logger.info(`Generating Variant ${variant[0].label}`);
-      const msg2 = await client.callCustom2(variant[0]);
+      const msg2 = await client.callCustomComponents(variant[0]);
       logger.info(`variant Ready from`, msg2.attachments[0].url);
     } else {
       logger.warn(
@@ -43,8 +43,8 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     const upscale = msg.getComponents(false, "U");
     logger.info(`${upscale.length} Upscale can be generated`);
     if (upscale.length > 0) {
-      logger.info(`Generating Variant ${upscale[0].label}`);
-      const msg2 = await client.callCustom2(upscale[0]);
+      logger.info(`Generating upscale ${upscale[0].label}`);
+      const msg2 = await client.callCustomComponents(upscale[0]);
       logger.info(`upscale Ready from`, msg2.attachments[0].url);
     } else {
       logger.warn(

@@ -72,6 +72,11 @@ export class Midjourney {
   //readonly x_super_properties: string;
   //readonly x_discord_locale: string;
 
+  /**
+   * build a Midjourney client from a fetch request extracted from a discord browser message.
+   * sample can be the fetch call test, or an existing filename, containing the fetch request.
+   * @param sample
+   */
   constructor(sample: string) {
     if (!sample.includes("{")) {
       // use sample as a filename
@@ -122,6 +127,11 @@ export class Midjourney {
   protected log(...args: unknown[]) {
     console.log(new Date().toISOString(), ...args);
   }
+
+  /**
+   * invoke /settings in discord bot..
+   * @param params
+   */
 
   async settings(): Promise<number> {
     const cmd = await this.commandCache.getCommand("settings");
@@ -195,12 +205,14 @@ export class Midjourney {
     );
   }
 
-  async callCustom2(button: ComponentsSummary): Promise<DiscordMessageHelper> {
+  async callCustomComponents(
+    button: ComponentsSummary,
+  ): Promise<DiscordMessageHelper> {
     await this.callCustom(button.parentId, button.custom_id);
     return await this.waitComponents(button);
   }
 
-  async callCustom(
+  private async callCustom(
     messageId: Snowflake,
     custom_id: string,
     message_flags = 0,
@@ -223,7 +235,7 @@ export class Midjourney {
     return response.status;
   }
 
-  async doInteractions(payload: Payload): Promise<Response> {
+  private async doInteractions(payload: Payload): Promise<Response> {
     const formData = new FormData();
     payload.nonce = new SnowflakeObj().encode();
     formData.append("payload_json", JSON.stringify(payload));
@@ -239,7 +251,7 @@ export class Midjourney {
    * wait for an upscale or a Variant
    * @param comp
    */
-  async waitComponents(
+  private async waitComponents(
     comp: ComponentsSummary,
     maxWait = 360,
   ): Promise<DiscordMessageHelper> {
@@ -263,7 +275,10 @@ export class Midjourney {
     return msg;
   }
 
-  async waitMessageOrThrow(
+  /**
+   * same as waitMessage but throw Error if no message was found
+   */
+  public async waitMessageOrThrow(
     opts: WaitOptions = {},
   ): Promise<DiscordMessageHelper> {
     const msgs = await this.waitMessage(opts);
@@ -273,7 +288,17 @@ export class Midjourney {
     return msgs;
   }
 
-  async waitMessage(
+  /**
+   * Wait for a message in the channel using a multiple cryteria, critera can be:
+   * - prompt: requested prompt
+   * - name: used as filename for /describe
+   * - maxWait: max wait iteration
+   * - type: what kind of resond are you waiting for, can be "variations" | "grid" | "upscale" | "describe"
+   * - imgId: use for upscale, can be 1 2 3 or 4
+   * - startId: do not look for message older than the initial request.
+   * - parent: filter by parent request
+   */
+  public async waitMessage(
     opts: WaitOptions = {},
   ): Promise<DiscordMessageHelper | null> {
     let { maxWait = 1000 } = opts;
@@ -285,9 +310,7 @@ export class Midjourney {
         imgId = Number(opts.imgId.replace(/[^0-9]+/g, "")) as 1 | 2 | 3 | 4;
       }
     }
-
     let startId = opts.startId || "";
-
     const follow = async (
       msg: DiscordMessageHelper,
     ): Promise<DiscordMessageHelper | null> => {
@@ -398,14 +421,23 @@ export class Midjourney {
     return null;
   }
 
-  async getMessagesHelper(
+  /**
+   * get message from the chanel as DiscordMessageHelper object
+   * @param params
+   */
+
+  public async getMessagesHelper(
     params: RESTGetAPIChannelMessagesQuery = {},
   ): Promise<DiscordMessageHelper[]> {
     const messages = await this.getMessages(params);
     return messages.map((m) => new DiscordMessageHelper(m));
   }
+  /**
+   * get message from the chanel
+   * @param params
+   */
 
-  async getMessages(
+  public async getMessages(
     params: RESTGetAPIChannelMessagesQuery = {},
   ): Promise<DiscordMessage[]> {
     const url = new URL(
@@ -430,10 +462,10 @@ export class Midjourney {
 
   /**
    * retrive a single message by id using the discord api get messages V10
-   * @param id
-   * @returns
+   * @param id message Snowflake id
+   * @returns the message
    */
-  async getMessageById(id: string): Promise<DiscordMessageHelper> {
+  public async getMessageById(id: Snowflake): Promise<DiscordMessageHelper> {
     // "Only bots can use this endpoint"
     //if (false) {
     //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
@@ -458,9 +490,10 @@ export class Midjourney {
     // }
   }
 
-  // 	XHRscience	XHRscience	XHRscience	XHRsearch?type=1&query=d&limit=7&include_applications=false	XHRscience	XHRsearch?type=1&query=de&limit=7&include_applications=false	XHRscience	XHRattachments	XHR0_1.png?upload_id=ADPycdsKxYT59eG_6VKbIeXSeFr8EyIu…ExL-CZheZ66YwWh0dAXF9GTgHr_dtZMTIK36XGdRAcKhXAIcu	XHRinteractions	XHRack	XHRversion.stable.json?_=5608652
-  // {"files":[{"filename":"0_1.png","file_size":1775802,"id":"13"}]}
-  async attachments(
+  /**
+   * prepare an attachement to upload an image.
+   */
+  public async attachments(
     ...files: { filename: string; file_size: number; id: number | string }[]
   ): Promise<{ attachments: UploadSlot[] }> {
     const headers = { ...this.headers, "content-type": "application/json" };
@@ -481,10 +514,11 @@ export class Midjourney {
   }
 
   /**
+   * Upload an image to an upload slot provided by the attachments function.
    * @param slot use uploadUrl to put the image
    * @returns
    */
-  async uploadImage(
+  public async uploadImage(
     slot: UploadSlot,
     data: ArrayBufferLike,
     contentType: string,
@@ -499,15 +533,26 @@ export class Midjourney {
       throw new Error(`Failed to upload ArrayBuffer: ${response.statusText}`);
     }
   }
-
-  async describeUrl(imageUrl: string): Promise<string[]> {
+  /**
+   * invoke /describe on an image from an URL.
+   * @param imageUrl url of the image
+   * @return a list of 4 prompt suggested by Midjourney
+   */
+  public async describeUrl(imageUrl: string): Promise<string[]> {
     const url = new URL(imageUrl);
     const filename = url.pathname.replaceAll(/\//g, "_"); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
     return this.describeImage(filename, imageData);
   }
+  /**
+   * invoke /describe on an image provided as a buffer
+   * @param filename image name
+   * @param imageData the buffer containing the image
+   * @param contentType the content type (can be autodetect from extention)
+   * @return a list of 4 prompt suggested by Midjourney
+   */
 
-  async describeImage(
+  public async describeImage(
     filename: string,
     imageData: ArrayBufferLike,
     contentType?: string,
