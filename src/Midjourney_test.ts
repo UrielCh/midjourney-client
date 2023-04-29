@@ -1,15 +1,16 @@
 import { assertEquals } from "../dev_deps.ts";
 import Midjourney from "./Midjourney.ts";
-
-import { existsSync, join } from "../dev_deps.ts";
+import { join } from "../dev_deps.ts";
 
 export function getMidjourney() {
   let file = "interaction.txt";
   for (let i = 0; i < 4; i++) {
-    if (existsSync(file)) {
-      return new Midjourney(file);
+    try {
+      const content = Deno.readTextFileSync(file);
+      return new Midjourney(content);
+    } catch (_e) {
+      file = join("..", file);
     }
-    file = join("..", file);
   }
   throw Error("no interaction.txt available for auth");
 }
