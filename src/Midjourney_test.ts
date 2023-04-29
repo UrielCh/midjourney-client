@@ -1,6 +1,7 @@
 import { assertEquals } from "../dev_deps.ts";
 import Midjourney from "./Midjourney.ts";
 import { join } from "../dev_deps.ts";
+import { wait } from "./utils.ts";
 
 export function getMidjourney() {
   let file = "interaction.txt";
@@ -18,6 +19,7 @@ export function getMidjourney() {
 Deno.test(async function getAllMsgs() {
   const client = getMidjourney();
   const limit = 5;
+  await wait(1000);
   const msgs = await client.getMessages({ limit });
   //for (let i=0; i<msgs.length; i++) {
   //  console.log(new DiscordMessageHelper(msgs[i]).prompt!.name);
