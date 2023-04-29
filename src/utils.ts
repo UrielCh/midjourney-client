@@ -17,3 +17,13 @@ export async function download(
     return data;
   }
 }
+
+export function getExistinggroup(text: string, reg: RegExp): string {
+  const m = text.match(reg);
+  if (!m) {
+    throw Error(
+      `failed to find ${reg} in provided sample of size:${text.length}`,
+    );
+  }
+  return m[1];
+}

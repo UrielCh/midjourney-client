@@ -15,17 +15,9 @@ import { ApplicationCommandType, MessageFlags } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import { download, wait } from "./utils.ts";
+import { download, getExistinggroup, wait } from "./utils.ts";
 
-function getExistinggroup(text: string, reg: RegExp): string {
-  const m = text.match(reg);
-  if (!m) {
-    throw Error(
-      `failed to find ${reg} in provided sample of size:${text.length}`,
-    );
-  }
-  return m[1];
-}
+// import * as DiscordJs from "npm:discord.js";
 
 const interactions = "https://discord.com/api/v9/interactions";
 
@@ -52,6 +44,9 @@ export class Midjourney {
   readonly channel_id: string;
   readonly session_id: string;
   readonly commandCache: CommandCache;
+
+  // readonly DISCORD_TOKEN: string;
+  // readonly DISCORD_BOTID: string;
   // readonly cookie: string;
   //readonly x_super_properties: string;
   //readonly x_discord_locale: string;
@@ -75,11 +70,43 @@ export class Midjourney {
     this.guild_id = getExistinggroup(sample, /"guild_id":\s?"(\d+)"/);
     this.channel_id = getExistinggroup(sample, /"channel_id":\s?"(\d+)"/);
     this.session_id = getExistinggroup(sample, /"session_id":\s?"([^"]+)"/);
+
+    // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
+    // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);
+
     this.commandCache = new CommandCache(this.channel_id, this.auth);
     // this.cookie = getExistinggroup(sample, / "cookie":\s?"([^"]+)"/);
     // this.x_super_properties = getExistinggroup(sample, / "x-super-properties":\s?"([^"]+)"/);
     // this.x_discord_locale = getExistinggroup(sample, / "x-discord-locale":\s?"([^"]+)"/);
   }
+
+  // public async connectDiscordBot(): Promise<void> {
+  //   if (!this.DISCORD_TOKEN) {
+  //     throw Error("no DISCORD_TOKEN available");
+  //   }
+// 
+  //   const client = new DiscordJs.Client({
+  //     intents: [ DiscordJs.GatewayIntentBits.Guilds], // , DiscordJs.GatewayIntentBits.GuildMessages
+  //   });
+  //   client.on("ready", () => {
+  //     if (client.user) {
+  //       console.log(`Logged in as ${client.user.tag}!`);
+  //     }
+  //   });
+  //   // client.on("message", (msg) => {
+  //   //   if (msg.content === "ping") msg.reply("pong");
+  //   // });
+  //   client.on('interactionCreate', async interaction => {
+  //     if (!interaction.isChatInputCommand()) return;
+  //   
+  //     if (interaction.commandName === 'ping') {
+  //       await interaction.reply('Pong!');
+  //     }
+  //   });
+  //   console.log('login... ', this.DISCORD_TOKEN)
+  //   const resp = await client.login(this.DISCORD_TOKEN);
+  //   console.log('done:', resp);
+  // }
 
   private get headers() {
     return {
