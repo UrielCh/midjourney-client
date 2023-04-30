@@ -9,18 +9,19 @@
  *
  * ## Features
  *
- * | feature     | Status             | feature      | Status        |
- * | ----------- | ------------------ | ------------ | ------------- |
- * | `/ask`      | :see_no_evil:      | `/private`   | :x: N/A       |
- * | `/blend`    | :writing_hand: WIP | `/public`    | :x: N/A       |
- * | `/describe` | ✅                 | `/relax`     | ✅            |
- * | `/fast`     | ✅                 | `/settings`  | ✅            |
- * | `/help`     | :see_no_evil:      | `/show`      | :x: N/A       |
- * | `/imagine`  | ✅                 | `/stealth`   | :x: N/A       |
- * | `/info`     | :x: N/A            | `/subscribe` | :see_no_evil: |
- * | `/invite`   | :see_no_evil:      | `/prefer`    | :x: N/A       |
- * | `Upscale`   | ✅                 | `Variations` | ✅            |
- * | `Reroll`    | ✅                 |              |               |
+ * | feature     | Status | feature      | Status |
+ * | ----------- | ------ | ------------ | ------ |
+ * | `/ask`      | 🙈     | `/private`   | ❌ N/A |
+ * | `/blend`    | 🚧 WIP | `/public`    | ❌ N/A |
+ * | `/describe` | ✅     | `/relax`     | ✅     |
+ * | `/fast`     | ✅     | `/settings`  | ✅     |
+ * | `/help`     | 🙈     | `/show`      | ❌ N/A |
+ * | `/imagine`  | ✅     | `/stealth`   | ❌ N/A |
+ * | `/info`     | ❌ N/A | `/subscribe` | 🙈     |
+ * | `/invite`   | 🙈     | `/prefer`    | ❌ N/A |
+ * | `Upscale`   | ✅     | `Variations` | ✅     |
+ * | `Reroll`    | ✅     |              |        |
+ * 
  * ## Installation
  *
  * ```ts
@@ -69,10 +70,10 @@
  * ```
  *
  * ### Upscale
- * 
+ *
  * ```ts
  * import Midjourney from "midjourney-discord-api";
- * 
+ *
  * const client = new Midjourney("interaction.txt");
  * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
@@ -82,12 +83,12 @@
  *   console.log(`upscale U2 Ready from`, result.attachments[0].url);
  * }
  * ```
- * 
+ *
  * ### Variant
- * 
+ *
  * ```ts
  * import Midjourney from "midjourney-discord-api";
- * 
+ *
  * const client = new Midjourney("interaction.txt");
  * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
@@ -97,12 +98,12 @@
  *   console.log(`upscale V2 Ready from`, result.attachments[0].url);
  * }
  * ```
- * 
+ *
  * ### Reroll
- * 
+ *
  * ```ts
  * import Midjourney from "midjourney-discord-api";
- * 
+ *
  * const client = new Midjourney("interaction.txt");
  * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",

@@ -1,5 +1,8 @@
 # midjourney-discord-api
 
+[![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
+_midjourney-discord-api_
+
 `midjourney-discord-api` is a library designed to connect to a Discord channel
 and send messages to be processed by the Midjourney bot. It utilizes the same
 requests as the Discord web client, allowing seamless communication with the
@@ -8,18 +11,18 @@ Midjourney bot using your web development tools.
 
 ## Features
 
-| feature     | Status             | feature      | Status        |
-| ----------- | ------------------ | ------------ | ------------- |
-| `/ask`      | :see_no_evil:      | `/private`   | :x: N/A       |
-| `/blend`    | :writing_hand: WIP | `/public`    | :x: N/A       |
-| `/describe` | ✅                 | `/relax`     | ✅            |
-| `/fast`     | ✅                 | `/settings`  | ✅            |
-| `/help`     | :see_no_evil:      | `/show`      | :x: N/A       |
-| `/imagine`  | ✅                 | `/stealth`   | :x: N/A       |
-| `/info`     | :x: N/A            | `/subscribe` | :see_no_evil: |
-| `/invite`   | :see_no_evil:      | `/prefer`    | :x: N/A       |
-| `Upscale`   | ✅                 | `Variations` | ✅            |
-| `Reroll`    | ✅                 |              |               |
+| feature     | Status | feature      | Status |
+| ----------- | ------ | ------------ | ------ |
+| `/ask`      | 🙈     | `/private`   | ❌ N/A |
+| `/blend`    | 🚧 WIP | `/public`    | ❌ N/A |
+| `/describe` | ✅     | `/relax`     | ✅     |
+| `/fast`     | ✅     | `/settings`  | ✅     |
+| `/help`     | 🙈     | `/show`      | ❌ N/A |
+| `/imagine`  | ✅     | `/stealth`   | ❌ N/A |
+| `/info`     | ❌ N/A | `/subscribe` | 🙈     |
+| `/invite`   | 🙈     | `/prefer`    | ❌ N/A |
+| `Upscale`   | ✅     | `Variations` | ✅     |
+| `Reroll`    | ✅     |              |        |
 
 ## Installation
 
