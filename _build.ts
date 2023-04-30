@@ -4,6 +4,7 @@ import { build, emptyDir } from "https://deno.land/x/dnt@0.34.0/mod.ts";
 // cd npm; npm publish;
 if (!Deno.args[0]) {
   console.error("Missing version number");
+  console.error("usage: deno run -A _build.ts 0.0.0");
   Deno.exit(-1);
 }
 
