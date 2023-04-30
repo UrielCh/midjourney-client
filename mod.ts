@@ -21,7 +21,7 @@
  * | `/invite`   | 🙈     | `/prefer`    | ❌ N/A |
  * | `Upscale`   | ✅     | `Variations` | ✅     |
  * | `Reroll`    | ✅     |              |        |
- * 
+ *
  * ## Installation
  *
  * ```ts
