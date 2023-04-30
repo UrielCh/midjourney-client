@@ -10,6 +10,7 @@ import type {
   Snowflake,
 } from "../deps.ts";
 import { ButtonStyle, logger, MessageType } from "../deps.ts";
+import Midjourney from "./Midjourney.ts";
 import type { ResponseType, UserReference } from "./models.ts";
 
 export interface ComponentsSummary {
@@ -251,24 +252,41 @@ export class DiscordMessage implements APIMessage {
    * See https://discord.com/developers/docs/resources/channel#message-object-message-types
    */
   type!: MessageType;
+  /**
+   * Message flags combined as a bitfield
+   *
+   * See https://discord.com/developers/docs/resources/channel#message-object-message-flags
+   *
+   * See https://en.wikipedia.org/wiki/Bit_field
+   */
+  flags?: number; //MessageFlags;
+  /**
+   * The message associated with the `message_reference`
+   *
+   * This field is only returned for messages with a `type` of `19` (REPLY).
+   *
+   * If the message is a reply but the `referenced_message` field is not present,
+   * the backend did not attempt to fetch the message that was being replied to,
+   * so its state is unknown.
+   *
+   * If the field exists but is `null`, the referenced message was deleted
+   *
+   * See https://discord.com/developers/docs/resources/channel#message-object
+   */
+  public referenced_message?: DiscordMessage | null;
 
-  // public content: string;
   public prompt?: SplitedPrompt;
-  //
-  // public author: { id: Snowflake; username: string };
-  // public mentions: { id: Snowflake; username: string }[];
-  //
-  // public attachments: APIAttachment[];
+
   public componentsSummery: ComponentsSummary[];
-  // public id: Snowflake;
 
-  // flags?: number; // set of MessageFlags
-  // referenced_message?: DiscordMessage; // Exclude<DiscordMessage, "message_reference" | "referenced_message">;
+  /**
+   * parent client
+   */
+  #client: Midjourney;
 
-  reference?: DiscordMessage | null;
-
-  constructor(public source: APIMessage) {
+  constructor(client: Midjourney, public source: APIMessage) {
     Object.assign(this, source);
+    this.#client = client;
     // this.id = source.id;
     this.prompt = extractPrompt(source.content);
     this.content = source.content;
@@ -277,7 +295,10 @@ export class DiscordMessage implements APIMessage {
       source.components || [],
     );
     if (source.referenced_message) {
-      this.reference = new DiscordMessage(source.referenced_message);
+      this.referenced_message = new DiscordMessage(
+        client,
+        source.referenced_message,
+      );
     }
     // labels: '1️⃣2️⃣3️⃣4️⃣🔄'
     // const labels = this.components.map(a => a.label).join('');

@@ -417,7 +417,7 @@ export class Midjourney {
       msgs: DiscordMessage[],
     ): Promise<DiscordMessage | null> => {
       counters.message += msgs.length;
-      const messages = msgs.map((m) => new DiscordMessage(m));
+      const messages = msgs.map((m) => new DiscordMessage(this, m));
       // maintain the last message Id;
       messages.forEach((item) => { //
         if (item.id > startId) startId = item.id;
@@ -436,7 +436,7 @@ export class Midjourney {
       }
       if (opts.parent) {
         matches = matches.filter((item) =>
-          item.reference && item.reference.id === opts.parent
+          item.referenced_message && item.referenced_message.id === opts.parent
         );
       }
       if (opts.type) {
@@ -515,7 +515,7 @@ export class Midjourney {
     if (response.status === 200) {
       const msgs: APIMessage[] = (await response.json()) as APIMessage[];
       // msgs.forEach((msg) => MsgsCache.set(msg.id, msg));
-      return msgs.map((msg) => new DiscordMessage(msg));
+      return msgs.map((msg) => new DiscordMessage(this, msg));
     }
     throw new Error(
       `getMessages return ${response.status} ${response.statusText} ${await response
