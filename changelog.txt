@@ -1,0 +1,12 @@
+# Changelog
+
+## v 0.0.2
+- add `fast` and `relax` command
+- partial implementation of `blend`
+- remove `waitMessageOrThrow`
+- `waitMessage` now throws meaningfull error in case of failure
+- add `MAX_TIME_OFFSET` set to 10 sec by default (was 5 before)
+- remove all console.log
+
+## v 0.0.1
+- initial version

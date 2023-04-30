@@ -7,7 +7,7 @@ import type {
   APIMessageActionRowComponent,
   Snowflake,
 } from "../deps.ts";
-import { ButtonStyle } from "../deps.ts";
+import { ButtonStyle, logger } from "../deps.ts";
 import type { DiscordMessage, ResponseType } from "./models.ts";
 
 export interface ComponentsSummary {
@@ -132,7 +132,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (!extra.length) {
     return prompt;
   }
-  console.log("failed to extract data from:", content);
+  logger.warn("Failedto extract prompt data from:", content);
 
   // // dual () is note, mode
   // m = content.match(/^\*\*(.+)\*\* - <@(\d+)> \(([^)])\) \(([^)])\)$/);
@@ -157,7 +157,7 @@ function getDataFromComponents(
       } else if ("label" in c && "url" in c) {
         out.push(new componentData(parentId, c)); //  as APIButtonComponentWithURL
       } else {
-        console.log(c);
+        logger.warn('getDataFromComponents meat non supported component', c);
       }
     }
   }
