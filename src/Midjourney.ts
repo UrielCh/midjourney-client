@@ -381,7 +381,7 @@ export class Midjourney {
         ) {
           prevCompletion = msg.prompt.completion;
           if (prevCompletion == -1) {
-            logger.info(`wait for prompt in Queue`);
+            logger.info(`wait for the prompt in Queue`);
           } else if (prevCompletion === 1) {
             logger.info(`follow message completion ready`);
           } else {
@@ -460,7 +460,7 @@ export class Midjourney {
       });
       counters.request++;
       if (i == 0 && startId) {
-        logger.info(`First request in waitMessage get ${msg.length} messages`);
+        logger.info(`First request in waitMessage gets ${msg.length} messages`);
       }
       // debugging get back in time and get the previous msg
       // if (msg.length === 0) {

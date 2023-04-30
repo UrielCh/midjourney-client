@@ -78,10 +78,10 @@ console.log("reversed prompt: ", prompts);
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
-const msg: DiscordMessageHelper = await client.imagine(
+const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
 );
-console.log("you can your result here: ", msg.attachments[0].url);
+console.log("you find your result here: ", msg.attachments[0].url);
 ```
 
 ### Upscale
@@ -90,7 +90,7 @@ console.log("you can your result here: ", msg.attachments[0].url);
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
-const msg: DiscordMessageHelper = await client.imagine(
+const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
 );
 // get all Upscale button
@@ -107,7 +107,7 @@ console.log(`upscale Ready from`, msg2.attachments[0].url);
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
-const msg: DiscordMessageHelper = await client.imagine(
+const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
 );
 // get all Upscale button

@@ -61,10 +61,10 @@
  * import Midjourney from "midjourney-discord-api";
  * 
  * const client = new Midjourney("interaction.txt");
- * const msg: DiscordMessageHelper = await client.imagine(
+ * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
  * );
- * console.log("you can your result here: ", msg.attachments[0].url);
+ * console.log("you find your result here: ", msg.attachments[0].url);
  * ```
  * 
  * ### Upscale
@@ -73,7 +73,7 @@
  * import Midjourney from "midjourney-discord-api";
  * 
  * const client = new Midjourney("interaction.txt");
- * const msg: DiscordMessageHelper = await client.imagine(
+ * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
  * );
  * // get all Upscale button
@@ -90,7 +90,7 @@
  * import Midjourney from "midjourney-discord-api";
  * 
  * const client = new Midjourney("interaction.txt");
- * const msg: DiscordMessageHelper = await client.imagine(
+ * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
  * );
  * // get all Upscale button
@@ -126,3 +126,4 @@ export { default as default } from "./src/Midjourney.ts";
 export { default as Midjourney } from "./src/Midjourney.ts";
 export { SnowflakeObj } from "./src/SnowflakeObj.ts";
 export type { UploadSlot, WaitOptions } from "./src/Midjourney.ts";
+export { type ComponentsSummary, type SplitedPrompt, DiscordMessageHelper} from "./src/DiscordMessageHelper.ts";
