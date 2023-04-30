@@ -21,18 +21,18 @@ async function buildDnt() {
         // webSocket: false,
         // undici: true,
         custom: [
-        //   {
-        //     package: {
-        //       name: "stream/web",
-        //     },
-        //     globalNames: ["ReadableStream", "TransformStream"],
-        //   },
-        //   {
-        //     globalNames: [{ name: "MessageEvent", typeOnly: true }],
-        //     package: {
-        //       name: "ws",
-        //     },
-        //   }
+          //   {
+          //     package: {
+          //       name: "stream/web",
+          //     },
+          //     globalNames: ["ReadableStream", "TransformStream"],
+          //   },
+          //   {
+          //     globalNames: [{ name: "MessageEvent", typeOnly: true }],
+          //     package: {
+          //       name: "ws",
+          //     },
+          //   }
         ],
       },
       compilerOptions: {

@@ -22,10 +22,10 @@ Deno.test(async function getAllMsgs() {
   await wait(1000);
   const msgs = await client.getMessages({ limit });
   //for (let i=0; i<msgs.length; i++) {
-  //  console.log(new DiscordMessageHelper(msgs[i]).prompt!.name);
+  //  console.log(msgs[i].prompt!.name);
   //}
   // await client.waitMessage({})
-  // console.log(new DiscordMessageHelper(msgs[0]).prompt);
+  // console.log(msgs[0].prompt);
   // const { commandCache } = client;
   assertEquals(msgs.length, limit);
 });

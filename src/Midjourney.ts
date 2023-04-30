@@ -1,17 +1,9 @@
-import {
-  ComponentsSummary,
-  DiscordMessageHelper,
-} from "./DiscordMessageHelper.ts";
+import { ComponentsSummary, DiscordMessage } from "./DiscordMessage.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
-import type {
-  Command,
-  DiscordMessage,
-  Payload,
-  ResponseType,
-} from "./models.ts";
-import { ApplicationCommandType } from "../deps.ts";
+import type { Command, Payload, ResponseType } from "./models.ts";
+import { APIMessage, ApplicationCommandType } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
@@ -151,7 +143,10 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    throw new Error(`settings return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `settings return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   /**
@@ -165,7 +160,10 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    throw new Error(`relax return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `relax return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   /**
@@ -179,10 +177,13 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    throw new Error(`fast return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `fast return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
-  async imagine(prompt: string): Promise<DiscordMessageHelper> {
+  async imagine(prompt: string): Promise<DiscordMessage> {
     const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
     const cmd = await this.commandCache.getCommand("imagine");
     const payload: Payload = this.buildPayload(cmd);
@@ -196,7 +197,10 @@ export class Midjourney {
       });
       return msg;
     }
-    throw new Error(`imagine return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `imagine return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   private async describe(attachment: UploadSlot): Promise<number> {
@@ -212,7 +216,10 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    throw new Error(`describe return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `describe return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   private async blend(
@@ -243,7 +250,10 @@ export class Midjourney {
       // no content;
       return response.status;
     }
-    throw new Error(`blend return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `blend return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   // setSettingsRelax(): Promise<number> {
@@ -266,7 +276,7 @@ export class Midjourney {
 
   async callCustomComponents(
     button: ComponentsSummary,
-  ): Promise<DiscordMessageHelper> {
+  ): Promise<DiscordMessage> {
     await this.callCustom(button.parentId, button.custom_id);
     return await this.waitComponents(button);
   }
@@ -312,7 +322,7 @@ export class Midjourney {
   private async waitComponents(
     comp: ComponentsSummary,
     maxWait = 360,
-  ): Promise<DiscordMessageHelper> {
+  ): Promise<DiscordMessage> {
     let type: ResponseType | undefined;
     let imgId = comp.label;
     if (comp.label.startsWith("V")) {
@@ -345,7 +355,7 @@ export class Midjourney {
    */
   public async waitMessage(
     opts: WaitOptions = {},
-  ): Promise<DiscordMessageHelper> {
+  ): Promise<DiscordMessage> {
     const counters = {
       request: 0,
       message: 0,
@@ -364,15 +374,15 @@ export class Midjourney {
     let startId = opts.startId || "";
     /** called once the correct message had been located */
     const follow = async (
-      msg: DiscordMessageHelper,
-    ): Promise<DiscordMessageHelper | null> => {
+      msg: DiscordMessage,
+    ): Promise<DiscordMessage | null> => {
       const msgid = msg.id;
       let prevCompletion = -2;
       counters.hit = true;
       logger.info(`waitMessage for prompt message found`, msgid, msg.content);
       for (let i = 0; i < maxWait; i++) {
         if (!msg.prompt) {
-          logger.error(`lose track of the current progress with message`, msg)
+          logger.error(`lose track of the current progress with message`, msg);
           throw new Error(`failed to extract prompt from ${msg.content}`);
         }
         if (
@@ -405,9 +415,9 @@ export class Midjourney {
 
     const lookFor = async (
       msgs: DiscordMessage[],
-    ): Promise<DiscordMessageHelper | null> => {
+    ): Promise<DiscordMessage | null> => {
       counters.message += msgs.length;
-      const messages = msgs.map((m) => new DiscordMessageHelper(m));
+      const messages = msgs.map((m) => new DiscordMessage(m));
       // maintain the last message Id;
       messages.forEach((item) => { //
         if (item.id > startId) startId = item.id;
@@ -467,7 +477,7 @@ export class Midjourney {
       //   msg = await this.getMessages({
       //     limit: 1,
       //   });
-      //   console.log(new DiscordMessageHelper(msg[0]));
+      //   console.log(msg[0]);
       // }
       const results = await lookFor(msg);
       if (results) return results;
@@ -484,21 +494,9 @@ export class Midjourney {
   }
 
   /**
-   * get message from the chanel as DiscordMessageHelper object
-   * @param params
-   */
-
-  public async getMessagesHelper(
-    params: RESTGetAPIChannelMessagesQuery = {},
-  ): Promise<DiscordMessageHelper[]> {
-    const messages = await this.getMessages(params);
-    return messages.map((m) => new DiscordMessageHelper(m));
-  }
-  /**
    * get message from the chanel
    * @param params
    */
-
   public async getMessages(
     params: RESTGetAPIChannelMessagesQuery = {},
   ): Promise<DiscordMessage[]> {
@@ -515,12 +513,14 @@ export class Midjourney {
     url.search = searchParams.toString();
     const response = await fetch(url.toString(), { headers: this.headers });
     if (response.status === 200) {
-      const msgs: DiscordMessage[] =
-        (await response.json()) as DiscordMessage[];
+      const msgs: APIMessage[] = (await response.json()) as APIMessage[];
       // msgs.forEach((msg) => MsgsCache.set(msg.id, msg));
-      return msgs;
+      return msgs.map((msg) => new DiscordMessage(msg));
     }
-    throw new Error(`getMessages return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `getMessages return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   /**
@@ -528,7 +528,7 @@ export class Midjourney {
    * @param id message Snowflake id
    * @returns the message
    */
-  public async getMessageById(id: Snowflake): Promise<DiscordMessageHelper> {
+  public async getMessageById(id: Snowflake): Promise<DiscordMessage> {
     // "Only bots can use this endpoint"
     //if (false) {
     //    const url = `https://discord.com/api/v12/channels/${this.channel_id}/messages/${id}`;
@@ -549,7 +549,7 @@ export class Midjourney {
     if (!data.length) {
       throw new Error("no message found, around " + id);
     }
-    return new DiscordMessageHelper(data[0]);
+    return data[0];
     // }
   }
 
@@ -574,7 +574,10 @@ export class Midjourney {
       const atts = (await response.json()) as { attachments: UploadSlot[] };
       return atts;
     }
-    throw new Error(`Attachments return ${response.status} ${response.statusText} ${await response.text()}`);
+    throw new Error(
+      `Attachments return ${response.status} ${response.statusText} ${await response
+        .text()}`,
+    );
   }
 
   /**
@@ -594,7 +597,10 @@ export class Midjourney {
       body: new Uint8Array(data),
     });
     if (!response.ok) {
-      throw new Error(`uploadImage return ${response.status} ${response.statusText} ${await response.text()}`);
+      throw new Error(
+        `uploadImage return ${response.status} ${response.statusText} ${await response
+          .text()}`,
+      );
     }
   }
   /**

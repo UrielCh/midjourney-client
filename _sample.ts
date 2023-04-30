@@ -33,7 +33,7 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     } else {
       logger.warn(
         `No move variant available in result label:`,
-        msg.components.map((a) => a.label).join(", "),
+        msg.componentsSummery.map((a) => a.label).join(", "),
       );
     }
   }
@@ -47,7 +47,7 @@ async function imaginVariantUpscal(client: Midjourney, prompt: string) {
     } else {
       logger.warn(
         `No move upscale available in result label:`,
-        msg.components.map((a) => a.label).join(", "),
+        msg.componentsSummery.map((a) => a.label).join(", "),
       );
     }
   }
@@ -108,10 +108,16 @@ async function mainSample() {
     // url =
     //   "https://cdn.midjourney.com/5a2120ca-d9e1-46a5-9784-a7fb7026768e/0_3_32_N.webp";
     const client = new Midjourney("interaction.txt");
-    const prompts = await client.describeUrl(urls[10]);
-    for (const prompt of prompts) {
-      await imaginVariantUpscal(client, prompt);
-    }
+    // await client.connectDiscordBot();
+    await client.fast();
+    const msgs = await client.getMessages({ limit: 1 });
+
+    console.log(msgs[0]);
+
+    //const prompts = await client.describeUrl(urls[10]);
+    //for (const prompt of prompts) {
+    //  await imaginVariantUpscal(client, prompt);
+    //}
   } catch (err) {
     console.error(err);
   }

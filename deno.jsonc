@@ -1,6 +1,6 @@
 {
   "tasks": {
     "dev": "deno run --watch main.ts",
-    "test": "deno test --allow-read=interaction.txt --allow-net=discord.com"
+    "test": "deno test --allow-write=cmdCache --allow-read=interaction.txt --allow-net=discord.com"
   }
 }

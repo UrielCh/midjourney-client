@@ -8,16 +8,16 @@ Midjourney bot using your web development tools.
 
 ## Features
 
-| feature     | Status             | feature     | Status             |
-| ----------- | ------------------ | ----------- | ------------------ |
-| `ask`       | :see_no_evil:      | `private`   | :x: N/A            |
-| `blend`     | :writing_hand: WIP | `public`    | :x: N/A            |
-| `describe`  | :white_check_mark: | `relax`     | :white_check_mark: |
-| `fast`      | :white_check_mark: | `settings`  | :white_check_mark: |
-| `help`      | :see_no_evil:      | `show`      | :x: N/A            |
-| `imagine`   | :white_check_mark: | `stealth`   | :x: N/A            |
-| `info`      | :x: N/A            | `subscribe` | :see_no_evil:      |
-| `invite`    | :see_no_evil:      | `prefer`    | :x: N/A            |
+| feature    | Status             | feature     | Status             |
+| ---------- | ------------------ | ----------- | ------------------ |
+| `ask`      | :see_no_evil:      | `private`   | :x: N/A            |
+| `blend`    | :writing_hand: WIP | `public`    | :x: N/A            |
+| `describe` | :white_check_mark: | `relax`     | :white_check_mark: |
+| `fast`     | :white_check_mark: | `settings`  | :white_check_mark: |
+| `help`     | :see_no_evil:      | `show`      | :x: N/A            |
+| `imagine`  | :white_check_mark: | `stealth`   | :x: N/A            |
+| `info`     | :x: N/A            | `subscribe` | :see_no_evil:      |
+| `invite`   | :see_no_evil:      | `prefer`    | :x: N/A            |
 
 ## Installation
 
@@ -32,9 +32,9 @@ npm install midjourney-discord-api
 ```js
 import Midjourney from "midjourney-discord-api";
 
-const cli = new Midjourney('interaction.txt');
+const cli = new Midjourney("interaction.txt");
 const msgs = await cli.getMessages();
-console.log(msgs.length + ' messages visibles'); // by default get 50 messages
+console.log(msgs.length + " messages visibles"); // by default get 50 messages
 ```
 
 ### Deno
