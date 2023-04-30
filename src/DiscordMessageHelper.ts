@@ -87,6 +87,14 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     return prompt;
   }
 
+  m = extra.match(/^Upscaled by <@(\d+)>$/);
+  if (m) {
+    prompt.id = m[1];
+    prompt.completion = 1;
+    prompt.type = "upscale";
+    return prompt;
+  }
+
   m = extra.match(
     /^Variations by <@(\d+)> \(Open on website for full quality\)$/,
   );

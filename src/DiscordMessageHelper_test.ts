@@ -84,3 +84,14 @@ Deno.test(function ParseMidJourneyWebsiteFullQuality() {
   assertEquals(p1.completion, 1);
   assertEquals(p1.type, "variations");
 });
+
+Deno.test(function ParseMidJourneyUpscaled() {
+  const p1 = extractPrompt(
+    "**a view of Paris drawn by Kanagawa --v 5 --seed 6894** - Upscaled by <@1097074882203303911> (fast)",
+  );
+  assertExists(p1);
+  assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5 --seed 6894");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+  assertEquals(p1.type, "upscale");
+});
