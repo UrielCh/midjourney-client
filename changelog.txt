@@ -1,5 +1,8 @@
 # Changelog
 
+## v 0.1.0
+- Big refactor
+
 ## v 0.0.2
 - add `fast` and `relax` command
 - partial implementation of `blend`
