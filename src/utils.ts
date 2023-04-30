@@ -1,5 +1,7 @@
 import { logger } from "../deps.ts";
 
+export const REROLL = "🔄";
+
 export const wait = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 

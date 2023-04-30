@@ -2,6 +2,7 @@
 import Midjourney from "./src/Midjourney.ts";
 import { SnowflakeObj } from "./src/SnowflakeObj.ts";
 import { logger } from "./deps.ts";
+import { DiscordMessage } from "./mod.ts";
 
 /**
  * a simple example of how to use the imagine command
@@ -12,45 +13,22 @@ import { logger } from "./deps.ts";
 async function imaginVariantUpscal(client: Midjourney, prompt: string) {
   // 5 second back in time
   const startId = new SnowflakeObj(-5 * 1000).encode();
-  let msg = await client.waitMessage({
-    prompt,
-    startId,
-    type: "grid",
-    maxWait: 0,
-  });
+  let msg: DiscordMessage | null = null;
+  try {
+    msg = await client.waitMessage({
+      prompt,
+      startId,
+      type: "grid",
+      maxWait: 0,
+    });
+  } catch (e) {}
   if (!msg) {
     logger.info("Failed to find existing prompt result");
     msg = await client.imagine(prompt);
   }
   logger.info("Prompt result available", { id: msg.id });
-  {
-    const variant = msg.getComponents(false, "V");
-    logger.info(`${variant.length} Variant can be generated`);
-    if (variant.length > 0) {
-      logger.info(`Generating Variant ${variant[0].label}`);
-      const msg2 = await client.callCustomComponents(variant[0]);
-      logger.info(`variant Ready from`, msg2.attachments[0].url);
-    } else {
-      logger.warn(
-        `No move variant available in result label:`,
-        msg.componentsSummery.map((a) => a.label).join(", "),
-      );
-    }
-  }
-  {
-    const upscale = msg.getComponents(false, "U");
-    logger.info(`${upscale.length} Upscale can be generated`);
-    if (upscale.length > 0) {
-      logger.info(`Generating upscale ${upscale[0].label}`);
-      const msg2 = await client.callCustomComponents(upscale[0]);
-      logger.info(`upscale Ready from`, msg2.attachments[0].url);
-    } else {
-      logger.warn(
-        `No move upscale available in result label:`,
-        msg.componentsSummery.map((a) => a.label).join(", "),
-      );
-    }
-  }
+  await msg.variant(2);
+  await msg.upscale(1);
   console.log("done");
 }
 
@@ -109,15 +87,35 @@ async function mainSample() {
     //   "https://cdn.midjourney.com/5a2120ca-d9e1-46a5-9784-a7fb7026768e/0_3_32_N.webp";
     const client = new Midjourney("interaction.txt");
     // await client.connectDiscordBot();
-    await client.fast();
+    await client.relax();
     const msgs = await client.getMessages({ limit: 1 });
+    if (msgs[0].canReroll()) {
+      await msgs[0].reroll();
+    }
 
-    console.log(msgs[0]);
-
-    //const prompts = await client.describeUrl(urls[10]);
-    //for (const prompt of prompts) {
-    //  await imaginVariantUpscal(client, prompt);
+    //for (const msg of msgs) {
+    //  if (!msg.canUpscale(2)) continue;
+    //  const result = await msg. upscale(2);
+    //  console.log(result.attachments.length, "up ready", ...result.attachments.map(a=>a.url));
+    //  break;
     //}
+    //for (const msg of msgs) {
+    //  if (!msg.canVariant()) continue;
+    //  const result = await msg.variant(2);
+    //  console.log(result.attachments.length, "var ready", ...result.attachments.map(a=>a.url));
+    //  break;
+    //}
+
+    //  console.log(msgs[0]);
+    //  const up = await msgs[0].upscale(1);
+    //  console.log('up ready');
+    //  const vari = await msgs[0].variant(1);
+    //  console.log('vari ready', vari);
+
+    // const prompts = await client.describeUrl(urls[14]);
+    // for (const prompt of prompts) {
+    //   await imaginVariantUpscal(client, prompt);
+    // }
   } catch (err) {
     console.error(err);
   }

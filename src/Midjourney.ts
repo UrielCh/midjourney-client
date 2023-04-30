@@ -1,9 +1,14 @@
-import { ComponentsSummary, DiscordMessage } from "./DiscordMessage.ts";
+import { DiscordMessage } from "./DiscordMessage.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, Payload, ResponseType } from "./models.ts";
-import { APIMessage, ApplicationCommandType } from "../deps.ts";
+import {
+  APIButtonComponentWithCustomId,
+  APIMessage,
+  ApplicationCommandType,
+  ButtonStyle,
+} from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
@@ -281,16 +286,18 @@ export class Midjourney {
   // }
 
   public async callCustomComponents(
-    button: ComponentsSummary,
+    // button: ComponentsSummary,
+    parentId: Snowflake,
+    button: APIButtonComponentWithCustomId,
   ): Promise<DiscordMessage> {
-    if (!button.processed) {
-      await this.callCustom(button.parentId, button.custom_id);
+    if (!button.disabled && button.style !== ButtonStyle.Primary) {
+      await this.callCustom(parentId, button.custom_id);
     } else {
       logger.warn(
         `The requested action ${button.custom_id} had already been processed, just looking for a previous result.`,
       );
     }
-    return await this.waitComponents(button);
+    return await this.waitComponents(parentId, button);
   }
 
   private async callCustom(
@@ -332,27 +339,30 @@ export class Midjourney {
    * @param comp
    */
   async waitComponents(
-    comp: ComponentsSummary,
+    parentId: Snowflake,
+    button: APIButtonComponentWithCustomId,
     maxWait = 360,
   ): Promise<DiscordMessage> {
     let type: ResponseType | undefined;
-    let imgId = comp.label;
-    if (comp.label.startsWith("V")) {
+    let label = button.label || button.emoji?.name || "ERROR";
+    let imgId: string | undefined = undefined;
+    if (label.startsWith("V")) {
       type = "variations";
       imgId = ""; // image Id is not specified in title for variations.
-    } else if (comp.label.startsWith("U")) {
+    } else if (label.startsWith("U")) {
       type = "upscale";
-    } else if (comp.label === REROLL) {
+    } else if (label === REROLL) {
       type = undefined;
+      imgId = undefined;
     } else {
       throw Error("waitComponents only support upscale and variations");
     }
     const msg = await this.waitMessage({
       maxWait,
       type,
-      startId: comp.parentId,
-      imgId,
-      parent: comp.parentId,
+      startId: parentId,
+      imgId: imgId,
+      parent: parentId,
     });
     return msg;
   }
@@ -483,7 +493,9 @@ export class Midjourney {
       });
       counters.request++;
       if (i == 0 && startId) {
-        logger.info(`waitMessage 1st request gets ${msgs.length} messages`);
+        logger.info(
+          `waitMessage 1st request gets ${msgs.length} messages, Will retry one per sec up to ${maxWait} times`,
+        );
       } else {
         if (msgs.length) {
           logger.info(

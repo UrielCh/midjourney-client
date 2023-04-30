@@ -2,7 +2,6 @@ import type {
   APIActionRowComponent,
   APIAttachment,
   APIButtonComponentWithCustomId,
-  APIButtonComponentWithURL,
   APIChannel,
   APIEmbed,
   APIMessage,
@@ -30,31 +29,6 @@ export interface SplitedPrompt {
   type?: ResponseType;
   name: string;
   completion?: number; // 0..1
-}
-
-export class componentData {
-  public processed: boolean;
-  public label: string;
-  public custom_id: string;
-  public url: string;
-
-  constructor(
-    public readonly parentId: Snowflake,
-    src: APIButtonComponentWithCustomId | APIButtonComponentWithURL,
-  ) {
-    this.processed = src.style === ButtonStyle.Primary; // 1 is primary button means that it had already been click
-    this.label = src.label || src.emoji?.name || "N/A";
-    if ("custom_id" in src) {
-      this.custom_id = src.custom_id || "";
-      this.url = "";
-    } else {
-      this.custom_id = "";
-      this.url = src.url || "";
-      if (this.url) {
-        this.processed = true;
-      }
-    }
-  }
 }
 
 export function extractPrompt(content: string): SplitedPrompt | undefined {
@@ -296,8 +270,6 @@ export class DiscordMessage implements APIMessage {
 
   public prompt?: SplitedPrompt;
 
-  public componentsSummery: ComponentsSummary[];
-
   /**
    * parent client
    */
@@ -309,10 +281,6 @@ export class DiscordMessage implements APIMessage {
     // this.id = source.id;
     this.prompt = extractPrompt(source.content);
     this.content = source.content;
-    this.componentsSummery = getDataFromComponents(
-      source.id,
-      source.components || [],
-    );
     if (source.referenced_message) {
       this.referenced_message = new DiscordMessage(
         client,
@@ -427,51 +395,29 @@ export class DiscordMessage implements APIMessage {
 
   reroll(): Promise<DiscordMessage> {
     const comp = this.getComponentsByLabel(REROLL);
-    const compData = new componentData(this.id, comp);
-    logger.info(`${compData.custom_id} Reroll will be generated`);
-    return this.#client.callCustomComponents(compData);
+    logger.info(`${comp.custom_id} Reroll will be generated`);
+    return this.#client.callCustomComponents(this.id, comp);
   }
 
   upscale(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
     const label = `U${id}`;
     const comp = this.getComponentsByLabel(label);
-    const compData = new componentData(this.id, comp);
-    logger.info(`${compData.custom_id} Upscale will be generated`);
-    return this.#client.callCustomComponents(compData);
+    logger.info(`${comp.custom_id} Upscale will be generated`);
+    return this.#client.callCustomComponents(this.id, comp);
   }
 
   variant(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
     const label = `V${id}`;
     const comp = this.getComponentsByLabel(label);
-    const compData = new componentData(this.id, comp);
-    logger.info(`${compData.custom_id} Variant will be generated`);
-    return this.#client.callCustomComponents(compData);
+    logger.info(`${comp.custom_id} Variant will be generated`);
+    return this.#client.callCustomComponents(this.id, comp);
   }
 
-  getComponents(processed: boolean, name?: string): ComponentsSummary[] {
-    let list = this.componentsSummery.filter((a) => a.processed === processed);
-    if (name) {
-      list = list.filter((a) => a.label.startsWith(name));
-    }
-    return list;
-  }
-}
-
-function getDataFromComponents(
-  parentId: Snowflake,
-  srcs: APIActionRowComponent<APIMessageActionRowComponent>[],
-): componentData[] {
-  const out: componentData[] = [];
-  for (const src of srcs) {
-    for (const c of src.components) {
-      if ("custom_id" in c && ("label" in c || "emoji" in c)) {
-        out.push(new componentData(parentId, c)); //  as APIButtonComponentWithCustomId
-      } else if ("label" in c && "url" in c) {
-        out.push(new componentData(parentId, c)); //  as APIButtonComponentWithURL
-      } else {
-        logger.warn("getDataFromComponents meat non supported component", c);
-      }
-    }
-  }
-  return out;
+  // getComponents(processed: boolean, name?: string): ComponentsSummary[] {
+  //   let list = this.componentsSummery.filter((a) => a.processed === processed);
+  //   if (name) {
+  //     list = list.filter((a) => a.label.startsWith(name));
+  //   }
+  //   return list;
+  // }
 }

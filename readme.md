@@ -8,16 +8,18 @@ Midjourney bot using your web development tools.
 
 ## Features
 
-| feature    | Status             | feature     | Status             |
-| ---------- | ------------------ | ----------- | ------------------ |
-| `ask`      | :see_no_evil:      | `private`   | :x: N/A            |
-| `blend`    | :writing_hand: WIP | `public`    | :x: N/A            |
-| `describe` | :white_check_mark: | `relax`     | :white_check_mark: |
-| `fast`     | :white_check_mark: | `settings`  | :white_check_mark: |
-| `help`     | :see_no_evil:      | `show`      | :x: N/A            |
-| `imagine`  | :white_check_mark: | `stealth`   | :x: N/A            |
-| `info`     | :x: N/A            | `subscribe` | :see_no_evil:      |
-| `invite`   | :see_no_evil:      | `prefer`    | :x: N/A            |
+| feature     | Status             | feature      | Status        |
+| ----------- | ------------------ | ------------ | ------------- |
+| `/ask`      | :see_no_evil:      | `/private`   | :x: N/A       |
+| `/blend`    | :writing_hand: WIP | `/public`    | :x: N/A       |
+| `/describe` | ✅                 | `/relax`     | ✅            |
+| `/fast`     | ✅                 | `/settings`  | ✅            |
+| `/help`     | :see_no_evil:      | `/show`      | :x: N/A       |
+| `/imagine`  | ✅                 | `/stealth`   | :x: N/A       |
+| `/info`     | :x: N/A            | `/subscribe` | :see_no_evil: |
+| `/invite`   | :see_no_evil:      | `/prefer`    | :x: N/A       |
+| `Upscale`   | ✅                 | `Variations` | ✅            |
+| `Reroll`    | ✅                 |              |               |
 
 ## Installation
 
@@ -93,12 +95,10 @@ const client = new Midjourney("interaction.txt");
 const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
 );
-// get all Upscale button
-const upscale = msg.getComponents(false, "U");
-console.log(`${upscale.length} Upscales can be generated`);
-console.log(`Generating upscale ${upscale[0].label}`);
-const msg2 = await client.callCustomComponents(upscale[0]);
-console.log(`upscale Ready from`, msg2.attachments[0].url);
+if (msg.canUpscale()) {
+  const result = msg.upscale(2);
+  console.log(`upscale U2 Ready from`, result.attachments[0].url);
+}
 ```
 
 ### Variant
@@ -110,12 +110,25 @@ const client = new Midjourney("interaction.txt");
 const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
 );
-// get all Upscale button
-const variant = msg.getComponents(false, "V");
-console.log(`${variant.length} Variants can be generated`);
-console.log(`Generating Variant ${variant[0].label}`);
-const msg2 = await client.callCustomComponents(variant[0]);
-console.log(`variant Ready from`, msg2.attachments[0].url);
+if (msg.canVariant()) {
+  const result = msg.variant(2);
+  console.log(`upscale V2 Ready from`, result.attachments[0].url);
+}
+```
+
+### Reroll
+
+```ts
+import Midjourney from "midjourney-discord-api";
+
+const client = new Midjourney("interaction.txt");
+const msg = await client.imagine(
+  "A photo of an astronaut riding a horse",
+);
+if (msg.canReroll()) {
+  const result = msg.reroll();
+  console.log(`upscale V2 Ready from`, result.attachments[0].url);
+}
 ```
 
 ## API Documentation
