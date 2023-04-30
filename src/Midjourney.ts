@@ -7,7 +7,13 @@ import { APIMessage, ApplicationCommandType } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import { download, filename2Mime, getExistinggroup, wait } from "./utils.ts";
+import {
+  download,
+  filename2Mime,
+  getExistinggroup,
+  REROLL,
+  wait,
+} from "./utils.ts";
 
 // import * as DiscordJs from "npm:discord.js";
 
@@ -274,10 +280,16 @@ export class Midjourney {
   //   );
   // }
 
-  async callCustomComponents(
+  public async callCustomComponents(
     button: ComponentsSummary,
   ): Promise<DiscordMessage> {
-    await this.callCustom(button.parentId, button.custom_id);
+    if (!button.processed) {
+      await this.callCustom(button.parentId, button.custom_id);
+    } else {
+      logger.warn(
+        `The requested action ${button.custom_id} had already been processed, just looking for a previous result.`,
+      );
+    }
     return await this.waitComponents(button);
   }
 
@@ -319,7 +331,7 @@ export class Midjourney {
    * wait for an upscale or a Variant
    * @param comp
    */
-  private async waitComponents(
+  async waitComponents(
     comp: ComponentsSummary,
     maxWait = 360,
   ): Promise<DiscordMessage> {
@@ -330,6 +342,8 @@ export class Midjourney {
       imgId = ""; // image Id is not specified in title for variations.
     } else if (comp.label.startsWith("U")) {
       type = "upscale";
+    } else if (comp.label === REROLL) {
+      type = undefined;
     } else {
       throw Error("waitComponents only support upscale and variations");
     }
@@ -393,7 +407,7 @@ export class Midjourney {
           if (prevCompletion == -1) {
             logger.info(`wait for the prompt in Queue`);
           } else if (prevCompletion === 1) {
-            logger.info(`follow message completion ready`);
+            logger.info(`waitMessage found a 100% process done message`);
           } else {
             logger.info(
               `follow message completion: (${
@@ -414,10 +428,9 @@ export class Midjourney {
     };
 
     const lookFor = async (
-      msgs: DiscordMessage[],
+      messages: DiscordMessage[],
     ): Promise<DiscordMessage | null> => {
-      counters.message += msgs.length;
-      const messages = msgs.map((m) => new DiscordMessage(this, m));
+      counters.message += messages.length;
       // maintain the last message Id;
       messages.forEach((item) => { //
         if (item.id > startId) startId = item.id;
@@ -464,13 +477,19 @@ export class Midjourney {
       maxWait = 1;
     }
     for (let i = 0; i < maxWait; i++) {
-      const msg: DiscordMessage[] = await this.getMessages({
+      const msgs: DiscordMessage[] = await this.getMessages({
         limit,
         after: startId,
       });
       counters.request++;
       if (i == 0 && startId) {
-        logger.info(`First request in waitMessage gets ${msg.length} messages`);
+        logger.info(`waitMessage 1st request gets ${msgs.length} messages`);
+      } else {
+        if (msgs.length) {
+          logger.info(
+            `waitMessage ${i}th request gets ${msgs.length} messages`,
+          );
+        }
       }
       // debugging get back in time and get the previous msg
       // if (msg.length === 0) {
@@ -479,8 +498,10 @@ export class Midjourney {
       //   });
       //   console.log(msg[0]);
       // }
-      const results = await lookFor(msg);
-      if (results) return results;
+      if (msgs.length) {
+        const results = await lookFor(msgs);
+        if (results) return results;
+      }
       await wait(1000);
     }
     if (counters.hit) {
@@ -506,9 +527,7 @@ export class Midjourney {
     const searchParams = new URLSearchParams(url.search); // generic import prev params
     for (const [key, value] of Object.entries(params)) {
       const strValue = value.toString();
-      if (strValue) {
-        searchParams.set(key, strValue);
-      }
+      if (strValue) searchParams.set(key, strValue);
     }
     url.search = searchParams.toString();
     const response = await fetch(url.toString(), { headers: this.headers });

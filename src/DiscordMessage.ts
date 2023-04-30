@@ -3,6 +3,7 @@ import type {
   APIAttachment,
   APIButtonComponentWithCustomId,
   APIButtonComponentWithURL,
+  APIChannel,
   APIEmbed,
   APIMessage,
   APIMessageActionRowComponent,
@@ -12,6 +13,7 @@ import type {
 import { ButtonStyle, logger, MessageType } from "../deps.ts";
 import Midjourney from "./Midjourney.ts";
 import type { ResponseType, UserReference } from "./models.ts";
+import { REROLL } from "./utils.ts";
 
 export interface ComponentsSummary {
   parentId: Snowflake;
@@ -260,6 +262,23 @@ export class DiscordMessage implements APIMessage {
    * See https://en.wikipedia.org/wiki/Bit_field
    */
   flags?: number; //MessageFlags;
+
+  /**
+   * Sent if a thread was started from this message
+   */
+  thread?: APIChannel;
+
+  /**
+   * Sent if the message contains components like buttons, action rows, or other interactive components
+   *
+   * The `MESSAGE_CONTENT` privileged gateway intent will become required after **August 31, 2022** for verified applications to receive a non-empty value from this field
+   *
+   * In the Discord Developers Portal, you need to enable the toggle of this intent of your application in **Bot > Privileged Gateway Intents**
+   *
+   * See https://support-dev.discord.com/hc/articles/4404772028055
+   */
+  components?: APIActionRowComponent<APIMessageActionRowComponent>[];
+
   /**
    * The message associated with the `message_reference`
    *
@@ -336,21 +355,98 @@ export class DiscordMessage implements APIMessage {
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
-  // isImagineResult(): boolean {
-  //     if (!this.prompt)
-  //         return false;
-  //     if (!this.prompt.note)
-  //         return false;
-  //     return true;
-  // }
-  //
-  // isUpscaleResult(): boolean {
-  //     if (!this.prompt)
-  //         return false;
-  //     if (!this.prompt.name) // name is empty when it is a prompt
-  //         return false;
-  //     return true;
-  // }
+  private getComponentsByLabel(label: string): APIButtonComponentWithCustomId {
+    if (!this.components) {
+      throw Error("no components In this message.");
+    }
+    const availableLabels: string[] = [];
+    for (const src of this.components) {
+      for (const c of src.components) {
+        if (!("custom_id" in c)) continue;
+        if ("label" in c && c.label && c.label) {
+          if (c.label === label) return c as APIButtonComponentWithCustomId;
+          availableLabels.push(c.label);
+        } else if ("emoji" in c && c.emoji && c.emoji.name) {
+          if (c.emoji.name === label) {
+            return c as APIButtonComponentWithCustomId;
+          }
+          availableLabels.push(`${c.emoji.name}`);
+        }
+      }
+    }
+    throw Error(
+      `Failed to find componant named "${label}" within ${
+        availableLabels.map((a) => `"${a}"`).join(", ")
+      }`,
+    );
+  }
+
+  /**
+   * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
+   */
+  canReroll(): boolean {
+    try {
+      this.getComponentsByLabel(REROLL);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /**
+   * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
+   */
+  canUpscale(id?: 1 | 2 | 3 | 4): boolean {
+    const selector = id ? `U${id}` : "U1";
+    try {
+      const c = this.getComponentsByLabel(selector);
+      if (id) {
+        return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /**
+   * return if the the Message can be varaint, if an id is provide, will return true only if the requested action had not already been started.
+   */
+  canVariant(id?: 1 | 2 | 3 | 4): boolean {
+    const selector = id ? `V${id}` : "V1";
+    try {
+      const c = this.getComponentsByLabel(selector);
+      if (id) {
+        return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  reroll(): Promise<DiscordMessage> {
+    const comp = this.getComponentsByLabel(REROLL);
+    const compData = new componentData(this.id, comp);
+    logger.info(`${compData.custom_id} Reroll will be generated`);
+    return this.#client.callCustomComponents(compData);
+  }
+
+  upscale(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
+    const label = `U${id}`;
+    const comp = this.getComponentsByLabel(label);
+    const compData = new componentData(this.id, comp);
+    logger.info(`${compData.custom_id} Upscale will be generated`);
+    return this.#client.callCustomComponents(compData);
+  }
+
+  variant(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
+    const label = `V${id}`;
+    const comp = this.getComponentsByLabel(label);
+    const compData = new componentData(this.id, comp);
+    logger.info(`${compData.custom_id} Variant will be generated`);
+    return this.#client.callCustomComponents(compData);
+  }
 
   getComponents(processed: boolean, name?: string): ComponentsSummary[] {
     let list = this.componentsSummery.filter((a) => a.processed === processed);
