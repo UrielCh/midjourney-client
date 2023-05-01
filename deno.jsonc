@@ -9,5 +9,8 @@
     "indentWidth": 2,
     "include": ["src/", "samples/", "*.ts"],
     "exclude": ["npm/"]
+  },
+  "lint": {
+    "exclude": ["npm/"]
   }
 }
