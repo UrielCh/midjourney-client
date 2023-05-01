@@ -75,9 +75,7 @@ export default class Logger {
     const date = this.getDate();
     const filename = this.rotate === true ? `${date}_${type}` : type;
     const path = `${dir}/${filename}.log`;
-    const msg = this.now === true
-      ? this.format(`[${this.getNow()}]`, ...args)
-      : this.format(...args);
+    const msg = this.now === true ? this.format(`[${this.getNow()}]`, ...args) : this.format(...args);
     this.writer!.write({ path, msg, type });
   }
 

@@ -6,9 +6,9 @@
   "configurations": [
     {
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Sample upscale",
       "type": "node",
-      "program": "${workspaceFolder}/_sample.ts",
+      "program": "${workspaceFolder}/samples/upscaleLast.ts",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "deno",
       "runtimeArgs": [

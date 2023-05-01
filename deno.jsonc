@@ -2,5 +2,11 @@
   "tasks": {
     "dev": "deno run --watch main.ts",
     "test": "deno test --allow-write=cmdCache --allow-read=interaction.txt --allow-net=discord.com"
+  },
+  "fmt": {
+    "lineWidth": 160,
+    "indentWidth": 2,
+    "include": ["src/", "samples/", "*.ts"],
+    "exclude": ["npm/"]
   }
 }

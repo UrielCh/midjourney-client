@@ -3,22 +3,11 @@ import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, Payload, ResponseType } from "./models.ts";
-import {
-  APIButtonComponentWithCustomId,
-  APIMessage,
-  ApplicationCommandType,
-  ButtonStyle,
-} from "../deps.ts";
+import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import {
-  download,
-  filename2Mime,
-  getExistinggroup,
-  REROLL,
-  wait,
-} from "./utils.ts";
+import { download, filename2Mime, getExistinggroup, REROLL, wait } from "./utils.ts";
 
 // import * as DiscordJs from "npm:discord.js";
 
@@ -37,7 +26,7 @@ export interface WaitOptions {
   type?: ResponseType;
   imgId?: 1 | 2 | 3 | 4 | string;
   startId?: Snowflake;
-  parent?: Snowflake;
+  parentId?: Snowflake;
 }
 
 export class Midjourney {
@@ -286,7 +275,6 @@ export class Midjourney {
   // }
 
   public async callCustomComponents(
-    // button: ComponentsSummary,
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
   ): Promise<DiscordMessage> {
@@ -344,7 +332,7 @@ export class Midjourney {
     maxWait = 360,
   ): Promise<DiscordMessage> {
     let type: ResponseType | undefined;
-    let label = button.label || button.emoji?.name || "ERROR";
+    const label = button.label || button.emoji?.name || "ERROR";
     let imgId: string | undefined = undefined;
     if (label.startsWith("V")) {
       type = "variations";
@@ -357,13 +345,14 @@ export class Midjourney {
     } else {
       throw Error("waitComponents only support upscale and variations");
     }
-    const msg = await this.waitMessage({
+    const waitParams: WaitOptions = {
       maxWait,
       type,
       startId: parentId,
       imgId: imgId,
-      parent: parentId,
-    });
+      parentId,
+    };
+    const msg = await this.waitMessage(waitParams);
     return msg;
   }
 
@@ -420,9 +409,7 @@ export class Midjourney {
             logger.info(`waitMessage found a 100% process done message`);
           } else {
             logger.info(
-              `follow message completion: (${
-                (prevCompletion * 100).toFixed(0)
-              }%)`,
+              `follow message completion: (${(prevCompletion * 100).toFixed(0)}%)`,
             );
           }
         }
@@ -442,14 +429,12 @@ export class Midjourney {
     ): Promise<DiscordMessage | null> => {
       counters.message += messages.length;
       // maintain the last message Id;
-      messages.forEach((item) => { //
+      messages.forEach((item) => {
         if (item.id > startId) startId = item.id;
       });
       let matches = messages;
       matches = matches.filter((item) => item.prompt); // keep only parssable messages;
-      matches = matches.filter((item) =>
-        item.author.id === this.application_id
-      ); // keep only message from Discord bot
+      matches = matches.filter((item) => item.author.id === this.application_id); // keep only message from Discord bot
       if (opts.prompt) { // filter by prompt
         matches = matches.filter((item) => {
           const itemPrompt = item.prompt!.prompt;
@@ -457,10 +442,8 @@ export class Midjourney {
           return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
         });
       }
-      if (opts.parent) {
-        matches = matches.filter((item) =>
-          item.referenced_message && item.referenced_message.id === opts.parent
-        );
+      if (opts.parentId) {
+        matches = matches.filter((item) => item.referenced_message && item.referenced_message.id === opts.parentId);
       }
       if (opts.type) {
         matches = matches.filter((item) => item.prompt!.type === opts.type);
@@ -469,14 +452,12 @@ export class Midjourney {
         matches = matches.filter((item) => item.prompt!.name === opts.name);
       }
       if (opts.imgId) {
-        matches = matches.filter((item) =>
-          item.prompt!.name.includes(`#${imgId}`)
-        );
+        matches = matches.filter((item) => item.prompt!.name.includes(`#${imgId}`));
       }
       if (!matches.length) return null;
       if (matches.length > 1) {
         logger.error(
-          "warning multiple message match your waiting request! review your cryteria:",
+          "warning multiple message match your waiting request! review your criterion:",
           opts,
         );
       }
@@ -698,9 +679,7 @@ export class Midjourney {
     }[],
     dimensions?: `${number}:${number}`,
   ): Promise<void> {
-    images.forEach((image) =>
-      image.contentType = image.contentType || filename2Mime(image.filename)
-    );
+    images.forEach((image) => image.contentType = image.contentType || filename2Mime(image.filename));
     const id0 = Date.now();
     // const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
 

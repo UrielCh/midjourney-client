@@ -50,8 +50,7 @@ export class CommandCache {
       logger.info(
         `CommandCache: ${name} not in cache, requesting Discord server.`,
       );
-      const url =
-        `https://discord.com/api/v9/channels/${this.channel_id}/application-commands/search?type=1&query=${name}&limit=1&include_applications=false`;
+      const url = `https://discord.com/api/v9/channels/${this.channel_id}/application-commands/search?type=1&query=${name}&limit=1&include_applications=false`;
       const response = await fetch(url, {
         headers: { authorization: this.authorization },
       });

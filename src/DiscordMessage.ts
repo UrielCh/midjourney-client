@@ -323,7 +323,7 @@ export class DiscordMessage implements APIMessage {
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
-  private getComponentsByLabel(label: string): APIButtonComponentWithCustomId {
+  public getComponents(label: string): APIButtonComponentWithCustomId {
     if (!this.components) {
       throw Error("no components In this message.");
     }
@@ -343,9 +343,7 @@ export class DiscordMessage implements APIMessage {
       }
     }
     throw Error(
-      `Failed to find componant named "${label}" within ${
-        availableLabels.map((a) => `"${a}"`).join(", ")
-      }`,
+      `Failed to find componant named "${label}" within ${availableLabels.map((a) => `"${a}"`).join(", ")}`,
     );
   }
 
@@ -354,7 +352,7 @@ export class DiscordMessage implements APIMessage {
    */
   canReroll(): boolean {
     try {
-      this.getComponentsByLabel(REROLL);
+      this.getComponents(REROLL);
       return true;
     } catch (_) {
       return false;
@@ -364,15 +362,18 @@ export class DiscordMessage implements APIMessage {
   /**
    * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canUpscale(id?: 1 | 2 | 3 | 4): boolean {
+  canUpscale(id?: number): boolean {
     const selector = id ? `U${id}` : "U1";
     try {
-      const c = this.getComponentsByLabel(selector);
+      const c = this.getComponents(selector);
       if (id) {
         return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
       }
       return true;
     } catch (_) {
+      if (id && (id > 4 || id < 0)) {
+        logger.warn(`You asked for a image id out of bound [1,2,3,4]`);
+      }
       return false;
     }
   }
@@ -380,35 +381,36 @@ export class DiscordMessage implements APIMessage {
   /**
    * return if the the Message can be varaint, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canVariant(id?: 1 | 2 | 3 | 4): boolean {
+  canVariant(id: number): boolean {
     const selector = id ? `V${id}` : "V1";
     try {
-      const c = this.getComponentsByLabel(selector);
+      const c = this.getComponents(selector);
       if (id) {
         return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
       }
       return true;
     } catch (_) {
+      if (id && (id > 4 || id < 0)) {
+        logger.warn(`You asked for a image id out of bound [1,2,3,4]`);
+      }
       return false;
     }
   }
 
   reroll(): Promise<DiscordMessage> {
-    const comp = this.getComponentsByLabel(REROLL);
+    const comp = this.getComponents(REROLL);
     logger.info(`${comp.custom_id} Reroll will be generated`);
     return this.#client.callCustomComponents(this.id, comp);
   }
 
-  upscale(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
-    const label = `U${id}`;
-    const comp = this.getComponentsByLabel(label);
+  upscale(id: number): Promise<DiscordMessage> {
+    const comp = this.getComponents(`U${id}`);
     logger.info(`${comp.custom_id} Upscale will be generated`);
     return this.#client.callCustomComponents(this.id, comp);
   }
 
-  variant(id: 1 | 2 | 3 | 4): Promise<DiscordMessage> {
-    const label = `V${id}`;
-    const comp = this.getComponentsByLabel(label);
+  variant(id: number): Promise<DiscordMessage> {
+    const comp = this.getComponents(`V${id}`);
     logger.info(`${comp.custom_id} Variant will be generated`);
     return this.#client.callCustomComponents(this.id, comp);
   }
