@@ -69,7 +69,7 @@ async function buildDnt() {
           url: "https://github.com/UrielCh/midjourney-client/issues",
         },
         "engine-strict": {
-          node: ">=14",
+          node: ">=18",
         },
       },
     });
