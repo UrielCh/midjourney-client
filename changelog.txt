@@ -1,16 +1,16 @@
 # Changelog
 
-## v 0.1.1
-- fix broken upscale completion detector.
-- add download method in message.
-- improve samples in doc
+## V0.1.1
+- fix broken `Upscale` completion detector.
+- add the download method in `DiscordMessage`.
+- improve samples in the doc
 - add sample directory
-- add suport for variant on upscaled image
+- add support for `Variant`
 
-## v 0.1.0
+## V0.1.0
 - Big refactor
 
-## v 0.0.2
+## V0.0.2
 - add `fast` and `relax` command
 - partial implementation of `blend`
 - remove `waitMessageOrThrow`
@@ -18,5 +18,5 @@
 - add `MAX_TIME_OFFSET` set to 10 sec by default (was 5 before)
 - remove all console.log
 
-## v 0.0.1
+## V0.0.1
 - initial version
