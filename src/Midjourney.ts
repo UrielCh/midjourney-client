@@ -334,11 +334,12 @@ export class Midjourney {
     let type: ResponseType | undefined;
     const label = button.label || button.emoji?.name || "ERROR";
     let imgId: string | undefined = undefined;
-    if (label.startsWith("V")) {
+    if (label.startsWith("V") || label == "Make Variations") {
       type = "variations";
       imgId = ""; // image Id is not specified in title for variations.
     } else if (label.startsWith("U")) {
       type = "upscale";
+      imgId = label;
     } else if (label === REROLL) {
       type = undefined;
       imgId = undefined;
@@ -352,6 +353,7 @@ export class Midjourney {
       imgId: imgId,
       parentId,
     };
+    // logger.info(`Waiting for`, waitParams);
     const msg = await this.waitMessage(waitParams);
     return msg;
   }

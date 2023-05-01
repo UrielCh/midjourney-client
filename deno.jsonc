@@ -1,6 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --watch main.ts",
+    "dnt": "deno run -A _build.ts",
     "test": "deno test --allow-write=cmdCache --allow-read=interaction.txt --allow-net=discord.com"
   },
   "fmt": {

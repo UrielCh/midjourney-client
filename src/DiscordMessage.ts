@@ -1,3 +1,4 @@
+//TYPES IMPORTS
 import type {
   APIActionRowComponent,
   APIAttachment,
@@ -9,10 +10,12 @@ import type {
   APIRole,
   Snowflake,
 } from "../deps.ts";
-import { ButtonStyle, logger, MessageType } from "../deps.ts";
+// CODE imports
+import { ButtonStyle, logger, MessageType, path } from "../deps.ts";
+
 import Midjourney from "./Midjourney.ts";
 import type { ResponseType, UserReference } from "./models.ts";
-import { REROLL } from "./utils.ts";
+import { download, REROLL } from "./utils.ts";
 
 export interface ComponentsSummary {
   parentId: Snowflake;
@@ -323,7 +326,7 @@ export class DiscordMessage implements APIMessage {
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
-  public getComponents(label: string): APIButtonComponentWithCustomId {
+  public getComponents(label: string, label2?: string): APIButtonComponentWithCustomId {
     if (!this.components) {
       throw Error("no components In this message.");
     }
@@ -333,9 +336,13 @@ export class DiscordMessage implements APIMessage {
         if (!("custom_id" in c)) continue;
         if ("label" in c && c.label && c.label) {
           if (c.label === label) return c as APIButtonComponentWithCustomId;
+          if (label2 && c.label === label2) return c as APIButtonComponentWithCustomId;
           availableLabels.push(c.label);
         } else if ("emoji" in c && c.emoji && c.emoji.name) {
           if (c.emoji.name === label) {
+            return c as APIButtonComponentWithCustomId;
+          }
+          if (label2 && c.emoji.name === label2) {
             return c as APIButtonComponentWithCustomId;
           }
           availableLabels.push(`${c.emoji.name}`);
@@ -350,50 +357,53 @@ export class DiscordMessage implements APIMessage {
   /**
    * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canReroll(): boolean {
+  canReroll():  APIButtonComponentWithCustomId | null {
     try {
-      this.getComponents(REROLL);
-      return true;
+      return this.getComponents(REROLL);
     } catch (_) {
-      return false;
+      return null;
     }
   }
 
   /**
    * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canUpscale(id?: number): boolean {
+  canUpscale(id?: number): APIButtonComponentWithCustomId | null{
     const selector = id ? `U${id}` : "U1";
     try {
       const c = this.getComponents(selector);
       if (id) {
-        return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
+        if (!c.disabled && c.style !== ButtonStyle.Primary) // 1 is primary button means that it had already been click
+          return c;
+        return null;
       }
-      return true;
+      return c;
     } catch (_) {
       if (id && (id > 4 || id < 0)) {
         logger.warn(`You asked for a image id out of bound [1,2,3,4]`);
       }
-      return false;
+      return null;
     }
   }
 
   /**
    * return if the the Message can be varaint, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canVariant(id: number): boolean {
+  canVariant(id?: number): APIButtonComponentWithCustomId | null {
     const selector = id ? `V${id}` : "V1";
     try {
-      const c = this.getComponents(selector);
+      const c = this.getComponents(selector, "Make Variations");
       if (id) {
-        return !c.disabled && c.style !== ButtonStyle.Primary; // 1 is primary button means that it had already been click
+        if (!c.disabled && c.style !== ButtonStyle.Primary)
+          return c;
+        return null; // 1 is primary button means that it had already been click
       }
-      return true;
+      return c;
     } catch (_) {
       if (id && (id > 4 || id < 0)) {
         logger.warn(`You asked for a image id out of bound [1,2,3,4]`);
       }
-      return false;
+      return null;
     }
   }
 
@@ -410,11 +420,38 @@ export class DiscordMessage implements APIMessage {
   }
 
   variant(id: number): Promise<DiscordMessage> {
-    const comp = this.getComponents(`V${id}`);
+    const comp = this.getComponents(`V${id}`, "Make Variations");
     logger.info(`${comp.custom_id} Variant will be generated`);
     return this.#client.callCustomComponents(this.id, comp);
   }
 
+  async download(attachementId: number, dest: string): Promise<boolean> {
+    if (!this.attachments) {
+      return false;
+    }
+    const att = this.attachments[attachementId];
+    if (!att) {
+      return false;
+    }
+    try {
+      const stats = await Deno.stat(dest);
+      if (stats.isDirectory) {
+        const destFile = path.join(dest, att.filename);
+        logger.info(`downloading ${att.url} to ${destFile}`);
+        await download(att.url, destFile);
+        return true;
+      }
+      throw Error(`download abort, ${dest} is an existing file`);
+    } catch (_) {
+      if (path.basename(dest).includes(".")) {
+        await download(att.url, dest);
+      } else {
+        await Deno.mkdir(dest, { recursive: true });
+        return this.download(attachementId, dest);
+      }
+    }
+    return true;
+  }
   // getComponents(processed: boolean, name?: string): ComponentsSummary[] {
   //   let list = this.componentsSummery.filter((a) => a.processed === processed);
   //   if (name) {

@@ -7,15 +7,27 @@ export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve,
 export async function download(
   url: string,
   filename: string,
+): Promise<ArrayBuffer> {
+  const data = await (await fetch(url)).arrayBuffer();
+  if (filename) {
+    logger.info("saving downloaded file to ", filename);
+    await Deno.writeFile(filename, new Uint8Array(data));
+  }
+  return data;
+}
+
+/**
+ * download or read file from disk
+ */
+export async function downloadFileCached(
+  url: string,
+  filename: string,
 ): Promise<ArrayBufferLike> {
   try {
     const content: Uint8Array = await Deno.readFile(filename);
     return content.buffer;
   } catch (_e) {
-    const data = await (await fetch(url)).arrayBuffer();
-    logger.info("saving downloaded file to ", filename);
-    Deno.writeFile(filename, new Uint8Array(data));
-    return data;
+    return download(url, filename);
   }
 }
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v 0.1.1
+- fix broken upscale completion detector.
+- add download method in message.
+- improve samples in doc
+- add sample directory
+- add suport for variant on upscaled image
+
 ## v 0.1.0
 - Big refactor
 

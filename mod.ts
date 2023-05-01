@@ -48,7 +48,7 @@
  * ### Describe URL
  *
  * ```ts
- * import Midjourney from "midjourney-discord-api";
+ * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  *
  * const client = new Midjourney("interaction.txt");
  * const prompts: string[] = await client.describeUrl(
@@ -60,7 +60,7 @@
  * ### Imagine
  *
  * ```ts
- * import Midjourney from "midjourney-discord-api";
+ * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  *
  * const client = new Midjourney("interaction.txt");
  * const msg = await client.imagine(
@@ -71,38 +71,56 @@
  *
  * ### Upscale
  *
+ * > Upscale the first none upscaled images in chat, searching from the newest to the oldest images
  * ```ts
- * import Midjourney from "midjourney-discord-api";
- *
  * const client = new Midjourney("interaction.txt");
- * const msg = await client.imagine(
- *   "A photo of an astronaut riding a horse",
- * );
- * if (msg.canUpscale()) {
- *   const result = msg.upscale(2);
- *   console.log(`upscale U2 Ready from`, result.attachments[0].url);
+ * const msgs = await client.getMessages();
+ * main:
+ * for (const msg of msgs) {
+ *   if (!msg.canUpscale()) {
+ *     continue;
+ *   }
+ *   for (let i = 1; i <= 4; i++) {
+ *     if (msg.canUpscale(i)) {
+ *       console.log(`Upscaling image ${i} from ${msg.id}: ${msg.prompt?.prompt}`);
+ *       const result = await msg.upscale(i);
+ *       await result.download(0, "images");
+ *       break main;
+ *     }
+ *   }
  * }
+
  * ```
  *
  * ### Variant
  *
+ * > Variant the last image available in chat
  * ```ts
- * import Midjourney from "midjourney-discord-api";
- *
+ * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  * const client = new Midjourney("interaction.txt");
- * const msg = await client.imagine(
- *   "A photo of an astronaut riding a horse",
- * );
- * if (msg.canVariant()) {
- *   const result = msg.variant(2);
- *   console.log(`upscale V2 Ready from`, result.attachments[0].url);
+ * const msgs = await client.getMessages();
+ * main:
+ * for (const msg of msgs) {
+ *   if (!msg.canVariant()) {
+ *     continue;
+ *   }
+ *   for (let i = 1; i <= 4; i++) {
+ *     const v = msg.canVariant(i)
+ *     if (v) {
+ *       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
+ *       const result = await msg.variant(i);
+ *       await result.download(0, "images");
+ *       break main;
+ *     }
+ *   }
  * }
+ * 
  * ```
  *
  * ### Reroll
  *
  * ```ts
- * import Midjourney from "midjourney-discord-api";
+ * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  *
  * const client = new Midjourney("interaction.txt");
  * const msg = await client.imagine(

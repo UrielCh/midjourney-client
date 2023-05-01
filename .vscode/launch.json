@@ -6,6 +6,21 @@
   "configurations": [
     {
       "request": "launch",
+      "name": "Sample variant",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/variantLast.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+    {
+      "request": "launch",
       "name": "Sample upscale",
       "type": "node",
       "program": "${workspaceFolder}/samples/upscaleLast.ts",
@@ -18,6 +33,6 @@
         "--allow-all"
       ],
       "attachSimplePort": 9229
-    }
+    },
   ]
 }
