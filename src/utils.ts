@@ -31,14 +31,14 @@ export async function downloadFileCached(
   }
 }
 
-export function getExistinggroup(text: string, reg: RegExp): string {
-  const m = text.match(reg);
-  if (!m) {
-    throw Error(
-      `failed to find ${reg} in provided sample of size:${text.length}`,
-    );
+export function getExistinggroup(text: string, ...regs: RegExp[]): string {
+  for (const reg of regs) {
+    const m = text.match(reg);
+    if (m) return m[1];
   }
-  return m[1];
+  throw Error(
+    `failed to find ${regs.join(' | ')} in provided sample of size:${text.length}`,
+  );
 }
 
 export function filename2Mime(filename: string): string {

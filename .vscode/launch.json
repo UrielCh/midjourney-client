@@ -6,7 +6,7 @@
   "configurations": [
     {
       "request": "launch",
-      "name": "Sample variant",
+      "name": "variantLast",
       "type": "node",
       "program": "${workspaceFolder}/samples/variantLast.ts",
       "cwd": "${workspaceFolder}",
@@ -21,7 +21,7 @@
     },
     {
       "request": "launch",
-      "name": "Sample upscale",
+      "name": "upscaleLast",
       "type": "node",
       "program": "${workspaceFolder}/samples/upscaleLast.ts",
       "cwd": "${workspaceFolder}",
@@ -34,5 +34,23 @@
       ],
       "attachSimplePort": 9229
     },
+    {
+      "request": "launch",
+      "name": "upscaleLasthoursAgo",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/upscaleLasthoursAgo.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+
+
+    
   ]
 }
