@@ -72,6 +72,14 @@ async function buildDnt() {
           node: ">=18",
         },
       },
+      mappings: {
+        "https://deno.land/x/discord_api_types@0.37.40/v9.ts": {
+          name: "discord-api-types",
+          version: "0.37.40",
+          peerDependency: false,
+          subPath: 'v9',
+        },
+      },
     });
 
     // post build steps
