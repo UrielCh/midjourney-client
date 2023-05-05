@@ -1,5 +1,9 @@
 # Changelog
 
+- the client can now get configuration values from SALAI_TOKEN, CHANNEL_ID, SERVER_ID env variables
+- the client can Now extract values SALAI_TOKEN, CHANNEL_ID, SERVER_ID from configuration file
+- map discord-api-types directly from npm in dnt
+
 ## V0.1.1
 - fix broken `Upscale` completion detector.
 - add the download method in `DiscordMessage`.
@@ -14,7 +18,7 @@
 - add `fast` and `relax` command
 - partial implementation of `blend`
 - remove `waitMessageOrThrow`
-- `waitMessage` now throws meaningfull error in case of failure
+- `waitMessage` now throws a meaningful error in case of failure
 - add `MAX_TIME_OFFSET` set to 10 sec by default (was 5 before)
 - remove all console.log
 

@@ -56,14 +56,15 @@ export class Midjourney {
       sample = Deno.readTextFileSync(sample);
     }
     sample = sample.replace(/\\"/g, '"');
-    this.auth = getExistinggroup(sample, /"authorization":\s?"([^"]+)"/);
+    this.auth = getExistinggroup(sample, "SALAI_TOKEN", /"authorization":\s?"([^"]+)"/), /SALAI_TOKEN\s*=\s*"?([A-Za-z.]+)"?/;
     this.application_id = getExistinggroup(
       sample,
+      "", 
       /"application_id":\s?"(\d+)"/,
     );
-    this.guild_id = getExistinggroup(sample, /"guild_id":\s?"(\d+)"/);
-    this.channel_id = getExistinggroup(sample, /"channel_id":\s?"(\d+)"/);
-    this.session_id = getExistinggroup(sample, /"session_id":\s?"([^"]+)"/);
+    this.guild_id = getExistinggroup(sample, "SERVER_ID", /"guild_id":\s?"(\d+)"/, /SERVER_ID\s*=\s*"?([0-9]+)"?/);
+    this.channel_id = getExistinggroup(sample, "CHANNEL_ID", /"channel_id":\s?"(\d+)"/, /CHANNEL_ID\s*=\s*"?([0-9]+)"?/);
+    this.session_id = getExistinggroup(sample, "", /"session_id":\s?"([^"]+)"/);
 
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
     // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);

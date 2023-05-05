@@ -31,13 +31,19 @@ export async function downloadFileCached(
   }
 }
 
-export function getExistinggroup(text: string, ...regs: RegExp[]): string {
+export function getExistinggroup(text: string, fallback_env: string,  ...regs: RegExp[]): string {
   for (const reg of regs) {
     const m = text.match(reg);
     if (m) return m[1];
   }
+  if (fallback_env) {
+    const envData = Deno.env.get(fallback_env);
+    if (envData)
+      return envData; 
+  }
+  const extra = fallback_env ? ` or fill the env variable: "${fallback_env}"` : '';
   throw Error(
-    `failed to find ${regs.join(' | ')} in provided sample of size:${text.length}`,
+    `failed to find ${regs.join(' | ')} in provided sample of size:${text.length}${extra}`,
   );
 }
 
