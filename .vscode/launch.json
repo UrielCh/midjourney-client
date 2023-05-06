@@ -21,6 +21,22 @@
       "attachSimplePort": 9229
     },
 
+    {
+      "request": "launch",
+      "name": "blendImages",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/blendImages.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+    
 
     {
       "request": "launch",

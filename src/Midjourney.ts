@@ -2,14 +2,12 @@ import { DiscordMessage } from "./DiscordMessage.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
-import type { Command, Payload, InteractionName } from "./models.ts";
+import type { Command, InteractionName, Payload } from "./models.ts";
 import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
 import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
-
-// import * as DiscordJs from "npm:discord.js";
 
 const interactions = "https://discord.com/api/v9/interactions";
 
@@ -20,7 +18,7 @@ export type UploadSlot = {
 };
 
 export interface WaitOptions {
-  prompt?: string;
+  prompt?: string | string[];
   name?: string;
   maxWait?: number;
   interaction?: InteractionName;
@@ -59,12 +57,12 @@ export class Midjourney {
     this.auth = getExistinggroup(sample, "SALAI_TOKEN", /"authorization":\s?"([^"]+)"/), /SALAI_TOKEN\s*=\s*"?([A-Za-z.]+)"?/;
     this.application_id = getExistinggroup(
       sample,
-      "", 
+      "",
       /"application_id":\s?"(\d+)"/,
     );
     this.guild_id = getExistinggroup(sample, "SERVER_ID", /"guild_id":\s?"(\d+)"/, /SERVER_ID\s*=\s*"?([0-9]+)"?/);
     this.channel_id = getExistinggroup(sample, "CHANNEL_ID", /"channel_id":\s?"(\d+)"/, /CHANNEL_ID\s*=\s*"?([0-9]+)"?/);
-    this.session_id = generateRandomString(32)
+    this.session_id = generateRandomString(32);
 
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
     // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);
@@ -225,9 +223,9 @@ export class Midjourney {
     );
   }
 
-  private async blend(
+  private async blendInternal(
     attachments: UploadSlot[],
-    dimensions?: `${number}:${number}`,
+    dimensions?: "1:1" | "2:3" | "3:2",
   ): Promise<number> {
     const cmd = await this.commandCache.getCommand("blend");
     const payload: Payload = this.buildPayload(cmd);
@@ -424,6 +422,13 @@ export class Midjourney {
         try {
           msg = await this.getMessageById(msgid);
         } catch (_) {
+          // the next pass will be a blend
+          if (opts.interaction === "blend") {
+            opts.interaction = "imagine";
+            if (Array.isArray(opts.prompt)) {
+              opts.prompt = msg.prompt!.prompt;
+            }
+          }
           return null;
         }
         counters.hitRefresh++;
@@ -445,8 +450,15 @@ export class Midjourney {
       if (opts.prompt) { // filter by prompt
         matches = matches.filter((item) => {
           const itemPrompt = item.prompt!.prompt;
-          const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, "");
-          return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
+          if (Array.isArray(opts.prompt)) {
+            for (const elm of opts.prompt) {
+              if (!itemPrompt.includes(elm)) return false;
+            }
+            return true;
+          } else {
+            const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, "");
+            return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
+          }
         });
       }
       if (opts.parentId) {
@@ -471,7 +483,6 @@ export class Midjourney {
       const m2 = await follow(matches[0]);
       return m2;
     };
-
 
     const limit = startId ? 100 : 50;
     if (maxWait === 0) {
@@ -572,7 +583,7 @@ export class Midjourney {
       throw new Error(`no message found, around ${id}`);
     }
     const [data] = datas;
-    if (data.id !== id)  {
+    if (data.id !== id) {
       throw new Error(`the message ${id} had been removed`);
     }
     return datas[0];
@@ -685,17 +696,30 @@ export class Midjourney {
     }
   }
 
-  public async blendImage(
+  public async blendUrl(imageUrls: string[], dimensions?: "1:1" | "2:3" | "3:2"): Promise<DiscordMessage> {
+    const images = await Promise.all(imageUrls.map(async (imageUrl) => {
+      const url = new URL(imageUrl);
+      const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
+      const imageData = await download(imageUrl, filename);
+      return {
+        filename,
+        imageData,
+      };
+    }));
+    return this.blend(images, dimensions);
+  }
+
+  public async blend(
     images: {
       filename: string;
       imageData: ArrayBufferLike;
       contentType?: string;
     }[],
-    dimensions?: `${number}:${number}`,
-  ): Promise<void> {
+    dimensions?: "1:1" | "2:3" | "3:2",
+  ): Promise<DiscordMessage> {
     images.forEach((image) => image.contentType = image.contentType || filename2Mime(image.filename));
     const id0 = Date.now();
-    // const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
+    const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
 
     const { attachments } = await this.attachments(...images.map((img, id) => ({
       filename: img.filename,
@@ -712,22 +736,23 @@ export class Midjourney {
     }
 
     // const [attachment] = attachments;
-    await this.blend(attachments, dimensions);
-    // TODO implements wait
-    // const realfilename = filename.replace(/^_/, "");
-    // for (let i = 0; i < 5; i++) {
-    //   const msg = await this.waitMessage({
-    //     type: "describe",
-    //     name: realfilename,
-    //     maxWait: 1,
-    //     startId,
-    //   });
-    //   if (msg && msg.prompt) {
-    //     logger.info(msg);
-    //     return msg.prompt.prompt.split(/\n+/g).map((p) => p.slice(4));
-    //   }
-    // }
-    // throw Error("Wait for describe response failed");
+    const status = await this.blendInternal(attachments, dimensions);
+
+    const identifier = []; // attachments.map((a) => a.upload_filename);
+    if (dimensions) {
+      identifier.push(`--ar ${dimensions}`);
+    }
+
+    if (status === 204) {
+      const msg = await this.waitMessage({
+        interaction: "blend",
+        prompt: identifier,
+        startId,
+        maxWait: 3000,
+      });
+      return msg;
+    }
+    throw Error("Wait for blend response failed");
   }
 }
 

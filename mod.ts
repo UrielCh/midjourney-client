@@ -12,7 +12,7 @@
  * | feature     | Status | feature      | Status |
  * | ----------- | ------ | ------------ | ------ |
  * | `/ask`      | 🙈     | `/private`   | ❌ N/A |
- * | `/blend`    | 🚧 WIP | `/public`    | ❌ N/A |
+ * | `/blend`    | ✅     | `/public`    | ❌ N/A |
  * | `/describe` | ✅     | `/relax`     | ✅     |
  * | `/fast`     | ✅     | `/settings`  | ✅     |
  * | `/help`     | 🙈     | `/show`      | ❌ N/A |
