@@ -61,3 +61,12 @@ export function filename2Mime(filename: string): string {
     throw Error(`unknown extention in ${filename}`);
   }
 }
+export function generateRandomString(length: number) {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}

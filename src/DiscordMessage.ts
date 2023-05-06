@@ -1,4 +1,5 @@
 //TYPES IMPORTS
+import { APIMessageInteraction } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 import type {
   APIActionRowComponent,
   APIAttachment,
@@ -14,7 +15,7 @@ import type {
 import { ButtonStyle, logger, MessageType, path } from "../deps.ts";
 
 import Midjourney from "./Midjourney.ts";
-import type { ResponseType, UserReference } from "./models.ts";
+import type { InteractionName, UserReference } from "./models.ts";
 import { download, REROLL } from "./utils.ts";
 
 export interface ComponentsSummary {
@@ -29,7 +30,6 @@ export interface SplitedPrompt {
   prompt: string;
   id?: string;
   mode?: "fast" | "relaxed";
-  type?: ResponseType;
   name: string;
   completion?: number; // 0..1
 }
@@ -53,11 +53,16 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     prompt.mode = "relaxed";
     extra = extra.substring(0, extra.length - 10);
   }
+
+  if (extra.endsWith(" (paused)")) {
+    extra = extra.substring(0, extra.length - 9);
+  }
+
   m = extra.match(/^<@(\d+)> \(Open on website for full quality\)$/);
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
-    prompt.type = "grid";
+    // prompt.type = "grid";
     return prompt;
   }
 
@@ -65,7 +70,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
-    prompt.type = "variations";
+    // prompt.type = "variations";
     return prompt;
   }
 
@@ -73,7 +78,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
-    prompt.type = "upscale";
+    // prompt.type = "upscale";
     return prompt;
   }
 
@@ -83,7 +88,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
-    prompt.type = "variations";
+    // prompt.type = "variations";
     return prompt;
   }
 
@@ -91,7 +96,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[2];
     prompt.completion = 1;
-    prompt.type = "upscale"; // or variations
+    // prompt.type = "upscale"; // or variations
     prompt.name = `Image #${m[1]}`;
     return prompt;
   }
@@ -100,7 +105,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[1];
     prompt.completion = parseInt(m[2]) / 100;
-    prompt.type = "grid";
+    // prompt.type = "grid";
     return prompt;
   }
 
@@ -108,14 +113,14 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   if (m) {
     prompt.id = m[1];
     prompt.completion = -1;
-    prompt.type = "grid";
+    // prompt.type = "grid";
     return prompt;
   }
   m = extra.match(/^<@(\d+)>$/);
   if (m) {
     prompt.id = m[1];
     prompt.completion = 1;
-    prompt.type = "grid";
+    // prompt.type = "grid";
     return prompt;
   }
 
@@ -239,7 +244,10 @@ export class DiscordMessage implements APIMessage {
    * See https://en.wikipedia.org/wiki/Bit_field
    */
   flags?: number; //MessageFlags;
-
+  /**
+   * Sent if the message is a response to an Interaction
+   */
+  interaction?: APIMessageInteraction;
   /**
    * Sent if a thread was started from this message
    */
@@ -278,7 +286,7 @@ export class DiscordMessage implements APIMessage {
    */
   #client: Midjourney;
 
-  constructor(client: Midjourney, public source: APIMessage) {
+  constructor(client: Midjourney, source: APIMessage) {
     Object.assign(this, source);
     this.#client = client;
     // this.id = source.id;
@@ -302,7 +310,6 @@ export class DiscordMessage implements APIMessage {
             const description: string = embeds.description || "";
             this.prompt = {
               source: description,
-              type: "describe",
               name: embeds.image.url.replace(/.+\//, ""),
               prompt: description,
               completion: 1,
@@ -312,18 +319,37 @@ export class DiscordMessage implements APIMessage {
           // embeds not available yet.
           this.prompt = {
             source: "",
-            type: "describe",
             name: "",
             prompt: "",
             completion: -1,
           };
         }
+      } else if (name === "imagine") {
+        // 
       } else {
         logger.info("interaction Name: ", name, this.prompt);
         // console.log("interaction source.embeds: ", source.embeds);
       }
     }
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
+  }
+
+  get parentInteraction(): InteractionName | "" {
+    if (this.interaction && this.interaction.name) {
+      return this.interaction.name as InteractionName;
+    }
+    if (this.components && this.components.length) {
+      const sig1 = this.components[0].components.map(a => (a as {label: string}).label).join('');
+      if (sig1.includes("U1U2U3U4")) {
+        if (this.referenced_message && this.referenced_message.parentInteraction === "imagine")
+          return "variations";
+        return "imagine";
+      } 
+      if (sig1.includes("Make VariationsWeb"))
+        return "upscale";
+      console.error('FIXME: can not Identify signature', sig1);
+    }
+    return '';
   }
 
   public getComponents(label: string, label2?: string): APIButtonComponentWithCustomId {
@@ -357,7 +383,7 @@ export class DiscordMessage implements APIMessage {
   /**
    * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canReroll():  APIButtonComponentWithCustomId | null {
+  canReroll(): APIButtonComponentWithCustomId | null {
     try {
       return this.getComponents(REROLL);
     } catch (_) {
@@ -368,13 +394,14 @@ export class DiscordMessage implements APIMessage {
   /**
    * return if the the Message is upscalable, if an id is provide, will return true only if the requested action had not already been started.
    */
-  canUpscale(id?: number): APIButtonComponentWithCustomId | null{
+  canUpscale(id?: number): APIButtonComponentWithCustomId | null {
     const selector = id ? `U${id}` : "U1";
     try {
       const c = this.getComponents(selector);
       if (id) {
-        if (!c.disabled && c.style !== ButtonStyle.Primary) // 1 is primary button means that it had already been click
+        if (!c.disabled && c.style !== ButtonStyle.Primary) { // 1 is primary button means that it had already been click
           return c;
+        }
         return null;
       }
       return c;
@@ -394,8 +421,9 @@ export class DiscordMessage implements APIMessage {
     try {
       const c = this.getComponents(selector, "Make Variations");
       if (id) {
-        if (!c.disabled && c.style !== ButtonStyle.Primary)
+        if (!c.disabled && c.style !== ButtonStyle.Primary) {
           return c;
+        }
         return null; // 1 is primary button means that it had already been click
       }
       return c;
@@ -425,11 +453,28 @@ export class DiscordMessage implements APIMessage {
     return this.#client.callCustomComponents(this.id, comp);
   }
 
+  async refresh(): Promise<this> {
+    const m2 = await this.#client.getMessageById(this.id);
+    if (m2)
+      Object.assign(this, m2);
+    return this;
+  }
+
+  // async waitForattachements(timeout = 10): Promise<void> {
+  //   for (let i = 0; i < timeout; i++) {
+  //     if (!this.attachments || !this.attachments.length) {
+  //       await wait(600);
+  //       await this.refresh();
+  //       console.log("Failed to get Attachement.");
+  //     } else {
+  //       break;
+  //     }
+  //   }
+  // }
+
   async download(attachementId: number, dest: string): Promise<boolean> {
-    if (!this.attachments) {
-      return false;
-    }
-    const att = this.attachments[attachementId];
+    // await this.waitForattachements();
+    const att = (this.attachments || [])[attachementId];
     if (!att) {
       return false;
     }

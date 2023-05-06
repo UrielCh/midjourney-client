@@ -1,7 +1,7 @@
 import type { APIApplicationCommand, APIMessageReference, APIUser, Snowflake } from "../deps.ts";
 import { ApplicationCommandType } from "../deps.ts";
 
-export type ResponseType = "variations" | "grid" | "upscale" | "describe";
+export type InteractionName = "variations" | "grid" | "upscale" | "describe" | "imagine";
 
 export interface Command extends APIApplicationCommand {
   name: "imagine" | "settings" | string;

@@ -2,12 +2,12 @@ import { DiscordMessage } from "./DiscordMessage.ts";
 import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
-import type { Command, Payload, ResponseType } from "./models.ts";
+import type { Command, Payload, InteractionName } from "./models.ts";
 import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import { download, filename2Mime, getExistinggroup, REROLL, wait } from "./utils.ts";
+import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
 
 // import * as DiscordJs from "npm:discord.js";
 
@@ -23,7 +23,7 @@ export interface WaitOptions {
   prompt?: string;
   name?: string;
   maxWait?: number;
-  type?: ResponseType;
+  interaction?: InteractionName;
   imgId?: 1 | 2 | 3 | 4 | string;
   startId?: Snowflake;
   parentId?: Snowflake;
@@ -64,7 +64,7 @@ export class Midjourney {
     );
     this.guild_id = getExistinggroup(sample, "SERVER_ID", /"guild_id":\s?"(\d+)"/, /SERVER_ID\s*=\s*"?([0-9]+)"?/);
     this.channel_id = getExistinggroup(sample, "CHANNEL_ID", /"channel_id":\s?"(\d+)"/, /CHANNEL_ID\s*=\s*"?([0-9]+)"?/);
-    this.session_id = getExistinggroup(sample, "", /"session_id":\s?"([^"]+)"/);
+    this.session_id = generateRandomString(32)
 
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
     // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);
@@ -192,10 +192,12 @@ export class Midjourney {
     const response = await this.doInteractions(payload);
     if (response.status === 204) {
       const msg = await this.waitMessage({
+        interaction: "imagine",
         prompt,
         startId,
         maxWait: 3000,
       });
+      // console.log('imagine return msg P type', msg.parentInteraction)
       return msg;
     }
     throw new Error(
@@ -332,7 +334,7 @@ export class Midjourney {
     button: APIButtonComponentWithCustomId,
     maxWait = 360,
   ): Promise<DiscordMessage> {
-    let type: ResponseType | undefined;
+    let type: InteractionName | undefined;
     const label = button.label || button.emoji?.name || "ERROR";
     let imgId: string | undefined = undefined;
     if (label.startsWith("V") || label == "Make Variations") {
@@ -349,7 +351,7 @@ export class Midjourney {
     }
     const waitParams: WaitOptions = {
       maxWait,
-      type,
+      interaction: type,
       startId: parentId,
       imgId: imgId,
       parentId,
@@ -419,10 +421,12 @@ export class Midjourney {
         if (msg.prompt.completion === 1) return msg;
         // if (msg.attachments.length && msg.attachments[0].url) { console.log(msg.attachments[0]); }
         await wait(1000);
-        msg = await this.getMessageById(msgid);
+        try {
+          msg = await this.getMessageById(msgid);
+        } catch (_) {
+          return null;
+        }
         counters.hitRefresh++;
-        // console.log('follow1', msg.prompt?.source);
-        // console.log('follow2', msg.prompt?.completion);
       }
       return null;
     };
@@ -448,8 +452,8 @@ export class Midjourney {
       if (opts.parentId) {
         matches = matches.filter((item) => item.referenced_message && item.referenced_message.id === opts.parentId);
       }
-      if (opts.type) {
-        matches = matches.filter((item) => item.prompt!.type === opts.type);
+      if (opts.interaction) {
+        matches = matches.filter((item) => item.parentInteraction === opts.interaction);
       }
       if (opts.name) {
         matches = matches.filter((item) => item.prompt!.name === opts.name);
@@ -464,8 +468,11 @@ export class Midjourney {
           opts,
         );
       }
-      return await follow(matches[0]);
+      const m2 = await follow(matches[0]);
+      return m2;
     };
+
+
     const limit = startId ? 100 : 50;
     if (maxWait === 0) {
       maxWait = 1;
@@ -557,14 +564,18 @@ export class Midjourney {
     //    throw new Error(response.statusText + ' ' + await response.text());
     //} else {
     // use retrieveMessages instead of get messages
-    const data: DiscordMessage[] = await this.getMessages({
+    const datas: DiscordMessage[] = await this.getMessages({
       around: id,
       limit: 1,
     });
-    if (!data.length) {
-      throw new Error("no message found, around " + id);
+    if (!datas.length) {
+      throw new Error(`no message found, around ${id}`);
     }
-    return data[0];
+    const [data] = datas;
+    if (data.id !== id)  {
+      throw new Error(`the message ${id} had been removed`);
+    }
+    return datas[0];
     // }
   }
 
@@ -625,7 +636,7 @@ export class Midjourney {
    */
   public async describeUrl(imageUrl: string): Promise<string[]> {
     const url = new URL(imageUrl);
-    const filename = url.pathname.replaceAll(/\//g, "_"); // "pixelSample.webp";
+    const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
     return this.describeImage(filename, imageData);
   }
@@ -658,7 +669,7 @@ export class Midjourney {
     for (let i = 0;; i++) {
       try {
         const msg = await this.waitMessage({
-          type: "describe",
+          interaction: "describe",
           name: realfilename,
           maxWait: 1,
           startId,

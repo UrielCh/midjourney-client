@@ -12,7 +12,6 @@ Deno.test(function ParseMidJourneyVariationsFast() {
   );
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-  assertEquals(p1.type, "variations");
   assertEquals(p1.mode, "fast");
 });
 
@@ -24,7 +23,6 @@ Deno.test(function ParseMidJourneyDoneRelaxed() {
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-  assertEquals(p1.type, "grid");
   assertEquals(p1.mode, "relaxed");
 });
 
@@ -40,6 +38,19 @@ Deno.test(function ParseMidJourneyDoneRelaxed2() {
   assertEquals(p1.mode, "relaxed");
 });
 
+Deno.test(function ParseMidJourneyDoneRelaxed2() {
+  const p1 = extractPrompt(
+    "**ice creams, pinkcore, organic shapes --v 5** - <@1097074882203303911> (paused) (relaxed)",
+  );
+  assertExists(p1);
+  assertEquals(p1.prompt, "ice creams, pinkcore, organic shapes --v 5");
+  assertEquals(p1.id, "1097074882203303911");
+  // assertEquals(p1.completion, 1);
+  // assertEquals(p1.type, "grid");
+  assertEquals(p1.mode, "relaxed");
+});
+
+
 Deno.test(function ParseMidJourneyDoneUpscall() {
   const p1 = extractPrompt(
     "**A Big wave in the ocean style like Kanagawa --v 5** - Image #4 <@1097074882203303911>",
@@ -48,7 +59,6 @@ Deno.test(function ParseMidJourneyDoneUpscall() {
   assertEquals(p1.prompt, "A Big wave in the ocean style like Kanagawa --v 5");
   assertEquals(p1.id, "1097074882203303911");
   // assertEquals(p1.completion, 1);
-  assertEquals(p1.type, "upscale");
 });
 
 Deno.test(function ParseMidJourneyImagineRelaxedProgress() {
@@ -67,7 +77,6 @@ Deno.test(function ParseMidJourneyImagineRelaxedProgress() {
     "should extract the correct user id",
   );
   assertEquals(p1.completion, 0.62, "should collect progression percent");
-  assertEquals(p1.type, "grid", "should collect type as grid");
   assertEquals(p1.mode, "relaxed", "should collect mode as relax");
 });
 
@@ -87,7 +96,6 @@ Deno.test(function ParseMidJourneyImagineRelaxedQueue() {
     "should extract the correct user id",
   );
   assertEquals(p1.completion, -1);
-  assertEquals(p1.type, "grid");
 });
 
 Deno.test(function ParseMidJourneyWebsiteFullQuality() {
@@ -98,7 +106,6 @@ Deno.test(function ParseMidJourneyWebsiteFullQuality() {
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-  assertEquals(p1.type, "variations");
 });
 
 Deno.test(function ParseMidJourneyUpscaled() {
@@ -112,5 +119,4 @@ Deno.test(function ParseMidJourneyUpscaled() {
   );
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-  assertEquals(p1.type, "upscale");
 });
