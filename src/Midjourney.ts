@@ -452,7 +452,9 @@ export class Midjourney {
           const itemPrompt = item.prompt!.prompt;
           if (Array.isArray(opts.prompt)) {
             for (const elm of opts.prompt) {
-              if (!itemPrompt.includes(elm)) return false;
+              if (!itemPrompt.includes(elm)) {
+                return false;
+              }
             }
             return true;
           } else {
@@ -737,8 +739,9 @@ export class Midjourney {
 
     // const [attachment] = attachments;
     const status = await this.blendInternal(attachments, dimensions);
-
-    const identifier = []; // attachments.map((a) => a.upload_filename);
+    const identifier = attachments.map((a) => a.upload_filename.replace(/.+\//, ""));
+    // identifier.push("https://s.mj.run");
+    // https://cdn.discordapp.com/ephemeral-attachments/'
     if (dimensions) {
       identifier.push(`--ar ${dimensions}`);
     }
