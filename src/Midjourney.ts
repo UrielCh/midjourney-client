@@ -117,25 +117,54 @@ export class Midjourney {
   //   logger.info('done:', resp);
   // }
   private wsCnxCnt = 1;
+  private ws: WebSocket | null = null;
+  private wsActivated = false;
+  private wsHeartbeat: ReturnType<typeof setTimeout> | null = null;
+
+  public disconnectWs(): void {
+    if (this.wsHeartbeat) {
+      clearTimeout(this.wsHeartbeat);
+      this.wsHeartbeat = null;
+    }
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    this.wsActivated = false;
+  }
 
   public connectWs(): void {
+    if (this.ws && this.wsActivated) {
+      return;
+    }
+    this.wsActivated = true;
     let heartbeat_interval = 10000;
-    const ws = new WebSocket("wss://gateway.discord.gg/?encoding=json&v=9");
+    this.ws = new WebSocket("wss://gateway.discord.gg/?encoding=json&v=9");
     this.wsCnxCnt++;
     const send = (json: unknown) => {
       const asString = JSON.stringify(json);
       // console.log(`SND `, pc.red(asString));
-      ws.send(asString);
+      if (this.ws) this.ws.send(asString);
     };
 
     const doHeartbeat = () => {
       // console.log(`ping ${cnt} in ${heartbeat_interval}ms`);
       send({ op: 1, d: this.wsCnxCnt });
-      setTimeout(doHeartbeat, heartbeat_interval);
+      this.wsHeartbeat = setTimeout(doHeartbeat, heartbeat_interval);
     };
-    // const client: Midjourney = this;
-    // this: WebSocket,
-    ws.onmessage = (ev: MessageEvent) => {
+
+    this.ws.onclose = (/*ev: CloseEvent*/) => {
+      if (this.wsActivated) {
+        this.ws = null;
+        if (this.wsHeartbeat) {
+          clearTimeout(this.wsHeartbeat);
+          this.wsHeartbeat = null;
+        }
+        this.connectWs();
+      }
+    };
+
+    this.ws.onmessage = (ev: MessageEvent) => {
       // console.log(`RCV ev.data (${++nbevent})`, ev.data);
       if (typeof ev.data === "string") {
         const data = JSON.parse(ev.data as string) as WsMessage;
