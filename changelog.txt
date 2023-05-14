@@ -3,6 +3,8 @@
 ## V0.1.3
 
 - complet blend call
+- fix bug in token extraction
+- add WS messages model
 
 ## V0.1.2
 - the client can now get configuration values from SALAI_TOKEN, CHANNEL_ID, SERVER_ID env variables

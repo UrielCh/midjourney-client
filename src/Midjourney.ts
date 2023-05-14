@@ -54,7 +54,7 @@ export class Midjourney {
       sample = Deno.readTextFileSync(sample);
     }
     sample = sample.replace(/\\"/g, '"');
-    this.auth = getExistinggroup(sample, "SALAI_TOKEN", /"authorization":\s?"([^"]+)"/), /SALAI_TOKEN\s*=\s*"?([A-Za-z.]+)"?/;
+    this.auth = getExistinggroup(sample, "SALAI_TOKEN", /"authorization":\s?"([^"]+)"/, /SALAI_TOKEN\s*=\s*"?([_A-Za-z0-9.]+)"?/);
     this.application_id = getExistinggroup(
       sample,
       "",
