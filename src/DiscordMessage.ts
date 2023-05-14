@@ -325,7 +325,7 @@ export class DiscordMessage implements APIMessage {
           };
         }
       } else if (name === "imagine") {
-        // 
+        //
       } else {
         logger.info("interaction Name: ", name, this.prompt);
         // console.log("interaction source.embeds: ", source.embeds);
@@ -339,17 +339,19 @@ export class DiscordMessage implements APIMessage {
       return this.interaction.name as InteractionName;
     }
     if (this.components && this.components.length) {
-      const sig1 = this.components[0].components.map(a => (a as {label: string}).label).join('');
+      const sig1 = this.components[0].components.map((a) => (a as { label: string }).label).join("");
       if (sig1.includes("U1U2U3U4")) {
-        if (this.referenced_message && this.referenced_message.parentInteraction === "imagine")
+        if (this.referenced_message && this.referenced_message.parentInteraction === "imagine") {
           return "variations";
+        }
         return "imagine";
-      } 
-      if (sig1.includes("Make VariationsWeb"))
+      }
+      if (sig1.includes("Make VariationsWeb")) {
         return "upscale";
-      console.error('FIXME: can not Identify signature', sig1);
+      }
+      console.error("FIXME: can not Identify signature", sig1);
     }
-    return '';
+    return "";
   }
 
   public getComponents(label: string, label2?: string): APIButtonComponentWithCustomId {
@@ -455,8 +457,9 @@ export class DiscordMessage implements APIMessage {
 
   async refresh(): Promise<this> {
     const m2 = await this.#client.getMessageById(this.id);
-    if (m2)
+    if (m2) {
       Object.assign(this, m2);
+    }
     return this;
   }
 

@@ -1,6 +1,5 @@
 import { WsMsg0Dispatch } from "./WsMessageDispatch.ts";
-const browser_user_agent =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+const browser_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
 const browser_version = "113.0.0.0";
 
 export interface WsProperties {
@@ -209,24 +208,22 @@ export type WsMessage =
   | WsMsg11HeartbeatAck
   // ??
   // | WsMsg13CallConnect
-  | WsMsg14GuildSubscriptions
-  // | WsMsg15LobbyConnect
-  // | WsMsg16LobbyDisconnect
-  // | WsMsg17LobbyVoiceStatesUpdate
-  // | WsMsg18StreamCreate
-  // | WsMsg19StreamDelete
-  // | WsMsg20StreamWatch
-  // | WsMsg21StreamPing
-  // | WsMsg22StreamSetPaused
-  // | WsMsg24RequestGuildApplicationCommands
-  // | WsMsg25EmbeddedActivityLaunch
-  // | WsMsg26EmbeddedActivityClose
-  // | WsMsg27EmbeddedActivityUpdate
-  // | WsMsg28RequestForumUnreads
-  // | WsMsg29RemoteCommand
-  // | WsMsg30GetDeletedEntityIdsNotMatchingHash
-  // | WsMsg31RequestSoundboardSounds
-  // | WsMsg32SpeedTestCreate
-  // | WsMsg33SpeedTestDelete
-  // | WsMsg34RequestLastMessages  
-  ;
+  | WsMsg14GuildSubscriptions; // | WsMsg15LobbyConnect
+// | WsMsg16LobbyDisconnect
+// | WsMsg17LobbyVoiceStatesUpdate
+// | WsMsg18StreamCreate
+// | WsMsg19StreamDelete
+// | WsMsg20StreamWatch
+// | WsMsg21StreamPing
+// | WsMsg22StreamSetPaused
+// | WsMsg24RequestGuildApplicationCommands
+// | WsMsg25EmbeddedActivityLaunch
+// | WsMsg26EmbeddedActivityClose
+// | WsMsg27EmbeddedActivityUpdate
+// | WsMsg28RequestForumUnreads
+// | WsMsg29RemoteCommand
+// | WsMsg30GetDeletedEntityIdsNotMatchingHash
+// | WsMsg31RequestSoundboardSounds
+// | WsMsg32SpeedTestCreate
+// | WsMsg33SpeedTestDelete
+// | WsMsg34RequestLastMessages

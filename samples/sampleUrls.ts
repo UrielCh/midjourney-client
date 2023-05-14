@@ -1,4 +1,3 @@
-
 export const sampleUrls = [
   "https://cdn.midjourney.com/95e2c8fd-255c-4982-9065-83051143570c/0_0_640_N.webp",
   "https://cdn.midjourney.com/7decf47e-15ed-4e85-bb12-573d29db6643/0_1_640_N.webp",

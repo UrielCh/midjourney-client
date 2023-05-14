@@ -8,7 +8,7 @@ const client = new Midjourney("interaction.txt");
 const snowflake = new SnowflakeObj(-2 * 60 * 60 * 1000);
 // or select the exact time
 // snowflake.timestamp = new Date('2023-05-03T05:03:34.593Z').getTime();
-const msgs = await client.getMessages({after: snowflake.encode(), limit: 20});
+const msgs = await client.getMessages({ after: snowflake.encode(), limit: 20 });
 
 for (const msg of msgs) {
   if (!msg.canUpscale()) {

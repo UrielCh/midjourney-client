@@ -50,7 +50,6 @@ Deno.test(function ParseMidJourneyDoneRelaxed2() {
   assertEquals(p1.mode, "relaxed");
 });
 
-
 Deno.test(function ParseMidJourneyDoneUpscall() {
   const p1 = extractPrompt(
     "**A Big wave in the ocean style like Kanagawa --v 5** - Image #4 <@1097074882203303911>",

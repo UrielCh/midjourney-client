@@ -11,7 +11,7 @@ for (const msg of msgs) {
     continue;
   }
   for (let i = 1; i <= 4; i++) {
-    const v = msg.canVariant(i)
+    const v = msg.canVariant(i);
     if (v) {
       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
       const result = await msg.variant(i);

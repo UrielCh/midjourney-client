@@ -8,6 +8,7 @@ import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
 import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
+import { WsMessage, WsOpcode } from "./wsMessages.ts";
 
 const interactions = "https://discord.com/api/v9/interactions";
 
@@ -54,14 +55,29 @@ export class Midjourney {
       sample = Deno.readTextFileSync(sample);
     }
     sample = sample.replace(/\\"/g, '"');
-    this.auth = getExistinggroup(sample, "SALAI_TOKEN", /"authorization":\s?"([^"]+)"/, /SALAI_TOKEN\s*=\s*"?([_A-Za-z0-9.]+)"?/);
+    this.auth = getExistinggroup(
+      sample,
+      "SALAI_TOKEN",
+      /"authorization":\s?"([^"]+)"/,
+      /SALAI_TOKEN\s*=\s*"?([_A-Za-z0-9.]+)"?/,
+    );
     this.application_id = getExistinggroup(
       sample,
       "",
       /"application_id":\s?"(\d+)"/,
     );
-    this.guild_id = getExistinggroup(sample, "SERVER_ID", /"guild_id":\s?"(\d+)"/, /SERVER_ID\s*=\s*"?([0-9]+)"?/);
-    this.channel_id = getExistinggroup(sample, "CHANNEL_ID", /"channel_id":\s?"(\d+)"/, /CHANNEL_ID\s*=\s*"?([0-9]+)"?/);
+    this.guild_id = getExistinggroup(
+      sample,
+      "SERVER_ID",
+      /"guild_id":\s?"(\d+)"/,
+      /SERVER_ID\s*=\s*"?([0-9]+)"?/,
+    );
+    this.channel_id = getExistinggroup(
+      sample,
+      "CHANNEL_ID",
+      /"channel_id":\s?"(\d+)"/,
+      /CHANNEL_ID\s*=\s*"?([0-9]+)"?/,
+    );
     this.session_id = generateRandomString(32);
 
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
@@ -100,6 +116,53 @@ export class Midjourney {
   //   const resp = await client.login(this.DISCORD_TOKEN);
   //   logger.info('done:', resp);
   // }
+  private wsCnxCnt = 1;
+
+  public connectWs(): void {
+    let heartbeat_interval = 10000;
+    const ws = new WebSocket("wss://gateway.discord.gg/?encoding=json&v=9");
+    this.wsCnxCnt++;
+    const send = (json: unknown) => {
+      const asString = JSON.stringify(json);
+      // console.log(`SND `, pc.red(asString));
+      ws.send(asString);
+    };
+
+    const doHeartbeat = () => {
+      // console.log(`ping ${cnt} in ${heartbeat_interval}ms`);
+      send({ op: 1, d: this.wsCnxCnt });
+      setTimeout(doHeartbeat, heartbeat_interval);
+    };
+    // const client: Midjourney = this;
+    // this: WebSocket,
+    ws.onmessage = (ev: MessageEvent) => {
+      // console.log(`RCV ev.data (${++nbevent})`, ev.data);
+      if (typeof ev.data === "string") {
+        const data = JSON.parse(ev.data as string) as WsMessage;
+        if (data.op === WsOpcode.HELLO) {
+          const elm = data;
+          heartbeat_interval = elm.d.heartbeat_interval;
+          doHeartbeat();
+          return;
+        }
+        if (data.op === WsOpcode.HEARTBEAT_ACK) {
+          return;
+        }
+        if (data.op === WsOpcode.DISPATCH) {
+          if (data.t === "MESSAGE_CREATE") {
+            new DiscordMessage(this, data.d);
+          }
+          if (data.t === "MESSAGE_UPDATE") {
+            new DiscordMessage(this, data.d);
+          }
+        }
+        // Deno.writeTextFileSync(
+        //   `${data.op}-${(data as any).t || ""}.json`,
+        //   JSON.stringify(data, undefined, 2)
+        // );
+      }
+    };
+  }
 
   private get headers() {
     return {
@@ -143,8 +206,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `settings return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `settings return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -160,8 +222,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `relax return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `relax return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -177,8 +238,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `fast return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `fast return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -199,8 +259,7 @@ export class Midjourney {
       return msg;
     }
     throw new Error(
-      `imagine return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `imagine return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -218,8 +277,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `describe return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `describe return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -252,8 +310,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `blend return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `blend return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -369,9 +426,7 @@ export class Midjourney {
    * - startId: do not look for message older than the initial request.
    * - parent: filter by parent request
    */
-  public async waitMessage(
-    opts: WaitOptions = {},
-  ): Promise<DiscordMessage> {
+  public async waitMessage(opts: WaitOptions = {}): Promise<DiscordMessage> {
     const counters = {
       request: 0,
       message: 0,
@@ -412,7 +467,11 @@ export class Midjourney {
             logger.info(`waitMessage found a 100% process done message`);
           } else {
             logger.info(
-              `follow message completion: (${(prevCompletion * 100).toFixed(0)}%)`,
+              `follow message completion: (${
+                (prevCompletion * 100).toFixed(
+                  0,
+                )
+              }%)`,
             );
           }
         }
@@ -446,8 +505,11 @@ export class Midjourney {
       });
       let matches = messages;
       matches = matches.filter((item) => item.prompt); // keep only parssable messages;
-      matches = matches.filter((item) => item.author.id === this.application_id); // keep only message from Discord bot
-      if (opts.prompt) { // filter by prompt
+      matches = matches.filter(
+        (item) => item.author.id === this.application_id,
+      ); // keep only message from Discord bot
+      if (opts.prompt) {
+        // filter by prompt
         matches = matches.filter((item) => {
           const itemPrompt = item.prompt!.prompt;
           if (Array.isArray(opts.prompt)) {
@@ -464,10 +526,16 @@ export class Midjourney {
         });
       }
       if (opts.parentId) {
-        matches = matches.filter((item) => item.referenced_message && item.referenced_message.id === opts.parentId);
+        matches = matches.filter(
+          (item) =>
+            item.referenced_message &&
+            item.referenced_message.id === opts.parentId,
+        );
       }
       if (opts.interaction) {
-        matches = matches.filter((item) => item.parentInteraction === opts.interaction);
+        matches = matches.filter(
+          (item) => item.parentInteraction === opts.interaction,
+        );
       }
       if (opts.name) {
         matches = matches.filter((item) => item.prompt!.name === opts.name);
@@ -553,8 +621,7 @@ export class Midjourney {
       return msgs.map((msg) => new DiscordMessage(this, msg));
     }
     throw new Error(
-      `getMessages return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `getMessages return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -614,8 +681,7 @@ export class Midjourney {
       return atts;
     }
     throw new Error(
-      `Attachments return ${response.status} ${response.statusText} ${await response
-        .text()}`,
+      `Attachments return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -637,8 +703,7 @@ export class Midjourney {
     });
     if (!response.ok) {
       throw new Error(
-        `uploadImage return ${response.status} ${response.statusText} ${await response
-          .text()}`,
+        `uploadImage return ${response.status} ${response.statusText} ${await response.text()}`,
       );
     }
   }
@@ -698,16 +763,21 @@ export class Midjourney {
     }
   }
 
-  public async blendUrl(imageUrls: string[], dimensions?: "1:1" | "2:3" | "3:2"): Promise<DiscordMessage> {
-    const images = await Promise.all(imageUrls.map(async (imageUrl) => {
-      const url = new URL(imageUrl);
-      const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
-      const imageData = await download(imageUrl, filename);
-      return {
-        filename,
-        imageData,
-      };
-    }));
+  public async blendUrl(
+    imageUrls: string[],
+    dimensions?: "1:1" | "2:3" | "3:2",
+  ): Promise<DiscordMessage> {
+    const images = await Promise.all(
+      imageUrls.map(async (imageUrl) => {
+        const url = new URL(imageUrl);
+        const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
+        const imageData = await download(imageUrl, filename);
+        return {
+          filename,
+          imageData,
+        };
+      }),
+    );
     return this.blend(images, dimensions);
   }
 
@@ -719,15 +789,19 @@ export class Midjourney {
     }[],
     dimensions?: "1:1" | "2:3" | "3:2",
   ): Promise<DiscordMessage> {
-    images.forEach((image) => image.contentType = image.contentType || filename2Mime(image.filename));
+    images.forEach(
+      (image) => (image.contentType = image.contentType || filename2Mime(image.filename)),
+    );
     const id0 = Date.now();
     const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
 
-    const { attachments } = await this.attachments(...images.map((img, id) => ({
-      filename: img.filename,
-      file_size: img.imageData.byteLength,
-      id: id0 + id,
-    })));
+    const { attachments } = await this.attachments(
+      ...images.map((img, id) => ({
+        filename: img.filename,
+        file_size: img.imageData.byteLength,
+        id: id0 + id,
+      })),
+    );
 
     for (let i = 0; i < images.length; i++) {
       await this.uploadImage(
