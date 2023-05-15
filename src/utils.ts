@@ -10,7 +10,7 @@ export async function download(
 ): Promise<ArrayBuffer> {
   const data = await (await fetch(url)).arrayBuffer();
   if (filename) {
-    logger.info("saving downloaded file to ", filename);
+    logger.info(`saving downloaded file to ${filename}`);
     await Deno.writeFile(filename, new Uint8Array(data));
   }
   return data;
