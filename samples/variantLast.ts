@@ -4,6 +4,7 @@ import { Midjourney } from "../mod.ts";
  * Variant the last image available in chat
  */
 const client = new Midjourney("interaction.txt");
+await client.connectWs();
 const msgs = await client.getMessages();
 main:
 for (const msg of msgs) {

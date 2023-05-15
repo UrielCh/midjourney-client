@@ -97,7 +97,7 @@ export interface WsMsg2Identify {
     };
     compress: boolean;
     client_state: {
-      guild_versions: {};
+      guild_versions: unknown;// {};
       highest_last_message_id: "0";
       read_state_version: 0;
       user_guild_settings_version: -1;
@@ -140,7 +140,7 @@ export interface WsMsg4VoiceStateUpadate {
  */
 export interface WsMsg5ServerPing {
   op: 5;
-  d: {};
+  d: unknown;// {};
 }
 
 /**
@@ -188,7 +188,7 @@ export interface WsMsg14GuildSubscriptions {
     threads: true;
     activities: true;
     members: [];
-    channels: {};
+    channels: unknown;//  {};
     thread_member_lists: [];
   };
 }

@@ -4,6 +4,7 @@ import { Midjourney } from "../mod.ts";
  * Upscale the first none upscaled images in chat, searching from the newest to the oldest images
  */
 const client = new Midjourney("interaction.txt");
+await client.connectWs();
 const msgs = await client.getMessages();
 main:
 for (const msg of msgs) {

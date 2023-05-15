@@ -4,16 +4,18 @@ import { join } from "../dev_deps.ts";
 import { wait } from "./utils.ts";
 
 export function getMidjourney() {
-  let file = "interaction.txt";
+  let file = "./interaction.txt";
+  const rearchPaths = [];
   for (let i = 0; i < 4; i++) {
     try {
       const content = Deno.readTextFileSync(file);
       return new Midjourney(content);
     } catch (_e) {
+      rearchPaths.push(file);
       file = join("..", file);
     }
   }
-  throw Error("no interaction.txt available for auth");
+  throw Error("no interaction.txt available for auth in " + rearchPaths.join(", "));
 }
 
 Deno.test(async function getAllMsgs() {

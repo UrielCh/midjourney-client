@@ -1,4 +1,5 @@
 import { Midjourney } from "../mod.ts";
+import { progressLogger } from "./progressLogger.ts";
 import { sampleUrls } from "./sampleUrls.ts";
 
 /**
@@ -9,6 +10,6 @@ const client = new Midjourney("interaction.txt");
 // msg.download(0, "regen.png");
 const sourceImg1 = sampleUrls[(Math.random() * sampleUrls.length) | 0];
 const sourceImg2 = sampleUrls[(Math.random() * sampleUrls.length) | 0];
-
-const msg = await client.blendUrl([sourceImg1, sourceImg2], "2:3");
+await client.connectWs();
+const msg = await client.blendUrl([sourceImg1, sourceImg2], "2:3", progressLogger('Blend 2 images'));
 await msg.download(0, "blend.png");

@@ -3,12 +3,12 @@ import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, InteractionName, Payload } from "./models.ts";
-import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle } from "../deps.ts";
+import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle, EventEmitter, pc } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
 import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
-import { WsMessage, WsOpcode } from "./wsMessages.ts";
+import { properties, WsMessage, WsOpcode } from "./wsMessages.ts";
 
 const interactions = "https://discord.com/api/v9/interactions";
 
@@ -18,15 +18,28 @@ export type UploadSlot = {
   upload_url: string;
 };
 
+interface WaitCounter {
+  request: number;
+  message: number;
+  hit: boolean;
+  hitRefresh: number;
+}
+
 export interface WaitOptions {
   prompt?: string | string[];
   name?: string;
   maxWait?: number;
+  interactionOriginal?: InteractionName;
   interaction?: InteractionName;
   imgId?: 1 | 2 | 3 | 4 | string;
   startId?: Snowflake;
   parentId?: Snowflake;
+  progress?: (percent: number) => void;
 }
+export interface WaitOptionsProgress extends WaitOptions {
+  progress: (percent: number) => void;
+}
+// export type WaitOptions = Exclude<WaitOptionsProgress, 'progress'> & Partial<Pick<WaitOptionsProgress, 'progress'>>;
 
 export class Midjourney {
   readonly auth: string;
@@ -35,7 +48,7 @@ export class Midjourney {
   readonly channel_id: string;
   readonly session_id: string;
   readonly commandCache: CommandCache;
-
+  public properties = { ...properties };
   // readonly DISCORD_TOKEN: string;
   // readonly DISCORD_BOTID: string;
   // readonly cookie: string;
@@ -79,21 +92,15 @@ export class Midjourney {
       /CHANNEL_ID\s*=\s*"?([0-9]+)"?/,
     );
     this.session_id = generateRandomString(32);
-
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
     // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);
-
     this.commandCache = new CommandCache(this.channel_id, this.auth);
-    // this.cookie = getExistinggroup(sample, / "cookie":\s?"([^"]+)"/);
-    // this.x_super_properties = getExistinggroup(sample, / "x-super-properties":\s?"([^"]+)"/);
-    // this.x_discord_locale = getExistinggroup(sample, / "x-discord-locale":\s?"([^"]+)"/);
   }
 
   // public async connectDiscordBot(): Promise<void> {
   //   if (!this.DISCORD_TOKEN) {
   //     throw Error("no DISCORD_TOKEN available");
   //   }
-  //
   //   const client = new DiscordJs.Client({
   //     intents: [ DiscordJs.GatewayIntentBits.Guilds], // , DiscordJs.GatewayIntentBits.GuildMessages
   //   });
@@ -116,10 +123,15 @@ export class Midjourney {
   //   const resp = await client.login(this.DISCORD_TOKEN);
   //   logger.info('done:', resp);
   // }
-  private wsCnxCnt = 1;
+  private wsCnxCnt = 0;
   private ws: WebSocket | null = null;
   private wsActivated = false;
   private wsHeartbeat: ReturnType<typeof setTimeout> | null = null;
+
+  messageCache = new Map<string, DiscordMessage>();
+  MessageCacheByPrompt = new Map<string, DiscordMessage[]>();
+  MessageCacheByParent = new Map<string, DiscordMessage[]>();
+  messageEmmiter = new EventEmitter();
 
   public disconnectWs(): void {
     if (this.wsHeartbeat) {
@@ -133,14 +145,16 @@ export class Midjourney {
     this.wsActivated = false;
   }
 
-  public connectWs(): void {
+  public async connectWs(): Promise<void> {
     if (this.ws && this.wsActivated) {
       return;
     }
-    this.wsActivated = true;
     let heartbeat_interval = 10000;
     this.ws = new WebSocket("wss://gateway.discord.gg/?encoding=json&v=9");
     this.wsCnxCnt++;
+    if (this.wsCnxCnt === 0) {
+      // getMessages(params: RESTGetAPIChannelMessagesQuery = {}, ): Promise<DiscordMessage[]>
+    }
     const send = (json: unknown) => {
       const asString = JSON.stringify(json);
       // console.log(`SND `, pc.red(asString));
@@ -151,6 +165,37 @@ export class Midjourney {
       // console.log(`ping ${cnt} in ${heartbeat_interval}ms`);
       send({ op: 1, d: this.wsCnxCnt });
       this.wsHeartbeat = setTimeout(doHeartbeat, heartbeat_interval);
+    };
+
+    this.ws.onopen = () => {
+      if (this.ws) {
+        this.ws.send(
+          JSON.stringify({
+            op: 2,
+            d: {
+              token: this.auth,
+              capabilities: 8189,
+              properties: this.properties,
+              presence: {
+                status: "unknown",
+                since: 0,
+                activities: [],
+                afk: false,
+              },
+              compress: false,
+              client_state: {
+                guild_versions: {},
+                highest_last_message_id: "0",
+                read_state_version: 0,
+                user_guild_settings_version: -1,
+                user_settings_version: -1,
+                private_channels_version: "0",
+                api_code_version: 0,
+              },
+            },
+          }),
+        );
+      }
     };
 
     this.ws.onclose = (/*ev: CloseEvent*/) => {
@@ -165,7 +210,6 @@ export class Midjourney {
     };
 
     this.ws.onmessage = (ev: MessageEvent) => {
-      // console.log(`RCV ev.data (${++nbevent})`, ev.data);
       if (typeof ev.data === "string") {
         const data = JSON.parse(ev.data as string) as WsMessage;
         if (data.op === WsOpcode.HELLO) {
@@ -178,25 +222,48 @@ export class Midjourney {
           return;
         }
         if (data.op === WsOpcode.DISPATCH) {
-          if (data.t === "MESSAGE_CREATE") {
-            new DiscordMessage(this, data.d);
-          }
-          if (data.t === "MESSAGE_UPDATE") {
-            new DiscordMessage(this, data.d);
+          // console.log(`RCV DISPATCH `, pc.green(data.t));
+          switch (data.t) {
+            case "MESSAGE_CREATE":
+            case "MESSAGE_UPDATE": {
+              let discMsg = new DiscordMessage(this, data.d);
+              if (discMsg.content && !discMsg.prompt) {
+                /// for debug only
+                discMsg = new DiscordMessage(this, data.d);
+                discMsg = new DiscordMessage(this, data.d);
+              }
+              this.messageEmmiter.emit(
+                "message",
+                data.d.id,
+                discMsg,
+              );
+              }
+              break;
+            case "MESSAGE_DELETE":
+              this.messageEmmiter.emit("message", data.d.id);
           }
         }
-        // Deno.writeTextFileSync(
-        //   `${data.op}-${(data as any).t || ""}.json`,
-        //   JSON.stringify(data, undefined, 2)
-        // );
       }
     };
+    if (!this.wsActivated) {
+      this.wsActivated = true;
+      this.messageEmmiter.on("message", (id: Snowflake, msg?: DiscordMessage) => {
+        if (!msg) {
+          // console.log(`delete Msg ${pc.red(id)} from index`);
+          this.messageCache.delete(id);
+        } else {
+          // console.log(`Index Msg ${pc.green(id)}`);
+          this.messageCache.set(id, msg);
+        }
+      });
+      const msgs = await this.getMessages({ limit: 50 });
+      msgs.forEach((msg) => this.messageEmmiter.emit("message", msg.id, msg));
+    }
   }
 
   private get headers() {
     return {
       authorization: this.auth,
-      // cookie: this.cookie,
     };
   }
 
@@ -271,7 +338,7 @@ export class Midjourney {
     );
   }
 
-  async imagine(prompt: string): Promise<DiscordMessage> {
+  async imagine(prompt: string, progress?: (percent: number) => void): Promise<DiscordMessage> {
     const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
     const cmd = await this.commandCache.getCommand("imagine");
     const payload: Payload = this.buildPayload(cmd);
@@ -279,6 +346,7 @@ export class Midjourney {
     const response = await this.doInteractions(payload);
     if (response.status === 204) {
       const msg = await this.waitMessage({
+        progress,
         interaction: "imagine",
         prompt,
         startId,
@@ -343,27 +411,10 @@ export class Midjourney {
     );
   }
 
-  // setSettingsRelax(): Promise<number> {
-  //   // the messageId should be update
-  //   return this.callCustom(
-  //     "1101102102157205574",
-  //     "MJ::Settings::RelaxMode::on",
-  //     MessageFlags.Ephemeral,
-  //   );
-  // }
-  //
-  // setSettingsFast(): Promise<number> {
-  //   // the messageId should be update
-  //   return this.callCustom(
-  //     "1101102102157205574",
-  //     "MJ::Settings::RelaxMode::off",
-  //     MessageFlags.Ephemeral,
-  //   );
-  // }
-
   public async callCustomComponents(
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     if (!button.disabled && button.style !== ButtonStyle.Primary) {
       await this.callCustom(parentId, button.custom_id);
@@ -372,7 +423,7 @@ export class Midjourney {
         `The requested action ${button.custom_id} had already been processed, just looking for a previous result.`,
       );
     }
-    return await this.waitComponents(parentId, button);
+    return await this.waitComponents(parentId, button, undefined, progress);
   }
 
   private async callCustom(
@@ -417,6 +468,7 @@ export class Midjourney {
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
     maxWait = 360,
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     let type: InteractionName | undefined;
     const label = button.label || button.emoji?.name || "ERROR";
@@ -434,6 +486,7 @@ export class Midjourney {
       throw Error("waitComponents only support upscale and variations");
     }
     const waitParams: WaitOptions = {
+      progress,
       maxWait,
       interaction: type,
       startId: parentId,
@@ -443,6 +496,177 @@ export class Midjourney {
     // logger.info(`Waiting for`, waitParams);
     const msg = await this.waitMessage(waitParams);
     return msg;
+  }
+
+  private filterMessages(
+    opts: WaitOptions = {},
+    messages: DiscordMessage[],
+  ): DiscordMessage[] {
+    let matches: DiscordMessage[] = messages;
+    matches = matches.filter((item) => item.prompt); // keep only parssable messages;
+    matches = matches.filter((item) => item.author.id === this.application_id); // keep only message from Discord bot
+    if (opts.prompt) {
+      // filter by prompt
+      matches = matches.filter((item) => {
+        const itemPrompt = item.prompt!.prompt;
+        if (Array.isArray(opts.prompt)) {
+          for (const elm of opts.prompt) {
+            if (!itemPrompt.includes(elm)) {
+              return false;
+            }
+          }
+          return true;
+        } else {
+          const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [.\d\w]+$/, "");
+          return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
+        }
+      });
+    }
+    if (opts.parentId) {
+      matches = matches.filter(
+        (item) =>
+          item.referenced_message &&
+          item.referenced_message.id === opts.parentId,
+      );
+    }
+    if (opts.interaction) {
+      matches = matches.filter(
+        (item) => item.parentInteraction === opts.interaction,
+      );
+    }
+    if (opts.name) {
+      matches = matches.filter((item) => item.prompt!.name === opts.name);
+    }
+    if (opts.imgId) {
+      let imgId = 0;
+      if (opts.imgId) {
+        if (typeof opts.imgId === "number") {
+          imgId = opts.imgId as 1 | 2 | 3 | 4;
+        } else {
+          imgId = Number(opts.imgId.replace(/[^0-9]+/g, "")) as 1 | 2 | 3 | 4;
+        }
+      }
+      matches = matches.filter((item) => item.prompt!.name.includes(`#${imgId}`));
+    }
+    if (matches.length > 1) {
+      logger.error(
+        "warning multiple message match your waiting request! review your criterion:",
+        opts,
+      );
+    }
+    return matches;
+  }
+
+  private waitMessageWs(opts: WaitOptionsProgress): Promise<DiscordMessage> {
+    if (!this.wsActivated) {
+      throw Error("websocket not activated");
+    }
+    // console.log(pc.magenta(`waitMessageWs`), opts);
+    let prevCompletion = -2;
+    const matches = this.filterMessages(opts, [...this.messageCache.values()]);
+    let prevMsg: DiscordMessage | undefined;
+    if (matches.length) {
+      prevMsg = matches[0];
+      const r = this.followCheckMsg(prevMsg, prevCompletion, opts.progress);
+      prevCompletion = r.completion;
+      if (r.completion === 1) {
+        return Promise.resolve(prevMsg);
+      }
+    }
+
+    return new Promise<DiscordMessage>((resolve, _reject) => {
+      const listenFnc = (_msgId: Snowflake, msg?: DiscordMessage) => {
+        if (!msg) {
+          // if (opts.interaction === "blend" && prevMsg && prevMsg.id === msgId) {
+          //   opts.interaction = "imagine";
+          //   if (Array.isArray(opts.prompt)) {
+          //     opts.prompt = prevMsg.prompt!.prompt;
+          //   }
+          // }
+        } else {
+          let matches = this.filterMessages(opts, [msg]);
+          if (!matches.length && prevMsg && prevMsg.id === msg.id) {
+            // rename search opt
+            if (opts.interactionOriginal === "blend") {
+              //if (Array.isArray(opts.prompt)) {
+              // opts.interaction = "imagine";
+              if (msg.prompt) {
+                delete opts.interaction;
+                opts.prompt = msg.prompt!.prompt;
+              }
+              // }
+            }
+            matches = this.filterMessages(opts, [msg]);
+          }
+
+          if (matches.length) {
+            prevMsg = matches[0];
+            const r = this.followCheckMsg(matches[0], prevCompletion, opts.progress);
+            prevCompletion = r.completion;
+            if (r.completion === 1) {
+              // console.log(pc.yellow('REMOVE messageEmmiter listener'));
+              this.messageEmmiter.removeListener("message", listenFnc);
+              resolve(matches[0]);
+            }
+          }
+        }
+      };
+      // console.log(pc.yellow('ADD messageEmmiter listener'));
+      this.messageEmmiter.addListener("message", listenFnc);
+    });
+  }
+
+  private followCheckMsg(
+    msg: DiscordMessage,
+    prevCompletion: number,
+    progress: (percent: number) => void,
+  ): { completion: number } {
+    const prompt = msg.prompt;
+    if (!prompt) {
+      // FATAL
+      logger.error(`lose track of the current progress with message`, msg);
+      throw new Error(`failed to extract prompt from ${msg.content}`);
+    }
+    if (
+      prompt.completion !== undefined &&
+      prevCompletion !== prompt.completion
+    ) {
+      prevCompletion = prompt.completion;
+      progress(prevCompletion);
+    }
+    return { completion: prevCompletion };
+  }
+
+  private async followLoop(
+    msg: DiscordMessage,
+    opts: WaitOptionsProgress,
+    counters: WaitCounter,
+  ): Promise<DiscordMessage | null> {
+    const msgid = msg.id;
+    let prevCompletion = -2;
+    const { maxWait = 1000 } = opts;
+    counters.hit = true;
+    logger.info(`waitMessage for prompt message found`, msgid, msg.content);
+    for (let i = 0; i < maxWait; i++) {
+      const ret = this.followCheckMsg(msg, prevCompletion, opts.progress);
+      prevCompletion = ret.completion;
+      if (prevCompletion === 1) return msg; // exit loop
+      await wait(1000);
+      try {
+        msg = await this.getMessageById(msgid);
+      } catch (_) {
+        // the next pass will be a blend
+        if (opts.interaction === "blend") {
+          opts.interaction = "imagine";
+          if (Array.isArray(opts.prompt)) {
+            opts.prompt = msg.prompt!.prompt;
+          }
+        }
+        return null;
+      }
+      counters.hitRefresh++;
+    }
+    return null;
   }
 
   /**
@@ -455,75 +679,37 @@ export class Midjourney {
    * - startId: do not look for message older than the initial request.
    * - parent: filter by parent request
    */
-  public async waitMessage(opts: WaitOptions = {}): Promise<DiscordMessage> {
-    const counters = {
+  public waitMessage(opts: WaitOptions = {}): Promise<DiscordMessage> {
+    if (!opts.progress) {
+      opts.progress = (percent: number) => {
+        if (percent < 0)
+          logger.info(`wait for the prompt in Queue`);
+        else if (percent === 1)
+          logger.info(`waitMessage found a 100% process done message`);
+        else
+        logger.info(
+          `follow message completion: (${(percent * 100).toFixed(0)}%)`,
+        );
+      }
+    }
+    return this.waitMessageInternal(opts as WaitOptionsProgress);
+  }
+
+  public async waitMessageInternal(opts: WaitOptionsProgress): Promise<DiscordMessage> {
+    if (this.wsActivated) {
+      return this.waitMessageWs(opts);
+      // use websocket
+    }
+
+    const counters: WaitCounter = {
       request: 0,
       message: 0,
       hit: false,
       hitRefresh: 0,
     };
     let { maxWait = 1000 } = opts;
-    let imgId = 0;
-    if (opts.imgId) {
-      if (typeof opts.imgId === "number") {
-        imgId = opts.imgId as 1 | 2 | 3 | 4;
-      } else {
-        imgId = Number(opts.imgId.replace(/[^0-9]+/g, "")) as 1 | 2 | 3 | 4;
-      }
-    }
     let startId = opts.startId || "";
     /** called once the correct message had been located */
-    const follow = async (
-      msg: DiscordMessage,
-    ): Promise<DiscordMessage | null> => {
-      const msgid = msg.id;
-      let prevCompletion = -2;
-      counters.hit = true;
-      logger.info(`waitMessage for prompt message found`, msgid, msg.content);
-      for (let i = 0; i < maxWait; i++) {
-        if (!msg.prompt) {
-          logger.error(`lose track of the current progress with message`, msg);
-          throw new Error(`failed to extract prompt from ${msg.content}`);
-        }
-        if (
-          msg.prompt.completion !== undefined &&
-          prevCompletion !== msg.prompt.completion
-        ) {
-          prevCompletion = msg.prompt.completion;
-          if (prevCompletion == -1) {
-            logger.info(`wait for the prompt in Queue`);
-          } else if (prevCompletion === 1) {
-            logger.info(`waitMessage found a 100% process done message`);
-          } else {
-            logger.info(
-              `follow message completion: (${
-                (prevCompletion * 100).toFixed(
-                  0,
-                )
-              }%)`,
-            );
-          }
-        }
-        if (msg.prompt.completion === 1) return msg;
-        // if (msg.attachments.length && msg.attachments[0].url) { console.log(msg.attachments[0]); }
-        await wait(1000);
-        try {
-          msg = await this.getMessageById(msgid);
-        } catch (_) {
-          // the next pass will be a blend
-          if (opts.interaction === "blend") {
-            opts.interaction = "imagine";
-            if (Array.isArray(opts.prompt)) {
-              opts.prompt = msg.prompt!.prompt;
-            }
-          }
-          return null;
-        }
-        counters.hitRefresh++;
-      }
-      return null;
-    };
-
     const lookFor = async (
       messages: DiscordMessage[],
     ): Promise<DiscordMessage | null> => {
@@ -532,54 +718,9 @@ export class Midjourney {
       messages.forEach((item) => {
         if (item.id > startId) startId = item.id;
       });
-      let matches = messages;
-      matches = matches.filter((item) => item.prompt); // keep only parssable messages;
-      matches = matches.filter(
-        (item) => item.author.id === this.application_id,
-      ); // keep only message from Discord bot
-      if (opts.prompt) {
-        // filter by prompt
-        matches = matches.filter((item) => {
-          const itemPrompt = item.prompt!.prompt;
-          if (Array.isArray(opts.prompt)) {
-            for (const elm of opts.prompt) {
-              if (!itemPrompt.includes(elm)) {
-                return false;
-              }
-            }
-            return true;
-          } else {
-            const itemPromptLt = itemPrompt.replace(/ --[^ ]+ [\d\w]+$/, "");
-            return opts.prompt === itemPrompt || opts.prompt === itemPromptLt;
-          }
-        });
-      }
-      if (opts.parentId) {
-        matches = matches.filter(
-          (item) =>
-            item.referenced_message &&
-            item.referenced_message.id === opts.parentId,
-        );
-      }
-      if (opts.interaction) {
-        matches = matches.filter(
-          (item) => item.parentInteraction === opts.interaction,
-        );
-      }
-      if (opts.name) {
-        matches = matches.filter((item) => item.prompt!.name === opts.name);
-      }
-      if (opts.imgId) {
-        matches = matches.filter((item) => item.prompt!.name.includes(`#${imgId}`));
-      }
+      const matches = this.filterMessages(opts, messages);
       if (!matches.length) return null;
-      if (matches.length > 1) {
-        logger.error(
-          "warning multiple message match your waiting request! review your criterion:",
-          opts,
-        );
-      }
-      const m2 = await follow(matches[0]);
+      const m2 = await this.followLoop(matches[0], opts, counters);
       return m2;
     };
 
@@ -741,11 +882,11 @@ export class Midjourney {
    * @param imageUrl url of the image
    * @return a list of 4 prompt suggested by Midjourney
    */
-  public async describeUrl(imageUrl: string): Promise<string[]> {
+  public async describeUrl(imageUrl: string, progress?: (percent: number) => void): Promise<string[]> {
     const url = new URL(imageUrl);
     const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
-    return this.describeImage(filename, imageData);
+    return this.describeImage(filename, imageData, undefined, progress);
   }
   /**
    * invoke /describe on an image provided as a buffer
@@ -759,6 +900,7 @@ export class Midjourney {
     filename: string,
     imageData: ArrayBufferLike,
     contentType?: string,
+    progress?: (percent: number) => void,
   ): Promise<string[]> {
     contentType = contentType || filename2Mime(filename);
     const id = Date.now();
@@ -776,6 +918,7 @@ export class Midjourney {
     for (let i = 0;; i++) {
       try {
         const msg = await this.waitMessage({
+          progress,
           interaction: "describe",
           name: realfilename,
           maxWait: 1,
@@ -795,6 +938,7 @@ export class Midjourney {
   public async blendUrl(
     imageUrls: string[],
     dimensions?: "1:1" | "2:3" | "3:2",
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     const images = await Promise.all(
       imageUrls.map(async (imageUrl) => {
@@ -807,7 +951,7 @@ export class Midjourney {
         };
       }),
     );
-    return this.blend(images, dimensions);
+    return this.blend(images, dimensions, progress);
   }
 
   public async blend(
@@ -816,7 +960,8 @@ export class Midjourney {
       imageData: ArrayBufferLike;
       contentType?: string;
     }[],
-    dimensions?: "1:1" | "2:3" | "3:2",
+    dimensions: "1:1" | "2:3" | "3:2" = "1:1",
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     images.forEach(
       (image) => (image.contentType = image.contentType || filename2Mime(image.filename)),
@@ -851,6 +996,8 @@ export class Midjourney {
 
     if (status === 204) {
       const msg = await this.waitMessage({
+        progress,
+        interactionOriginal: "blend",
         interaction: "blend",
         prompt: identifier,
         startId,

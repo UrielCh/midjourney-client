@@ -12,7 +12,7 @@ import type {
   Snowflake,
 } from "../deps.ts";
 // CODE imports
-import { ButtonStyle, logger, MessageType, path } from "../deps.ts";
+import { ButtonStyle, logger, MessageType, path, pc } from "../deps.ts";
 
 import Midjourney from "./Midjourney.ts";
 import type { InteractionName, UserReference } from "./models.ts";
@@ -35,99 +35,223 @@ export interface SplitedPrompt {
 }
 
 export function extractPrompt(content: string): SplitedPrompt | undefined {
-  let m = content.match(/^\*\*(.+)\*\* - (.+)$/); // (.+) <@(\d+)>
-  if (!m) {
+  if (!content) {
     return undefined;
   }
 
-  const prompt: SplitedPrompt = {
-    prompt: m[1],
-    source: content,
-    name: "",
+  const result: SplitedPrompt = {
+    // id?: string;
+    // mode?: "fast" | "relaxed";
+    // completion?: number; // 0..1
+    // completion: -1,
+    source: '',
+    prompt: '',
+    name: '',
   };
-  let extra = m[2];
+
+  let extra = content;
+
+
+  /**
+   * speed first
+   */
+
+
   if (extra.endsWith(" (fast)")) {
-    prompt.mode = "fast";
+    result.mode = "fast";
     extra = extra.substring(0, extra.length - 7);
   } else if (extra.endsWith(" (relaxed)")) {
-    prompt.mode = "relaxed";
+    result.mode = "relaxed";
     extra = extra.substring(0, extra.length - 10);
   }
 
+/**
+ * progression
+ */
+
   if (extra.endsWith(" (paused)")) {
     extra = extra.substring(0, extra.length - 9);
+    result.completion = -1;
+  } else if (extra.endsWith(" (Open on website for full quality)")) {
+    extra = extra.substring(0, extra.length - 35);
+    result.completion = 1;
+  } else if (extra.endsWith(" (Waiting to start)")) {
+    extra = extra.substring(0, extra.length - 19);
+    result.completion = -1;
+  } else {
+    const extractPercent = extra.match(/ \(([0-9]+)%\)$/);
+    if (extractPercent) {
+      extra = extra.substring(0, extra.length - extractPercent[0].length);
+      result.completion = parseInt(extractPercent[1]) / 100;
+    }
   }
 
-  m = extra.match(/^<@(\d+)> \(Open on website for full quality\)$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = 1;
-    // prompt.type = "grid";
-    return prompt;
+
+  /**
+   * prefix
+   */
+
+  if (extra.startsWith("Making variations for image #")) {
+    const prefix = extra.match(
+      /^Making variations for image #(\d) with prompt /,
+    );
+    if (prefix) {
+      result.name = prefix[1];
+      extra = extra.substring(prefix[0].length);
+    }
   }
 
-  m = extra.match(/^Variations by <@(\d+)>$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = 1;
-    // prompt.type = "variations";
-    return prompt;
+
+  const extractId = extra.match(/ <@(\d+)>$/);
+  if (extractId) {
+    extra = extra.substring(0, extra.length - extractId[0].length);
+    result.id = extractId[1];
+  }
+  // can be present befor the <@id>
+  if (extra.endsWith(' Upscaled by')) {
+    extra = extra.substring(0, extra.length - 12);
+    if (result.completion === undefined)
+      result.completion = 1; // Upscaled are only display at completion
+  } else if (extra.endsWith(' Variations by')) {
+    extra = extra.substring(0, extra.length - 14);
+    if (result.completion === undefined)
+      result.completion = 1; // Variations are only display at completion
+  } else if (extra.endsWith('** -')) {
+    if (result.completion === undefined)
+      result.completion = 1; // imagen on blend
   }
 
-  m = extra.match(/^Upscaled by <@(\d+)>$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = 1;
-    // prompt.type = "upscale";
-    return prompt;
+  {
+    const tailImage = extra.match(/ Image #(\d)$/);
+    if (tailImage) {
+      extra = extra.substring(0, extra.length - tailImage[0].length);
+      result.source = tailImage[0];
+    }
   }
 
-  m = extra.match(
-    /^Variations by <@(\d+)> \(Open on website for full quality\)$/,
-  );
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = 1;
-    // prompt.type = "variations";
-    return prompt;
+  if (extra.endsWith('** -')) {
+    extra = extra.substring(0, extra.length - 2);
   }
 
-  m = extra.match(/^Image #(\d) <@(\d+)>$/);
-  if (m) {
-    prompt.id = m[2];
-    prompt.completion = 1;
-    // prompt.type = "upscale"; // or variations
-    prompt.name = `Image #${m[1]}`;
-    return prompt;
+
+
+  if (extra.startsWith('**') && extra.endsWith('**') && extra.length > 4)  {
+    result.prompt = extra.substring(2, extra.length - 2);
+    return result;
   }
 
-  m = extra.match(/^<@(\d+)> \((\d+)%\)$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = parseInt(m[2]) / 100;
-    // prompt.type = "grid";
-    return prompt;
-  }
+  logger.warn("Failed to extract prompt data from:", pc.yellow(content));
+  logger.warn(`Extra data:"${pc.yellow(extra)}"`);
 
-  m = extra.match(/^<@(\d+)> \(Waiting to start\)$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = -1;
-    // prompt.type = "grid";
-    return prompt;
-  }
-  m = extra.match(/^<@(\d+)>$/);
-  if (m) {
-    prompt.id = m[1];
-    prompt.completion = 1;
-    // prompt.type = "grid";
-    return prompt;
-  }
 
-  if (!extra.length) {
-    return prompt;
-  }
-  logger.warn("Failedto extract prompt data from:", content);
+
+  // if (content.startsWith("Making variations for image #")) {
+  //   const m = content.match(
+  //     /^Making variations for image #(\d) with prompt \*\*(.+)\*\* - <@(\d+)> \(Waiting to start\)$/,
+  //   );
+  //   if (!m) {
+  //     logger.warn("Failed to extract prompt data from:", content);
+  //     return undefined;
+  //   }
+  //   const prompt: SplitedPrompt = {
+  //     prompt: m[2],
+  //     source: content,
+  //     name: `Image #${m[1]}`,
+  //     id: m[3],
+  //     completion: -1,
+  //   };
+  //   return prompt;
+  // }
+// 
+  // let m = content.match(/^\*\*(.+)\*\* - (.+)$/); // (.+) <@(\d+)>
+  // if (!m) {
+  //   logger.warn("Failed to extract prompt data from:", content);
+  //   return undefined;
+  // }
+// 
+  // const prompt: SplitedPrompt = {
+  //   prompt: m[1],
+  //   source: content,
+  //   name: "",
+  // };
+  // extra = m[2];
+  // if (extra.endsWith(" (fast)")) {
+  //   prompt.mode = "fast";
+  //   extra = extra.substring(0, extra.length - 7);
+  // } else if (extra.endsWith(" (relaxed)")) {
+  //   prompt.mode = "relaxed";
+  //   extra = extra.substring(0, extra.length - 10);
+  // }
+// 
+// 
+  // m = extra.match(/^<@(\d+)>$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   // prompt.type = "grid";
+  //   return prompt;
+  // }
+// 
+  // m = extra.match(/^Variations by <@(\d+)>$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   prompt.completion = 1;
+  //   // prompt.type = "variations";
+  //   return prompt;
+  // }
+// 
+  // m = extra.match(/^Upscaled by <@(\d+)>$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   prompt.completion = 1;
+  //   // prompt.type = "upscale";
+  //   return prompt;
+  // }
+// 
+  // m = extra.match(
+  //   /^Variations by <@(\d+)>$/,
+  // );
+  // if (m) {
+  //   prompt.id = m[1];
+  //   // prompt.type = "variations";
+  //   return prompt;
+  // }
+
+  // m = extra.match(/^Image #(\d) <@(\d+)>$/);
+  // if (m) {
+  //   prompt.id = m[2];
+  //   prompt.completion = 1;
+  //   // prompt.type = "upscale"; // or variations
+  //   prompt.name = `Image #${m[1]}`;
+  //   return prompt;
+  // }
+// 
+  // m = extra.match(/^<@(\d+)> \((\d+)%\)$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   prompt.completion = parseInt(m[2]) / 100;
+  //   // prompt.type = "grid";
+  //   return prompt;
+  // }
+// 
+  // m = extra.match(/^<@(\d+)> \(Waiting to start\)$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   prompt.completion = -1;
+  //   // prompt.type = "grid";
+  //   return prompt;
+  // }
+  // m = extra.match(/^<@(\d+)>$/);
+  // if (m) {
+  //   prompt.id = m[1];
+  //   prompt.completion = 1;
+  //   // prompt.type = "grid";
+  //   return prompt;
+  // }
+// 
+  // if (!extra.length) {
+  //   return prompt;
+  // }
+  // logger.warn("Failed to extract prompt data from:", pc.yellow(content));
 
   // // dual () is note, mode
   // m = content.match(/^\*\*(.+)\*\* - <@(\d+)> \(([^)])\) \(([^)])\)$/);
@@ -325,7 +449,9 @@ export class DiscordMessage implements APIMessage {
           };
         }
       } else if (name === "imagine") {
-        //
+        // empty
+      } else if (name === "blend") {
+        // empty
       } else {
         logger.info("interaction Name: ", name, this.prompt);
         // console.log("interaction source.embeds: ", source.embeds);
@@ -348,6 +474,11 @@ export class DiscordMessage implements APIMessage {
       }
       if (sig1.includes("Make VariationsWeb")) {
         return "upscale";
+      }
+      if (sig1.includes("Cancel Job")) {
+        console.error("parsing Cancel Job:", this.content);
+        return "";
+        //return "imagine";
       }
       console.error("FIXME: can not Identify signature", sig1);
     }
@@ -437,22 +568,22 @@ export class DiscordMessage implements APIMessage {
     }
   }
 
-  reroll(): Promise<DiscordMessage> {
+  reroll(progress?: (percent: number) => void): Promise<DiscordMessage> {
     const comp = this.getComponents(REROLL);
     logger.info(`${comp.custom_id} Reroll will be generated`);
-    return this.#client.callCustomComponents(this.id, comp);
+    return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
-  upscale(id: number): Promise<DiscordMessage> {
+  upscale(id: number, progress?: (percent: number) => void): Promise<DiscordMessage> {
     const comp = this.getComponents(`U${id}`);
     logger.info(`${comp.custom_id} Upscale will be generated`);
-    return this.#client.callCustomComponents(this.id, comp);
+    return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
-  variant(id: number): Promise<DiscordMessage> {
+  variant(id: number, progress?: (percent: number) => void): Promise<DiscordMessage> {
     const comp = this.getComponents(`V${id}`, "Make Variations");
     logger.info(`${comp.custom_id} Variant will be generated`);
-    return this.#client.callCustomComponents(this.id, comp);
+    return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
   async refresh(): Promise<this> {
