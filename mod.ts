@@ -52,6 +52,7 @@
  *
  * const client = new Midjourney("interaction.txt");
  * const prompts: string[] = await client.describeUrl(
+ * await client.connectWs(); // Used Websocket to boost detection. (experiental)
  *   "https://cdn.midjourney.com/95e2c8fd-255c-4982-9065-83051143570c/0_0_640_N.webp",
  * );
  * console.log("reversed prompt: ", prompts);
@@ -63,8 +64,10 @@
  * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  *
  * const client = new Midjourney("interaction.txt");
+ * await client.connectWs(); // Used Websocket to boost detection. (experiental)
  * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
+ *   // add optional progress function (percent) => void
  * );
  * console.log("you find your result here: ", msg.attachments[0].url);
  * ```
@@ -74,6 +77,7 @@
  * > Upscale the first none upscaled images in chat, searching from the newest to the oldest images
  * ```ts
  * const client = new Midjourney("interaction.txt");
+ * await client.connectWs(); // Used Websocket to boost detection. (experiental)
  * const msgs = await client.getMessages();
  * main:
  * for (const msg of msgs) {
@@ -98,6 +102,7 @@
  * ```ts
  * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  * const client = new Midjourney("interaction.txt");
+ * await client.connectWs(); // Used Websocket to boost detection. (experiental)
  * const msgs = await client.getMessages();
  * main:
  * for (const msg of msgs) {
@@ -123,8 +128,10 @@
  * import Midjourney from "https://deno.land/x/midjourney_discord_api";
  *
  * const client = new Midjourney("interaction.txt");
+ * await client.connectWs(); // Used Websocket to boost detection. (experiental)
  * const msg = await client.imagine(
  *   "A photo of an astronaut riding a horse",
+ *   // , add optional progress function (percent) => void
  * );
  * if (msg.canReroll()) {
  *   const result = msg.reroll();

@@ -71,8 +71,10 @@ Here are some examples of how to use the `Midjourney` class:
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
+await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const prompts: string[] = await client.describeUrl(
   "https://cdn.midjourney.com/95e2c8fd-255c-4982-9065-83051143570c/0_0_640_N.webp",
+  /* add optional progress function (percent) => void*/
 );
 console.log("reversed prompt: ", prompts);
 ```
@@ -83,8 +85,10 @@ console.log("reversed prompt: ", prompts);
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
+await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msg = await client.imagine(
-  "A photo of an astronaut riding a horse",
+  "A photo of an astronaut riding a horse", 
+  /* add optional progress function (percent) => void */
 );
 console.log("you find your result here: ", msg.attachments[0].url);
 ```
@@ -101,6 +105,7 @@ import Midjourney from "midjourney-discord-api";
  * Variant the last image available in chat
  */
 const client = new Midjourney("interaction.txt");
+await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msgs = await client.getMessages();
 main:
 for (const msg of msgs) {
@@ -111,7 +116,7 @@ for (const msg of msgs) {
     const v = msg.canVariant(i)
     if (v) {
       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
-      const result = await msg.variant(i);
+      const result = await msg.variant(i /* , add optional progress function (percent) => void */);
       await result.download(0, "images");
       break main;
     }
@@ -126,6 +131,7 @@ for (const msg of msgs) {
  * Variant the last image available in chat
  */
 const client = new Midjourney("interaction.txt");
+await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msgs = await client.getMessages();
 main:
 for (const msg of msgs) {
@@ -136,7 +142,7 @@ for (const msg of msgs) {
     const v = msg.canVariant(i)
     if (v) {
       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
-      const result = await msg.variant(i);
+      const result = await msg.variant(i/* , add optional progress function (percent) => void */);
       await result.download(0, "images");
       break main;
     }
@@ -150,11 +156,13 @@ for (const msg of msgs) {
 import Midjourney from "midjourney-discord-api";
 
 const client = new Midjourney("interaction.txt");
+await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
+  /* add optional progress function (percent) => void */
 );
 if (msg.canReroll()) {
-  const result = msg.reroll();
+  const result = msg.reroll(/* add optional progress function (percent) => void */);
   console.log(`upscale V2 Ready from`, result.attachments[0].url);
 }
 ```
