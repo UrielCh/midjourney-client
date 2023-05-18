@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.2.1
+
+- improve dnt script
+
 ## V0.2.0
 
 - complet blend call

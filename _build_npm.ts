@@ -1,4 +1,4 @@
-import { build, emptyDir } from "https://deno.land/x/dnt@0.34.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.35.0/mod.ts";
 // check version here: https://www.npmjs.com/package/midjourney-discord-api
 // deno run -A _build_npm.ts 0.0.0;
 // cd npm; npm publish;
