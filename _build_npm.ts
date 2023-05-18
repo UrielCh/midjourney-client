@@ -1,6 +1,6 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.34.0/mod.ts";
 // check version here: https://www.npmjs.com/package/midjourney-discord-api
-// deno run -A _build.ts 0.0.0;
+// deno run -A _build_npm.ts 0.0.0;
 // cd npm; npm publish;
 if (!Deno.args[0]) {
   console.error("Missing version number");
@@ -79,11 +79,11 @@ async function buildDnt() {
           peerDependency: false,
           subPath: 'v9',
         },
-        // "https://deno.land/x/logger@v1.1.0/logger.ts": {
-        //   name: "pino",
-        //   version: "8.12.1",
-        //   peerDependency: false,
-        // },
+        "https://deno.land/x/logger@v1.1.0/logger.ts": {
+          name: "@denodnt/logger",
+          version: "1.1.0",
+          peerDependency: false,
+        },
       },
     });
 
