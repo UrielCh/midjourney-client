@@ -1,0 +1,47 @@
+# This workflow will install Deno then run `deno lint` and `deno test`.
+# For more information see: https://github.com/denoland/setup-deno
+
+name: Deno Test
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        # uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@9db7f66e8e16b5699a514448ce994936c63f0d54
+        with:
+          deno-version: v1.x
+
+      - name: Node setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+          
+      - name: Run linter
+        run: deno lint
+
+      - name: Run tests
+        run: deno test -A
+
+      - name: Run dnt
+        run: deno run -A _build_npm.ts
+      
+      - name: publish to npm
+        run: |
+          cd npm
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
