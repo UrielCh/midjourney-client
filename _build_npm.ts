@@ -1,6 +1,7 @@
 // dnt deps can not be moved to dev_deps.ts
 import { build, emptyDir } from "https://deno.land/x/dnt@0.35.0/mod.ts";
 import * as pc from "https://deno.land/std@0.188.0/fmt/colors.ts";
+import { PackageJsonObject } from "https://deno.land/x/dnt@0.35.0/lib/types.ts";
 
 export async function buildDnt() {
   let version = Deno.args[0];
@@ -39,6 +40,39 @@ export async function buildDnt() {
     Deno.exit(-1);
   }
 
+  const packageJson: PackageJsonObject = {
+    // package.json properties
+    name: "midjourney-discord-api",
+    author: "Uriel Chemouni <uchemouni@gmail.com> (https://uriel.deno.dev/)",
+    license: "MIT",
+    contributors: [],
+    description: "Midjourney client using Discord.",
+    keywords: [
+      "Midjourney",
+      "Midjourney-api",
+      "Midjourney",
+      "Wrapper",
+      "Discord",
+      "api",
+      "ai",
+      "text2image",
+      "deno",
+      "img2prompt",
+      "prompt2img",
+    ],
+    homepage: "https://github.com/UrielCh/midjourney-client",
+    version: Deno.args[0],
+    repository: {
+      type: "git",
+      url: "git+https://github.com/UrielCh/midjourney-client.git",
+    },
+    bugs: {
+      url: "https://github.com/UrielCh/midjourney-client/issues",
+    },
+    "engine-strict": {
+      node: ">=18",
+    },
+  }
   await emptyDir("./npm");
 
   await build({
@@ -67,39 +101,7 @@ export async function buildDnt() {
     compilerOptions: {
       lib: ["dom", "esnext"],
     },
-    package: {
-      // package.json properties
-      name: "midjourney-discord-api",
-      author: "Uriel Chemouni <uchemouni@gmail.com> (https://uriel.deno.dev/)",
-      license: "MIT",
-      contributors: [],
-      description: "Midjourney client using Discord.",
-      keywords: [
-        "Midjourney",
-        "Midjourney-api",
-        "Midjourney",
-        "Wrapper",
-        "Discord",
-        "api",
-        "ai",
-        "text2image",
-        "deno",
-        "img2prompt",
-        "prompt2img",
-      ],
-      homepage: "https://github.com/UrielCh/midjourney-client",
-      version: Deno.args[0],
-      repository: {
-        type: "git",
-        url: "git+https://github.com/UrielCh/midjourney-client.git",
-      },
-      bugs: {
-        url: "https://github.com/UrielCh/midjourney-client/issues",
-      },
-      "engine-strict": {
-        node: ">=18",
-      },
-    },
+    package: packageJson,
     mappings: {
       "https://deno.land/x/discord_api_types@0.37.40/v9.ts": {
         name: "discord-api-types",
