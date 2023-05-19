@@ -1,8 +1,6 @@
 /**
  * # midjourney-discord-api
  *
- * @file readme.md
- * @include
  * @module
  */
 

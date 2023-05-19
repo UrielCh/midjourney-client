@@ -1,7 +1,7 @@
 # This workflow will install Deno then run `deno lint` and `deno test`.
 # For more information see: https://github.com/denoland/setup-deno
 
-name: publish to NPM
+name: Publish to NPM
 
 on:
   release:
@@ -40,12 +40,12 @@ jobs:
       - name: Run tests
         run: deno test -A
 
-      - name: build Node JS code with dnt
+      - name: Build Node JS code with dnt
         run: deno run -A _build_npm.ts ${{inputs.npm_version}}
         env:
           PKG_VERSION: ${{inputs.npm_version}}
 
-      - name: publish to npmjs.com
+      - name: Publish to npmjs.com
         run: |
           cd npm
           npm publish

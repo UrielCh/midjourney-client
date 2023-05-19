@@ -3,6 +3,8 @@
 [![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
 _midjourney-discord-api_
 
+[Deno doc](https://deno.land/x/midjourney_discord_api)
+
 `midjourney-discord-api` is a library designed to connect to a Discord channel
 and send messages to be processed by the Midjourney bot. It utilizes the same
 requests as the Discord web client, allowing seamless communication with the
