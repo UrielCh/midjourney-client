@@ -3,6 +3,7 @@
 ## V0.2.1
 
 - improve dnt script
+- use Github action
 
 ## V0.2.0
 
