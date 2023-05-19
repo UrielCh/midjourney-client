@@ -11,7 +11,6 @@ on:
       version:
         description: 'Version number to publish on NPM X.Y.Z'
         required: true
-        default: '1.0.0'
 permissions:
   contents: read
 
