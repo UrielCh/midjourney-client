@@ -8,12 +8,10 @@ on:
     types: [created]
   workflow_dispatch:
    inputs:
-      logLevel:
-        description: 'version'
+      version:
+        description: 'Version number to publish on NPM X.Y.Z'
         required: true
         default: '1.0.0'
-      tags:
-        description: 'version rto publish'
 permissions:
   contents: read
 
