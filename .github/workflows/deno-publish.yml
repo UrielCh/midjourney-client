@@ -40,12 +40,12 @@ jobs:
       - name: Run tests
         run: deno test -A
 
-      - name: build NodeJs code with dnt
+      - name: build Node JS code with dnt
         run: deno run -A _build_npm.ts ${{inputs.npm_version}}
         env:
           PKG_VERSION: ${{inputs.npm_version}}
 
-      - name: publish to npm
+      - name: publish to npmjs.com
         run: |
           cd npm
           npm publish
