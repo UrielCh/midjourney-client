@@ -3,7 +3,7 @@ import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, InteractionName, Payload } from "./models.ts";
-import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle, EventEmitter, pc } from "../deps.ts";
+import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle, EventEmitter } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
