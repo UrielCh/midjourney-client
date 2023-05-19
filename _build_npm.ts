@@ -113,7 +113,7 @@ export async function buildDnt() {
     console.log("extra build steps");
     console.log("cwd:", Deno.cwd());
     Deno.copyFileSync("LICENSE", "npm/LICENSE");
-    let readme = Deno.readTextFileSync("README.md");
+    let readme = Deno.readTextFileSync("readme.md");
     readme = readme.replaceAll('https://deno.land/x/midjourney_discord_api/mod.ts', 'midjourney-discord-api');
     Deno.writeTextFileSync("npm/README.md", readme);
     //Deno.copyFileSync("README.md", "npm/README.md");
