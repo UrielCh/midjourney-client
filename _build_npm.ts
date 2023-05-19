@@ -7,11 +7,17 @@ import * as pc from "https://deno.land/std@0.188.0/fmt/colors.ts";
 export async function buildDnt() {
   let version = Deno.args[0];
   const GITHUB_REF = Deno.env.get("GITHUB_REF");
+  const PKG_VERSION = Deno.env.get("PKG_VERSION");
 
-  if (!version && GITHUB_REF) {
+  if (!version) {
+    if (PKG_VERSION) {
+      console.log(`NPM_VERSION values is ${pc.green(PKG_VERSION)}`);
+      version = PKG_VERSION;
+    } else if (GITHUB_REF) {
     // drop the ref/tag/ and the v prefix
-    console.log(`GITHUB_REF values is ${pc.green(GITHUB_REF)}`);
-    version = GITHUB_REF.replace(/^.+\/[vV]?/g, "");
+      version = GITHUB_REF.replace(/^.+\/[vV]?/g, "");
+      console.log(`GITHUB_REF values is ${pc.green(GITHUB_REF)} will be used as version: ${pc.green(version)}`);
+    }
   }
 
   if (!version) {

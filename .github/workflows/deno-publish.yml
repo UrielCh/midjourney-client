@@ -41,9 +41,11 @@ jobs:
       - name: Run tests
         run: deno test -A
 
-      - name: Run dnt
+      - name: build NodeJs code with dnt
         run: deno run -A _build_npm.ts ${{ github.event.inputs.verion }}
-      
+        env:
+          PKG_VERSION: ${{ github.event.inputs.verion }}
+
       - name: publish to npm
         run: |
           cd npm
