@@ -1,8 +1,6 @@
+// dnt deps can not be moved to dev_deps.ts
 import { build, emptyDir } from "https://deno.land/x/dnt@0.35.0/mod.ts";
 import * as pc from "https://deno.land/std@0.188.0/fmt/colors.ts";
-// check version here: https://www.npmjs.com/package/midjourney-discord-api
-// deno run -A _build_npm.ts 0.0.0;
-// cd npm; npm publish;
 
 export async function buildDnt() {
   let version = Deno.args[0];
