@@ -8,14 +8,14 @@ on:
     types: [created]
   workflow_dispatch:
    inputs:
-      version:
+      npm_version:
         description: 'Version number to publish on NPM X.Y.Z'
         required: true
 permissions:
   contents: read
 
 jobs:
-  test:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,9 +41,9 @@ jobs:
         run: deno test -A
 
       - name: build NodeJs code with dnt
-        run: deno run -A _build_npm.ts ${{ inputs.verion }}
+        run: deno run -A _build_npm.ts ${{inputs.npm_version}}
         env:
-          PKG_VERSION: ${{ inputs.verion }}
+          PKG_VERSION: ${{inputs.npm_version}}
 
       - name: publish to npm
         run: |
