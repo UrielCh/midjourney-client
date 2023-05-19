@@ -11,5 +11,5 @@ const client = new Midjourney("interaction.txt");
 const sourceImg1 = sampleUrls[(Math.random() * sampleUrls.length) | 0];
 const sourceImg2 = sampleUrls[(Math.random() * sampleUrls.length) | 0];
 await client.connectWs();
-const msg = await client.blendUrl([sourceImg1, sourceImg2], "2:3", progressLogger('Blend 2 images'));
+const msg = await client.blendUrl([sourceImg1, sourceImg2], "2:3", progressLogger("Blend 2 images"));
 await msg.download(0, "blend.png");

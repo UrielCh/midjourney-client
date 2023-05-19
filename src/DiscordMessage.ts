@@ -44,18 +44,16 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     // mode?: "fast" | "relaxed";
     // completion?: number; // 0..1
     // completion: -1,
-    source: '',
-    prompt: '',
-    name: '',
+    source: "",
+    prompt: "",
+    name: "",
   };
 
   let extra = content;
 
-
   /**
    * speed first
    */
-
 
   if (extra.endsWith(" (fast)")) {
     result.mode = "fast";
@@ -65,9 +63,9 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     extra = extra.substring(0, extra.length - 10);
   }
 
-/**
- * progression
- */
+  /**
+   * progression
+   */
 
   if (extra.endsWith(" (paused)")) {
     extra = extra.substring(0, extra.length - 9);
@@ -86,7 +84,6 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     }
   }
 
-
   /**
    * prefix
    */
@@ -101,24 +98,26 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     }
   }
 
-
   const extractId = extra.match(/ <@(\d+)>$/);
   if (extractId) {
     extra = extra.substring(0, extra.length - extractId[0].length);
     result.id = extractId[1];
   }
   // can be present befor the <@id>
-  if (extra.endsWith(' Upscaled by')) {
+  if (extra.endsWith(" Upscaled by")) {
     extra = extra.substring(0, extra.length - 12);
-    if (result.completion === undefined)
+    if (result.completion === undefined) {
       result.completion = 1; // Upscaled are only display at completion
-  } else if (extra.endsWith(' Variations by')) {
+    }
+  } else if (extra.endsWith(" Variations by")) {
     extra = extra.substring(0, extra.length - 14);
-    if (result.completion === undefined)
+    if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
-  } else if (extra.endsWith('** -')) {
-    if (result.completion === undefined)
+    }
+  } else if (extra.endsWith("** -")) {
+    if (result.completion === undefined) {
       result.completion = 1; // imagen on blend
+    }
   }
 
   {
@@ -129,21 +128,17 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     }
   }
 
-  if (extra.endsWith('** -')) {
+  if (extra.endsWith("** -")) {
     extra = extra.substring(0, extra.length - 2);
   }
 
-
-
-  if (extra.startsWith('**') && extra.endsWith('**') && extra.length > 4)  {
+  if (extra.startsWith("**") && extra.endsWith("**") && extra.length > 4) {
     result.prompt = extra.substring(2, extra.length - 2);
     return result;
   }
 
   logger.warn("Failed to extract prompt data from:", pc.yellow(content));
   logger.warn(`Extra data:"${pc.yellow(extra)}"`);
-
-
 
   // if (content.startsWith("Making variations for image #")) {
   //   const m = content.match(
@@ -162,13 +157,13 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   };
   //   return prompt;
   // }
-// 
+  //
   // let m = content.match(/^\*\*(.+)\*\* - (.+)$/); // (.+) <@(\d+)>
   // if (!m) {
   //   logger.warn("Failed to extract prompt data from:", content);
   //   return undefined;
   // }
-// 
+  //
   // const prompt: SplitedPrompt = {
   //   prompt: m[1],
   //   source: content,
@@ -182,15 +177,15 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   prompt.mode = "relaxed";
   //   extra = extra.substring(0, extra.length - 10);
   // }
-// 
-// 
+  //
+  //
   // m = extra.match(/^<@(\d+)>$/);
   // if (m) {
   //   prompt.id = m[1];
   //   // prompt.type = "grid";
   //   return prompt;
   // }
-// 
+  //
   // m = extra.match(/^Variations by <@(\d+)>$/);
   // if (m) {
   //   prompt.id = m[1];
@@ -198,7 +193,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   // prompt.type = "variations";
   //   return prompt;
   // }
-// 
+  //
   // m = extra.match(/^Upscaled by <@(\d+)>$/);
   // if (m) {
   //   prompt.id = m[1];
@@ -206,7 +201,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   // prompt.type = "upscale";
   //   return prompt;
   // }
-// 
+  //
   // m = extra.match(
   //   /^Variations by <@(\d+)>$/,
   // );
@@ -224,7 +219,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   prompt.name = `Image #${m[1]}`;
   //   return prompt;
   // }
-// 
+  //
   // m = extra.match(/^<@(\d+)> \((\d+)%\)$/);
   // if (m) {
   //   prompt.id = m[1];
@@ -232,7 +227,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   // prompt.type = "grid";
   //   return prompt;
   // }
-// 
+  //
   // m = extra.match(/^<@(\d+)> \(Waiting to start\)$/);
   // if (m) {
   //   prompt.id = m[1];
@@ -247,7 +242,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   //   // prompt.type = "grid";
   //   return prompt;
   // }
-// 
+  //
   // if (!extra.length) {
   //   return prompt;
   // }

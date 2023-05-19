@@ -225,18 +225,19 @@ export class Midjourney {
           // console.log(`RCV DISPATCH `, pc.green(data.t));
           switch (data.t) {
             case "MESSAGE_CREATE":
-            case "MESSAGE_UPDATE": {
-              let discMsg = new DiscordMessage(this, data.d);
-              if (discMsg.content && !discMsg.prompt) {
-                /// for debug only
-                discMsg = new DiscordMessage(this, data.d);
-                discMsg = new DiscordMessage(this, data.d);
-              }
-              this.messageEmmiter.emit(
-                "message",
-                data.d.id,
-                discMsg,
-              );
+            case "MESSAGE_UPDATE":
+              {
+                let discMsg = new DiscordMessage(this, data.d);
+                if (discMsg.content && !discMsg.prompt) {
+                  /// for debug only
+                  discMsg = new DiscordMessage(this, data.d);
+                  discMsg = new DiscordMessage(this, data.d);
+                }
+                this.messageEmmiter.emit(
+                  "message",
+                  data.d.id,
+                  discMsg,
+                );
               }
               break;
             case "MESSAGE_DELETE":
@@ -682,15 +683,16 @@ export class Midjourney {
   public waitMessage(opts: WaitOptions = {}): Promise<DiscordMessage> {
     if (!opts.progress) {
       opts.progress = (percent: number) => {
-        if (percent < 0)
+        if (percent < 0) {
           logger.info(`wait for the prompt in Queue`);
-        else if (percent === 1)
+        } else if (percent === 1) {
           logger.info(`waitMessage found a 100% process done message`);
-        else
-        logger.info(
-          `follow message completion: (${(percent * 100).toFixed(0)}%)`,
-        );
-      }
+        } else {
+          logger.info(
+            `follow message completion: (${(percent * 100).toFixed(0)}%)`,
+          );
+        }
+      };
     }
     return this.waitMessageInternal(opts as WaitOptionsProgress);
   }

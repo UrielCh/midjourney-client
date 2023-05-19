@@ -2,7 +2,7 @@ import { assertEquals, assertExists } from "../dev_deps.ts";
 import { extractPrompt } from "./DiscordMessage.ts";
 
 Deno.test(function ParseMidJourneyVariationsFast() {
-  const p =  "**drawing of an office id badge design template colorful --v 5** - Variations by <@1097074882203303911> (fast)";
+  const p = "**drawing of an office id badge design template colorful --v 5** - Variations by <@1097074882203303911> (fast)";
   const p1 = extractPrompt(p);
   assertExists(p1);
   assertEquals(
@@ -112,28 +112,28 @@ Deno.test(function ParseMidJourneyUpscaled() {
 });
 
 Deno.test(function ParseVariantStreamContentWait() {
-  const p = 'Making variations for image #1 with prompt **a view of Paris drawn by Kanagawa --v 5** - <@1097074882203303911> (Waiting to start)';
+  const p = "Making variations for image #1 with prompt **a view of Paris drawn by Kanagawa --v 5** - <@1097074882203303911> (Waiting to start)";
   const p1 = extractPrompt(p);
   assertExists(p1);
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, -1);
-})
+});
 
 Deno.test(function ParseVariantStreamContentPercent() {
-  const p = '**a view of Paris drawn by Kanagawa --v 5.1** - Variations by <@1097074882203303911> (0%) (relaxed)';
+  const p = "**a view of Paris drawn by Kanagawa --v 5.1** - Variations by <@1097074882203303911> (0%) (relaxed)";
   const p1 = extractPrompt(p);
   assertExists(p1);
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa --v 5.1");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 0);
-})
+});
 
 Deno.test(function MergeCompleted() {
-  const p = '**<https://s.mj.run/abc> <https://s.mj.run/def> --ar 2:3 --v 5.1** - <@1097074882203303911> (relaxed)';
+  const p = "**<https://s.mj.run/abc> <https://s.mj.run/def> --ar 2:3 --v 5.1** - <@1097074882203303911> (relaxed)";
   const p1 = extractPrompt(p);
   assertExists(p1);
   assertEquals(p1.prompt, "<https://s.mj.run/abc> <https://s.mj.run/def> --ar 2:3 --v 5.1");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-})
+});

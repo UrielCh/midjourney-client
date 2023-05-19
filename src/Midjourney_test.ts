@@ -1,4 +1,4 @@
-import { assertEquals, assert} from "../dev_deps.ts";
+import { assert, assertEquals } from "../dev_deps.ts";
 import Midjourney from "./Midjourney.ts";
 import { join } from "../dev_deps.ts";
 import { wait } from "./utils.ts";
