@@ -5,9 +5,9 @@ name: Deno Test
 
 on:
   push:
-    branches: ["master", "new-doc"]
+    branches: ["main"]
   pull_request:
-    branches: ["master", "new-doc"]
+    branches: ["main"]
 
 permissions:
   contents: read
