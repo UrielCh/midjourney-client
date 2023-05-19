@@ -42,9 +42,9 @@ jobs:
         run: deno test -A
 
       - name: build NodeJs code with dnt
-        run: deno run -A _build_npm.ts ${{ github.event.inputs.verion }}
+        run: deno run -A _build_npm.ts ${{ inputs.verion }}
         env:
-          PKG_VERSION: ${{ github.event.inputs.verion }}
+          PKG_VERSION: ${{ inputs.verion }}
 
       - name: publish to npm
         run: |
