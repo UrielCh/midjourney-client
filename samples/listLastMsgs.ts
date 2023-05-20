@@ -13,4 +13,4 @@ for (const msg of msgs) {
     console.log(`${pc.green("prompt:")} ${msg.prompt.source}`);
   }
   console.log(`${pc.green("Partent Type:")} ${msg.parentInteraction}`);
-} 
+}

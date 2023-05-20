@@ -29,7 +29,7 @@ export interface SplitedPrompt {
   source: string;
   prompt: string;
   id?: string;
-  mode?: "fast" | "relaxed" | 'fast, stealth';
+  mode?: "fast" | "relaxed" | "fast, stealth" | "relaxed, stealth";
   name: string;
   completion?: number; // 0..1
 }
@@ -64,6 +64,9 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   } else if (extra.endsWith(" (fast, stealth)")) {
     result.mode = "fast, stealth";
     extra = extra.substring(0, extra.length - 16);
+  } else if (extra.endsWith(" (relaxed, stealth)")) {
+    result.mode = "relaxed, stealth";
+    extra = extra.substring(0, extra.length - 19);
   }
 
   /**
@@ -348,10 +351,11 @@ export class DiscordMessage implements APIMessage {
 
   get componentsNames(): string[] {
     const out: string[] = [];
-    if (!this.components)
+    if (!this.components) {
       return out;
+    }
     for (const component of this.components) {
-      const line = component.components.map((a) => (a as { label: string }).label).filter(a=>a);
+      const line = component.components.map((a) => (a as { label: string }).label).filter((a) => a);
       out.push(...line);
     }
     return out;
@@ -371,11 +375,11 @@ export class DiscordMessage implements APIMessage {
         if (this.prompt) {
           // "<https://s.mj.run/abcd> <https://s.mj.run/abcd> --ar 2:3 --v 5.1"
           let prompt = this.prompt.prompt;
-          prompt = prompt.replace(/ --s [0-9]+$/, '');
-          prompt = prompt.replace(/ --(v|niji) [0-9.]+$/, '');
-          prompt = prompt.replace(/ --ar [:0-9]+$/, '');
-          const urls = prompt.split(' ');
-          const u2 = urls.map(a => !a.match(/<https:\/\/s\.mj\.run\/[\w\d]+>/)).filter(a=>a);
+          prompt = prompt.replace(/ --s [0-9]+$/, "");
+          prompt = prompt.replace(/ --(v|niji) [0-9.]+$/, "");
+          prompt = prompt.replace(/ --ar [:0-9]+$/, "");
+          const urls = prompt.split(" ");
+          const u2 = urls.map((a) => !a.match(/<https:\/\/s\.mj\.run\/[\w\d]+>/)).filter((a) => a);
           if (u2.length === 0 && urls.length > 1) {
             return "blend";
           }
@@ -389,7 +393,7 @@ export class DiscordMessage implements APIMessage {
       // if (sig1 === 'Make VariationsRemasterWeb') {
       //   return "upscale";
       // }
-      if (this.prompt && this.prompt.source.startsWith('Image #')) {
+      if (this.prompt && this.prompt.source.startsWith("Image #")) {
         return "upscale";
       }
       if (sig1.includes("Cancel Job")) {
@@ -523,7 +527,7 @@ export class DiscordMessage implements APIMessage {
   //   }
   // }
 
-  async download(attachementId: number, dest: string): Promise<{data: ArrayBufferLike, file: string, cached: boolean} | null> {
+  async download(attachementId: number, dest: string): Promise<{ data: ArrayBufferLike; file: string; cached: boolean } | null> {
     // await this.waitForattachements();
     const att = (this.attachments || [])[attachementId];
     if (!att) {

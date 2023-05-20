@@ -1,9 +1,8 @@
-import { MIDJOURNEY_CHANNELS, Midjourney, SnowflakeObj } from "../mod.ts";
+import { Midjourney, MIDJOURNEY_CHANNELS, SnowflakeObj } from "../mod.ts";
 import { pc } from "../deps.ts";
 import nativebird from "npm:nativebird";
 
-
-async function downloadChannnel(url: `https://discord.com/channels/${number}/${number}`, toDownload=2000) {
+async function downloadChannnel(url: `https://discord.com/channels/${number}/${number}`, toDownload = 2000) {
   const client = new Midjourney("interaction.txt");
   let dateEnd = new SnowflakeObj();
   const limit = 100;
@@ -30,18 +29,18 @@ async function downloadChannnel(url: `https://discord.com/channels/${number}/${n
             const date = new SnowflakeObj(msg.id).date;
             await fd.write(
               new TextEncoder().encode(
-                `${date.toISOString()}\t${msg.id}\t${
-                  result.file
-                }\t${msg.componentsNames.join(",")}\t${msg.content.replaceAll(
-                  /[\r\n\t]+/g,
-                  " "
-                )}\n`
-              )
+                `${date.toISOString()}\t${msg.id}\t${result.file}\t${msg.componentsNames.join(",")}\t${
+                  msg.content.replaceAll(
+                    /[\r\n\t]+/g,
+                    " ",
+                  )
+                }\n`,
+              ),
             );
           }
         }
       },
-      { concurrency: 5 }
+      { concurrency: 5 },
     );
 
     if (msgs.length < limit) {
@@ -53,7 +52,7 @@ async function downloadChannnel(url: `https://discord.com/channels/${number}/${n
   }
   fd.close();
   console.log(
-    `Done ${pc.green("" + nbMessage)}/${pc.green("" + toDownload)} downloaded`
+    `Done ${pc.green("" + nbMessage)}/${pc.green("" + toDownload)} downloaded`,
   );
 }
 

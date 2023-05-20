@@ -114,13 +114,13 @@ export class Midjourney {
   }
 
   setDiscordChannelUrl(url: `https://discord.com/channels/${number}/${number}`) {
-    const ids = url.split('/').filter(a=> a.match(/^\d+$/));
-    if (ids.length != 2)
-      throw Error("invalid url discord channels urls looks like https://discord.com/channels/1234567890/1234567890")
+    const ids = url.split("/").filter((a) => a.match(/^\d+$/));
+    if (ids.length != 2) {
+      throw Error("invalid url discord channels urls looks like https://discord.com/channels/1234567890/1234567890");
+    }
     this._guild_id = ids[0];
     this._channel_id = ids[1];
   }
-
 
   // public async connectDiscordBot(): Promise<void> {
   //   if (!this.DISCORD_TOKEN) {
@@ -913,8 +913,9 @@ export class Midjourney {
     const url = new URL(imageUrl);
     const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
-    if (!imageData)
-      throw Error('download failed');
+    if (!imageData) {
+      throw Error("download failed");
+    }
     return this.describeImage(filename, imageData.data, undefined, progress);
   }
   /**
@@ -974,16 +975,18 @@ export class Midjourney {
         const url = new URL(imageUrl);
         const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
         const imageData = await download(imageUrl, filename);
-        if (!imageData)
-          throw Error('download failed');
+        if (!imageData) {
+          throw Error("download failed");
+        }
         return {
           filename,
           imageData: imageData.data,
         };
       }),
     );
-    if (!images)
-      throw Error('download failed');
+    if (!images) {
+      throw Error("download failed");
+    }
     return this.blend(images, dimensions, progress);
   }
 

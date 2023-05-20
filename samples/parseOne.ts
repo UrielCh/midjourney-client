@@ -1,9 +1,9 @@
-import { MIDJOURNEY_CHANNELS, Midjourney } from "../mod.ts";
+import { Midjourney, MIDJOURNEY_CHANNELS } from "../mod.ts";
 import { pc } from "../deps.ts";
 
 const client = new Midjourney("interaction.txt");
 client.setDiscordChannelUrl(MIDJOURNEY_CHANNELS.general1);
-const msg = await client.getMessageById('1109430481621098507');
+const msg = await client.getMessageById("1109430481621098507");
 console.log("");
 console.log(`${pc.green("content:")} ${msg.content}`);
 if (msg.prompt) {

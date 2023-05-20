@@ -54,7 +54,6 @@ Deno.test(function randomUpscale() {
   assertEquals(p1.completion, 1);
 });
 
-
 Deno.test(function ParseMidJourneyDoneRelaxed2() {
   const p = "**ice creams, pinkcore, organic shapes --v 5** - <@1097074882203303911> (paused) (relaxed)";
   const p1 = extractPrompt(p);

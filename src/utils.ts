@@ -7,13 +7,13 @@ export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve,
 export async function download(
   url: string,
   filename: string,
-): Promise<{data: ArrayBufferLike, file: string}> {
+): Promise<{ data: ArrayBufferLike; file: string }> {
   const data = await (await fetch(url)).arrayBuffer();
   if (filename) {
     logger.info(`saving downloaded file to ${filename}`);
     await Deno.writeFile(filename, new Uint8Array(data));
   }
-  return {data, file: filename};
+  return { data, file: filename };
 }
 
 /**
@@ -22,12 +22,12 @@ export async function download(
 export async function downloadFileCached(
   url: string,
   filename: string,
-): Promise<{data: ArrayBufferLike, file: string, cached: boolean}> {
+): Promise<{ data: ArrayBufferLike; file: string; cached: boolean }> {
   try {
     const content: Uint8Array = await Deno.readFile(filename);
-    return {data: content.buffer, file: filename, cached: true};
+    return { data: content.buffer, file: filename, cached: true };
   } catch (_e) {
-    return {...await download(url, filename), cached: false};
+    return { ...await download(url, filename), cached: false };
   }
 }
 
