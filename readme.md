@@ -210,7 +210,7 @@ check all the samples [here](https://github.com/UrielCh/midjourney-client/tree/m
 | [describeRegen.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/describeRegen.ts)             | descript an image then imagine the returned prompts |
 | [listLastMsgs.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/listLastMsgs.ts)               | list last message                                   |
 | [parseOne.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/parseOne.ts)                       | debug one message                                   |
-| [progressLogger.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/progressLogger.ts)           | a progressbart provider                             |
+| [progressLogger.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/progressLogger.ts)           | a progress logger provider                          |
 | [sampleUrls.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/sampleUrls.ts)                   | samples Image url used in test script               |
 | [saveAll.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/saveAll.ts)                         | download all image from a channel                   |
 | [upscaleLast.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/upscaleLast.ts)                 | upscall the last non upscalled image                |
