@@ -2,6 +2,8 @@ import { Midjourney, MIDJOURNEY_CHANNELS, SnowflakeObj } from "../mod.ts";
 import { pc } from "../deps.ts";
 import nativebird from "npm:nativebird";
 
+// logger.disable("info");
+
 async function downloadChannnel(url: `https://discord.com/channels/${number}/${number}`, toDownload = 2000) {
   const client = new Midjourney("interaction.txt");
   let dateEnd = new SnowflakeObj();
@@ -21,6 +23,11 @@ async function downloadChannnel(url: `https://discord.com/channels/${number}/${n
     await nativebird.map(
       msgs,
       async (msg) => {
+        if (msg.author.id !== "936929561302675456")
+          return;
+        if (!msg.prompt) {
+          console.log('no prompt from:', msg.content)
+        }
         const nbAtt = msg.attachments.length;
         for (let attachementId = 0; attachementId < nbAtt; attachementId++) {
           const dest = `${destFolder}/${msg.parentInteraction}`;
@@ -56,9 +63,11 @@ async function downloadChannnel(url: `https://discord.com/channels/${number}/${n
   );
 }
 
-const p2 = downloadChannnel(MIDJOURNEY_CHANNELS.general2);
-const p3 = downloadChannnel(MIDJOURNEY_CHANNELS.general3);
-const p4 = downloadChannnel(MIDJOURNEY_CHANNELS.general4);
-const p5 = downloadChannnel(MIDJOURNEY_CHANNELS.general5);
+const ps = [
+  downloadChannnel(MIDJOURNEY_CHANNELS.general2),
+  downloadChannnel(MIDJOURNEY_CHANNELS.general3),
+  downloadChannnel(MIDJOURNEY_CHANNELS.general4),
+  downloadChannnel(MIDJOURNEY_CHANNELS.general5),
+]
 
-await Promise.all([p2, p3, p4, p5]);
+await Promise.all(ps);

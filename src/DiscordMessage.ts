@@ -34,7 +34,13 @@ export interface SplitedPrompt {
   completion?: number; // 0..1
 }
 
-export function extractPrompt(content: string): SplitedPrompt | undefined {
+const progressionQueue = -1;
+const progressionStoped = -1;
+
+export function extractPrompt(
+  content: string,
+  id: Snowflake
+): SplitedPrompt | undefined {
   if (!content) {
     return undefined;
   }
@@ -75,13 +81,16 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
 
   if (extra.endsWith(" (paused)")) {
     extra = extra.substring(0, extra.length - 9);
-    result.completion = -1;
+    result.completion = progressionQueue;
+  } else if (extra.endsWith(" (Stopped)")) {
+    extra = extra.substring(0, extra.length - 10);
+    result.completion = progressionStoped;
   } else if (extra.endsWith(" (Open on website for full quality)")) {
     extra = extra.substring(0, extra.length - 35);
     result.completion = 1;
   } else if (extra.endsWith(" (Waiting to start)")) {
     extra = extra.substring(0, extra.length - 19);
-    result.completion = -1;
+    result.completion = progressionQueue;
   } else {
     const extractPercent = extra.match(/ \(([0-9]+)%\)$/);
     if (extractPercent) {
@@ -96,7 +105,7 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
 
   if (extra.startsWith("Making variations for image #")) {
     const prefix = extra.match(
-      /^Making variations for image #(\d) with prompt /,
+      /^Making variations for image #(\d) with prompt /
     );
     if (prefix) {
       result.name = prefix[1];
@@ -120,10 +129,30 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
     }
+  } else if (extra.endsWith(" Upscaled (Beta) by")) {
+    extra = extra.substring(0, extra.length - 19);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
+  } else if (extra.endsWith(" Upscaled (Max) by")) {
+    extra = extra.substring(0, extra.length - 18);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
+  } else if (extra.endsWith(" Upscaled (Light) by")) {
+    extra = extra.substring(0, extra.length - 20);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
   } else if (extra.endsWith(" Remix by")) {
     extra = extra.substring(0, extra.length - 9);
     if (result.completion === undefined) {
-      result.completion = 1; // Variations are only display at completion
+      result.completion = 1;
+    }
+  } else if (extra.endsWith(" Remaster by")) {
+    extra = extra.substring(0, extra.length - 12);
+    if (result.completion === undefined) {
+      result.completion = 1;
     }
   } else if (extra.endsWith("** -")) {
     if (result.completion === undefined) {
@@ -148,9 +177,10 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     result.prompt = extra.substring(2, extra.length - 2);
     return result;
   }
-
-  logger.warn("Failed to extract prompt data from:", pc.yellow(content));
-  logger.warn(`Extra data:"${pc.yellow(extra)}"`);
+  if (id === "936929561302675456") {
+    logger.warn(`Failed to extract prompt data from: ${pc.yellow(content)}`);
+    logger.warn(`Extra data:"${pc.yellow(extra)}"`);
+  }
 }
 
 export class DiscordMessage implements APIMessage {
@@ -303,12 +333,12 @@ export class DiscordMessage implements APIMessage {
     Object.assign(this, source);
     this.#client = client;
     // this.id = source.id;
-    this.prompt = extractPrompt(source.content);
+    this.prompt = extractPrompt(source.content, source.author.id);
     this.content = source.content;
     if (source.referenced_message) {
       this.referenced_message = new DiscordMessage(
         client,
-        source.referenced_message,
+        source.referenced_message
       );
     }
     // labels: '1️⃣2️⃣3️⃣4️⃣🔄'
@@ -355,7 +385,9 @@ export class DiscordMessage implements APIMessage {
       return out;
     }
     for (const component of this.components) {
-      const line = component.components.map((a) => (a as { label: string }).label).filter((a) => a);
+      const line = component.components
+        .map((a) => (a as { label: string }).label)
+        .filter((a) => a);
       out.push(...line);
     }
     return out;
@@ -368,8 +400,12 @@ export class DiscordMessage implements APIMessage {
     if (this.components && this.components.length) {
       const sig1 = this.componentsNames.join("");
       // [0].components.map((a) => (a as { label: string }).label).join("");
-      if (sig1 === "U1V1" || sig1.includes("U1U2")) { // U3U4
-        if (this.referenced_message && this.referenced_message.parentInteraction === "imagine") {
+      if (sig1 === "U1V1" || sig1.includes("U1U2")) {
+        // U3U4
+        if (
+          this.referenced_message &&
+          this.referenced_message.parentInteraction === "imagine"
+        ) {
           return "variations";
         }
         if (this.prompt) {
@@ -379,7 +415,9 @@ export class DiscordMessage implements APIMessage {
           prompt = prompt.replace(/ --(v|niji) [0-9.]+$/, "");
           prompt = prompt.replace(/ --ar [:0-9]+$/, "");
           const urls = prompt.split(" ");
-          const u2 = urls.map((a) => !a.match(/<https:\/\/s\.mj\.run\/[\w\d]+>/)).filter((a) => a);
+          const u2 = urls
+            .map((a) => !a.match(/<https:\/\/s\.mj\.run\/[\w\d]+>/))
+            .filter((a) => a);
           if (u2.length === 0 && urls.length > 1) {
             return "blend";
           }
@@ -387,7 +425,11 @@ export class DiscordMessage implements APIMessage {
         return "imagine";
       }
       // Make VariationsDetailed Upscale RedoBeta Upscale RedoRemasterWeb
-      if (sig1.includes("Make VariationsWeb") || sig1.includes("Make VariationsLight Upscale") || sig1.includes("Make VariationsDetailed Upscale")) {
+      if (
+        sig1.includes("Make VariationsWeb") ||
+        sig1.includes("Make VariationsLight Upscale") ||
+        sig1.includes("Make VariationsDetailed Upscale")
+      ) {
         return "upscale";
       }
       // if (sig1 === 'Make VariationsRemasterWeb') {
@@ -401,12 +443,19 @@ export class DiscordMessage implements APIMessage {
         return "";
         //return "imagine";
       }
-      console.error(`FIXME: can not Identify signature ${pc.green(sig1)} in message: ${pc.green(this.id)}`);
+      console.error(
+        `FIXME: can not Identify signature ${pc.green(
+          sig1
+        )} in message: ${pc.green(this.id)}`
+      );
     }
     return "";
   }
 
-  public getComponents(label: string, label2?: string): APIButtonComponentWithCustomId {
+  public getComponents(
+    label: string,
+    label2?: string
+  ): APIButtonComponentWithCustomId {
     if (!this.components) {
       throw Error("no components In this message.");
     }
@@ -416,7 +465,8 @@ export class DiscordMessage implements APIMessage {
         if (!("custom_id" in c)) continue;
         if ("label" in c && c.label && c.label) {
           if (c.label === label) return c as APIButtonComponentWithCustomId;
-          if (label2 && c.label === label2) return c as APIButtonComponentWithCustomId;
+          if (label2 && c.label === label2)
+            return c as APIButtonComponentWithCustomId;
           availableLabels.push(c.label);
         } else if ("emoji" in c && c.emoji && c.emoji.name) {
           if (c.emoji.name === label) {
@@ -430,7 +480,9 @@ export class DiscordMessage implements APIMessage {
       }
     }
     throw Error(
-      `Failed to find componant named "${label}" within ${availableLabels.map((a) => `"${a}"`).join(", ")}`,
+      `Failed to find componant named "${label}" within ${availableLabels
+        .map((a) => `"${a}"`)
+        .join(", ")}`
     );
   }
 
@@ -453,7 +505,8 @@ export class DiscordMessage implements APIMessage {
     try {
       const c = this.getComponents(selector);
       if (id) {
-        if (!c.disabled && c.style !== ButtonStyle.Primary) { // 1 is primary button means that it had already been click
+        if (!c.disabled && c.style !== ButtonStyle.Primary) {
+          // 1 is primary button means that it had already been click
           return c;
         }
         return null;
@@ -495,13 +548,19 @@ export class DiscordMessage implements APIMessage {
     return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
-  upscale(id: number, progress?: (percent: number) => void): Promise<DiscordMessage> {
+  upscale(
+    id: number,
+    progress?: (percent: number) => void
+  ): Promise<DiscordMessage> {
     const comp = this.getComponents(`U${id}`);
     logger.info(`${comp.custom_id} Upscale will be generated`);
     return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
-  variant(id: number, progress?: (percent: number) => void): Promise<DiscordMessage> {
+  variant(
+    id: number,
+    progress?: (percent: number) => void
+  ): Promise<DiscordMessage> {
     const comp = this.getComponents(`V${id}`, "Make Variations");
     logger.info(`${comp.custom_id} Variant will be generated`);
     return this.#client.callCustomComponents(this.id, comp, progress);
@@ -527,7 +586,10 @@ export class DiscordMessage implements APIMessage {
   //   }
   // }
 
-  async download(attachementId: number, dest: string): Promise<{ data: ArrayBufferLike; file: string; cached: boolean } | null> {
+  async download(
+    attachementId: number,
+    dest: string
+  ): Promise<{ data: ArrayBufferLike; file: string; cached: boolean } | null> {
     // await this.waitForattachements();
     const att = (this.attachments || [])[attachementId];
     if (!att) {
