@@ -205,7 +205,7 @@ check all the samples [here](https://github.com/UrielCh/midjourney-client/tree/m
 
 | name                                                                                                            |  function                                           |
 | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [ImagineSet.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/ImagineSet.ts)                   | Call mutiple /imagine function at the same time     |
+| [ImagineSet.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/ImagineSet.ts)                   | Call concurent /imagine function at the same time   |
 | [blendImages.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/blendImages.ts)                 | blend 2 random images                               |
 | [describeRegen.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/describeRegen.ts)             | descript an image then imagine the returned prompts |
 | [listLastMsgs.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/listLastMsgs.ts)               | list last message                                   |
