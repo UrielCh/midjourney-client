@@ -202,10 +202,23 @@ if (msg.canReroll()) {
 }
 ```
 
-## API Documentation
+## More Samples
 
-Refer to the provided method signatures and samples in the original post for
-detailed information on how to use each method and interface.
+check all the samples [here](https://github.com/UrielCh/midjourney-client/tree/main/samples)
+
+| name                                                                                                            |  function                                           |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [ImagineSet.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/ImagineSet.ts)                   | Call mutiple /imagine function at the same time     |
+| [blendImages.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/blendImages.ts)                 | blend 2 random images                               |
+| [describeRegen.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/describeRegen.ts)             | descript an image then imagine the returned prompts |
+| [listLastMsgs.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/listLastMsgs.ts)               | list last message                                   |
+| [parseOne.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/parseOne.ts)                       | debug one message                                   |
+| [progressLogger.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/progressLogger.ts)           | a progressbart provider                             |
+| [sampleUrls.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/sampleUrls.ts)                   | samples Image url used in test script               |
+| [saveAll.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/saveAll.ts)                         | download all image from a channel                   |
+| [upscaleLast.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/upscaleLast.ts)                 | upscall the last non upscalled image                |
+| [upscaleLasthoursAgo.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/upscaleLasthoursAgo.ts) | upscall an image at a specific time                 |
+| [variantLast.ts](https://github.com/UrielCh/midjourney-client/blob/main/samples/variantLast.ts)                 | generate variante for a the last generated image    |
 
 ## Contributing
 
