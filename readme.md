@@ -15,16 +15,13 @@ Midjourney bot using your web development tools.
 
 | feature     | Status | feature      | Status |
 | ----------- | ------ | ------------ | ------ |
-| `/ask`      | 🙈     | `/private`   | ❌ N/A |
-| `/blend`    | ✅     | `/public`    | ❌ N/A |
+| `/blend`    | ✅     | `Reroll`    | ✅     |
 | `/describe` | ✅     | `/relax`     | ✅     |
 | `/fast`     | ✅     | `/settings`  | ✅     |
-| `/help`     | 🙈     | `/show`      | ❌ N/A |
-| `/imagine`  | ✅     | `/stealth`   | ❌ N/A |
-| `/info`     | ❌ N/A | `/subscribe` | 🙈     |
-| `/invite`   | 🙈     | `/prefer`    | ❌ N/A |
-| `Upscale`   | ✅     | `Variations` | ✅     |
-| `Reroll`    | ✅     |              |        |
+| `/imagine`  | ✅     | `Variations` | ✅     |
+| `Upscale`   | ✅     | `/stealth`   | ❌ N/A |
+| `/private`  | ❌ N/A | `/public`    | ❌ N/A |
+| `/show`      | ❌ N/A |
 
 ## Installation
 
