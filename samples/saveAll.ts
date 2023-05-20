@@ -23,10 +23,11 @@ async function downloadChannnel(url: `https://discord.com/channels/${number}/${n
     await nativebird.map(
       msgs,
       async (msg) => {
-        if (msg.author.id !== "936929561302675456")
+        if (msg.author.id !== "936929561302675456") {
           return;
+        }
         if (!msg.prompt) {
-          console.log('no prompt from:', msg.content)
+          console.log("no prompt from:", msg.content);
         }
         const nbAtt = msg.attachments.length;
         for (let attachementId = 0; attachementId < nbAtt; attachementId++) {
@@ -68,6 +69,6 @@ const ps = [
   downloadChannnel(MIDJOURNEY_CHANNELS.general3),
   downloadChannnel(MIDJOURNEY_CHANNELS.general4),
   downloadChannnel(MIDJOURNEY_CHANNELS.general5),
-]
+];
 
 await Promise.all(ps);

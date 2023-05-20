@@ -39,7 +39,7 @@ const progressionStoped = -1;
 
 export function extractPrompt(
   content: string,
-  id: Snowflake
+  id: Snowflake,
 ): SplitedPrompt | undefined {
   if (!content) {
     return undefined;
@@ -105,7 +105,7 @@ export function extractPrompt(
 
   if (extra.startsWith("Making variations for image #")) {
     const prefix = extra.match(
-      /^Making variations for image #(\d) with prompt /
+      /^Making variations for image #(\d) with prompt /,
     );
     if (prefix) {
       result.name = prefix[1];
@@ -338,7 +338,7 @@ export class DiscordMessage implements APIMessage {
     if (source.referenced_message) {
       this.referenced_message = new DiscordMessage(
         client,
-        source.referenced_message
+        source.referenced_message,
       );
     }
     // labels: '1️⃣2️⃣3️⃣4️⃣🔄'
@@ -444,9 +444,11 @@ export class DiscordMessage implements APIMessage {
         //return "imagine";
       }
       console.error(
-        `FIXME: can not Identify signature ${pc.green(
-          sig1
-        )} in message: ${pc.green(this.id)}`
+        `FIXME: can not Identify signature ${
+          pc.green(
+            sig1,
+          )
+        } in message: ${pc.green(this.id)}`,
       );
     }
     return "";
@@ -454,7 +456,7 @@ export class DiscordMessage implements APIMessage {
 
   public getComponents(
     label: string,
-    label2?: string
+    label2?: string,
   ): APIButtonComponentWithCustomId {
     if (!this.components) {
       throw Error("no components In this message.");
@@ -465,8 +467,9 @@ export class DiscordMessage implements APIMessage {
         if (!("custom_id" in c)) continue;
         if ("label" in c && c.label && c.label) {
           if (c.label === label) return c as APIButtonComponentWithCustomId;
-          if (label2 && c.label === label2)
+          if (label2 && c.label === label2) {
             return c as APIButtonComponentWithCustomId;
+          }
           availableLabels.push(c.label);
         } else if ("emoji" in c && c.emoji && c.emoji.name) {
           if (c.emoji.name === label) {
@@ -480,9 +483,11 @@ export class DiscordMessage implements APIMessage {
       }
     }
     throw Error(
-      `Failed to find componant named "${label}" within ${availableLabels
-        .map((a) => `"${a}"`)
-        .join(", ")}`
+      `Failed to find componant named "${label}" within ${
+        availableLabels
+          .map((a) => `"${a}"`)
+          .join(", ")
+      }`,
     );
   }
 
@@ -550,7 +555,7 @@ export class DiscordMessage implements APIMessage {
 
   upscale(
     id: number,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     const comp = this.getComponents(`U${id}`);
     logger.info(`${comp.custom_id} Upscale will be generated`);
@@ -559,7 +564,7 @@ export class DiscordMessage implements APIMessage {
 
   variant(
     id: number,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     const comp = this.getComponents(`V${id}`, "Make Variations");
     logger.info(`${comp.custom_id} Variant will be generated`);
@@ -588,7 +593,7 @@ export class DiscordMessage implements APIMessage {
 
   async download(
     attachementId: number,
-    dest: string
+    dest: string,
   ): Promise<{ data: ArrayBufferLike; file: string; cached: boolean } | null> {
     // await this.waitForattachements();
     const att = (this.attachments || [])[attachementId];
