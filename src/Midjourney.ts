@@ -3,24 +3,11 @@ import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, InteractionName, Payload } from "./models.ts";
-import {
-  APIButtonComponentWithCustomId,
-  APIMessage,
-  ApplicationCommandType,
-  ButtonStyle,
-  EventEmitter,
-} from "../deps.ts";
+import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle, EventEmitter } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
-import {
-  download,
-  filename2Mime,
-  generateRandomString,
-  getExistinggroup,
-  REROLL,
-  wait,
-} from "./utils.ts";
+import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
 import { properties, WsMessage, WsOpcode } from "./wsMessages.ts";
 import { PWall } from "./PWall.ts";
 
@@ -97,7 +84,7 @@ export class Midjourney {
         sample,
         "SERVER_ID",
         /"guild_id":\s?"(\d+)"/,
-        /SERVER_ID\s*=\s*"?([0-9]+)"?/
+        /SERVER_ID\s*=\s*"?([0-9]+)"?/,
       );
     } catch (_e) {
       // ignore
@@ -107,7 +94,7 @@ export class Midjourney {
         sample,
         "CHANNEL_ID",
         /"channel_id":\s?"(\d+)"/,
-        /CHANNEL_ID\s*=\s*"?([0-9]+)"?/
+        /CHANNEL_ID\s*=\s*"?([0-9]+)"?/,
       );
     } catch (_e) {
       // ignore
@@ -120,7 +107,7 @@ export class Midjourney {
         sample,
         "SALAI_TOKEN",
         /"authorization":\s?"([^"]+)"/,
-        /SALAI_TOKEN\s*=\s*"?([_A-Za-z0-9.]+)"?/
+        /SALAI_TOKEN\s*=\s*"?([_A-Za-z0-9.]+)"?/,
       );
     }
   }
@@ -143,12 +130,12 @@ export class Midjourney {
   }
 
   setDiscordChannelUrl(
-    url: `https://discord.com/channels/${number}/${number}`
+    url: `https://discord.com/channels/${number}/${number}`,
   ) {
     const ids = url.split("/").filter((a) => a.match(/^\d+$/));
     if (ids.length != 2) {
       throw Error(
-        "invalid url discord channels urls looks like https://discord.com/channels/1234567890/1234567890"
+        "invalid url discord channels urls looks like https://discord.com/channels/1234567890/1234567890",
       );
     }
     this._guild_id = ids[0];
@@ -251,7 +238,7 @@ export class Midjourney {
                 api_code_version: 0,
               },
             },
-          })
+          }),
         );
       }
     };
@@ -312,7 +299,7 @@ export class Midjourney {
             // console.log(`Index Msg ${pc.green(id)}`);
             this.messageCache.set(id, msg);
           }
-        }
+        },
       );
       const msgs = await this.getMessages({ limit: 50 });
       msgs.forEach((msg) => this.messageEmmiter.emit("message", msg.id, msg));
@@ -322,15 +309,14 @@ export class Midjourney {
   private get headers() {
     return {
       authorization: this.auth,
-      "User-Agent":
-        "midjourney-discord-api/1.0 (WebClient; +https://github.com/UrielCh/midjourney-client)",
+      "User-Agent": "midjourney-discord-api/1.0 (WebClient; +https://github.com/UrielCh/midjourney-client)",
     };
   }
 
   private buildPayload(cmd: Command): Payload {
     if (!this._guild_id || !this._channel_id) {
       throw Error(
-        'you must choose a channel first with setDiscordChannelUrl("https://discord.com/channels/......./......")'
+        'you must choose a channel first with setDiscordChannelUrl("https://discord.com/channels/......./......")',
       );
     }
     const payload: Payload = {
@@ -368,9 +354,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `settings return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `settings return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -387,9 +371,7 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `relax return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `relax return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -406,15 +388,13 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `fast return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `fast return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
   async imagine(
     prompt: string,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     await this.pWall.waitForAccess();
     const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
@@ -434,9 +414,7 @@ export class Midjourney {
       return msg;
     }
     throw new Error(
-      `imagine return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `imagine return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -455,15 +433,13 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `describe return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `describe return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
   private async blendInternal(
     attachments: UploadSlot[],
-    dimensions?: "1:1" | "2:3" | "3:2"
+    dimensions?: "1:1" | "2:3" | "3:2",
   ): Promise<number> {
     await this.pWall.waitForAccess();
     const cmd = await this.commandCache.getCommand("blend");
@@ -491,23 +467,21 @@ export class Midjourney {
       return response.status;
     }
     throw new Error(
-      `blend return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `blend return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
   public async callCustomComponents(
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     await this.pWall.waitForAccess();
     if (!button.disabled && button.style !== ButtonStyle.Primary) {
       await this.callCustom(parentId, button.custom_id);
     } else {
       logger.warn(
-        `The requested action ${button.custom_id} had already been processed, just looking for a previous result.`
+        `The requested action ${button.custom_id} had already been processed, just looking for a previous result.`,
       );
     }
     return await this.waitComponents(parentId, button, undefined, progress);
@@ -516,11 +490,11 @@ export class Midjourney {
   private async callCustom(
     messageId: Snowflake,
     custom_id: string,
-    message_flags = 0
+    message_flags = 0,
   ): Promise<number> {
     if (!this._guild_id || !this._channel_id) {
       throw Error(
-        'you must choose a channel first with setDiscordChannelUrl("https://discord.com/channels/......./......")'
+        'you must choose a channel first with setDiscordChannelUrl("https://discord.com/channels/......./......")',
       );
     }
 
@@ -561,7 +535,7 @@ export class Midjourney {
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
     maxWait = 360,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     let type: InteractionName | undefined;
     const label = button.label || button.emoji?.name || "ERROR";
@@ -593,7 +567,7 @@ export class Midjourney {
 
   private filterMessages(
     opts: WaitOptions = {},
-    messages: DiscordMessage[]
+    messages: DiscordMessage[],
   ): DiscordMessage[] {
     let matches: DiscordMessage[] = messages;
     matches = matches.filter((item) => item.prompt); // keep only parssable messages;
@@ -619,12 +593,12 @@ export class Midjourney {
       matches = matches.filter(
         (item) =>
           item.referenced_message &&
-          item.referenced_message.id === opts.parentId
+          item.referenced_message.id === opts.parentId,
       );
     }
     if (opts.interaction) {
       matches = matches.filter(
-        (item) => item.parentInteraction === opts.interaction
+        (item) => item.parentInteraction === opts.interaction,
       );
     }
     if (opts.name) {
@@ -639,14 +613,12 @@ export class Midjourney {
           imgId = Number(opts.imgId.replace(/[^0-9]+/g, "")) as 1 | 2 | 3 | 4;
         }
       }
-      matches = matches.filter((item) =>
-        item.prompt!.name.includes(`#${imgId}`)
-      );
+      matches = matches.filter((item) => item.prompt!.name.includes(`#${imgId}`));
     }
     if (matches.length > 1) {
       logger.error(
         "warning multiple message match your waiting request! review your criterion:",
-        opts
+        opts,
       );
     }
     return matches;
@@ -699,7 +671,7 @@ export class Midjourney {
             const r = this.followCheckMsg(
               matches[0],
               prevCompletion,
-              opts.progress
+              opts.progress,
             );
             prevCompletion = r.completion;
             if (r.completion === 1) {
@@ -718,7 +690,7 @@ export class Midjourney {
   private followCheckMsg(
     msg: DiscordMessage,
     prevCompletion: number,
-    progress: (percent: number) => void
+    progress: (percent: number) => void,
   ): { completion: number } {
     const prompt = msg.prompt;
     if (!prompt) {
@@ -739,7 +711,7 @@ export class Midjourney {
   private async followLoop(
     msg: DiscordMessage,
     opts: WaitOptionsProgress,
-    counters: WaitCounter
+    counters: WaitCounter,
   ): Promise<DiscordMessage | null> {
     const msgid = msg.id;
     let prevCompletion = -2;
@@ -787,7 +759,7 @@ export class Midjourney {
           logger.info(`waitMessage found a 100% process done message`);
         } else {
           logger.info(
-            `follow message completion: (${(percent * 100).toFixed(0)}%)`
+            `follow message completion: (${(percent * 100).toFixed(0)}%)`,
           );
         }
       };
@@ -796,7 +768,7 @@ export class Midjourney {
   }
 
   public async waitMessageInternal(
-    opts: WaitOptionsProgress
+    opts: WaitOptionsProgress,
   ): Promise<DiscordMessage> {
     if (this.wsActivated) {
       return this.waitMessageWs(opts);
@@ -813,7 +785,7 @@ export class Midjourney {
     let startId = opts.startId || "";
     /** called once the correct message had been located */
     const lookFor = async (
-      messages: DiscordMessage[]
+      messages: DiscordMessage[],
     ): Promise<DiscordMessage | null> => {
       counters.message += messages.length;
       // maintain the last message Id;
@@ -838,12 +810,12 @@ export class Midjourney {
       counters.request++;
       if (i == 0 && startId) {
         logger.info(
-          `waitMessage 1st request gets ${msgs.length} messages, Will retry one per sec up to ${maxWait} times`
+          `waitMessage 1st request gets ${msgs.length} messages, Will retry one per sec up to ${maxWait} times`,
         );
       } else {
         if (msgs.length) {
           logger.info(
-            `waitMessage ${i}th request gets ${msgs.length} messages`
+            `waitMessage ${i}th request gets ${msgs.length} messages`,
           );
         }
       }
@@ -862,11 +834,11 @@ export class Midjourney {
     }
     if (counters.hit) {
       throw Error(
-        `waitMessage failed without finding the expected message after ${counters.request} requests, ${counters.message} messaages tested`
+        `waitMessage failed without finding the expected message after ${counters.request} requests, ${counters.message} messaages tested`,
       );
     }
     throw Error(
-      `waitMessage still waiting for a 100% processed status after ${counters.hitRefresh} refresh`
+      `waitMessage still waiting for a 100% processed status after ${counters.hitRefresh} refresh`,
     );
   }
 
@@ -875,10 +847,10 @@ export class Midjourney {
    * @param params
    */
   public async getMessages(
-    params: RESTGetAPIChannelMessagesQuery = {}
+    params: RESTGetAPIChannelMessagesQuery = {},
   ): Promise<DiscordMessage[]> {
     const url = new URL(
-      `https://discord.com/api/v10/channels/${this._channel_id}/messages`
+      `https://discord.com/api/v10/channels/${this._channel_id}/messages`,
     );
     const searchParams = new URLSearchParams(url.search); // generic import prev params
     for (const [key, value] of Object.entries(params)) {
@@ -893,9 +865,7 @@ export class Midjourney {
       return msgs.map((msg) => new DiscordMessage(this, msg));
     }
     throw new Error(
-      `getMessages return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `getMessages return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -941,7 +911,7 @@ export class Midjourney {
   ): Promise<{ attachments: UploadSlot[] }> {
     const headers = { ...this.headers, "content-type": "application/json" };
     const url = new URL(
-      `https://discord.com/api/v9/channels/${this._channel_id}/attachments`
+      `https://discord.com/api/v9/channels/${this._channel_id}/attachments`,
     );
     const body = { files }; //  [{ filename, file_size, id }]
     // filename: "aaaa.jpeg", file_size: 66618, id: "16"
@@ -955,9 +925,7 @@ export class Midjourney {
       return atts;
     }
     throw new Error(
-      `Attachments return ${response.status} ${
-        response.statusText
-      } ${await response.text()}`
+      `Attachments return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 
@@ -969,7 +937,7 @@ export class Midjourney {
   public async uploadImage(
     slot: UploadSlot,
     data: ArrayBufferLike,
-    contentType: string
+    contentType: string,
   ): Promise<void> {
     const headers = { "content-type": contentType };
     const response = await fetch(slot.upload_url, {
@@ -979,9 +947,7 @@ export class Midjourney {
     });
     if (!response.ok) {
       throw new Error(
-        `uploadImage return ${response.status} ${
-          response.statusText
-        } ${await response.text()}`
+        `uploadImage return ${response.status} ${response.statusText} ${await response.text()}`,
       );
     }
   }
@@ -992,7 +958,7 @@ export class Midjourney {
    */
   public async describeUrl(
     imageUrl: string,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<string[]> {
     const url = new URL(imageUrl);
     const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
@@ -1014,7 +980,7 @@ export class Midjourney {
     filename: string,
     imageData: ArrayBufferLike,
     contentType?: string,
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<string[]> {
     await this.pWall.waitForAccess();
     contentType = contentType || filename2Mime(filename);
@@ -1030,7 +996,7 @@ export class Midjourney {
     await this.uploadImage(attachment, imageData, contentType);
     await this.describe(attachment);
     const realfilename = filename.replace(/^_/, "");
-    for (let i = 0; ; i++) {
+    for (let i = 0;; i++) {
       try {
         const msg = await this.waitMessage({
           progress,
@@ -1053,7 +1019,7 @@ export class Midjourney {
   public async blendUrl(
     imageUrls: string[],
     dimensions?: "1:1" | "2:3" | "3:2",
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     const images = await Promise.all(
       imageUrls.map(async (imageUrl) => {
@@ -1067,7 +1033,7 @@ export class Midjourney {
           filename,
           imageData: imageData.data,
         };
-      })
+      }),
     );
     if (!images) {
       throw Error("download failed");
@@ -1082,12 +1048,11 @@ export class Midjourney {
       contentType?: string;
     }[],
     dimensions: "1:1" | "2:3" | "3:2" = "1:1",
-    progress?: (percent: number) => void
+    progress?: (percent: number) => void,
   ): Promise<DiscordMessage> {
     await this.pWall.waitForAccess();
     images.forEach(
-      (image) =>
-        (image.contentType = image.contentType || filename2Mime(image.filename))
+      (image) => (image.contentType = image.contentType || filename2Mime(image.filename)),
     );
     const id0 = Date.now();
     const startId = new SnowflakeObj(-this.MAX_TIME_OFFSET).encode();
@@ -1097,22 +1062,20 @@ export class Midjourney {
         filename: img.filename,
         file_size: img.imageData.byteLength,
         id: id0 + id,
-      }))
+      })),
     );
 
     for (let i = 0; i < images.length; i++) {
       await this.uploadImage(
         attachments[i],
         images[i].imageData,
-        images[i].contentType || ""
+        images[i].contentType || "",
       );
     }
 
     // const [attachment] = attachments;
     const status = await this.blendInternal(attachments, dimensions);
-    const identifier = attachments.map((a) =>
-      a.upload_filename.replace(/.+\//, "")
-    );
+    const identifier = attachments.map((a) => a.upload_filename.replace(/.+\//, ""));
     // identifier.push("https://s.mj.run");
     // https://cdn.discordapp.com/ephemeral-attachments/'
     if (dimensions) {
