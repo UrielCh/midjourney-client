@@ -53,7 +53,7 @@ Deno.test(function ParseMidJourneyDoneRemix() {
   assertEquals(p1.prompt, "ice creams, pinkcore, organic shapes --v 5");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
-  assertEquals(p1.mode, "relaxed");
+  assertEquals(p1.mode, "fast");
 });
 
 Deno.test(function randomUpscale() {
