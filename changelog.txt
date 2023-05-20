@@ -2,15 +2,15 @@
 
 ## V1.0.0
 
-- add saveAll sample
-- add parseOne sample
+- add `saveAll` sample
+- add `parseOne` sample
 - add `MIDJOURNEY_CHANNELS` constant
 - add `DiscordMessage.componentsNames`
 - improve `DiscordMessage.parentInteraction`
 - update `DiscordMessage.download()` return type
 - add `Midjourney.setDiscordChannelUrl("https://discord.com/channels/......./.......")` to change channel
 - update `SnowflakeObj.toString()`
-- no more needs for application_id value
+- no more need for application_id value
 - support multiple jobs in parallel
 - 'guild_id' and 'channel_id' are now optional at startup, and can be defined using `Midjourney.setDiscordChannelUrl("https://discord.com/channels/......./.......")`
 
