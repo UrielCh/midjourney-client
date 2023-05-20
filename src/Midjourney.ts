@@ -112,7 +112,7 @@ export class Midjourney {
     }
   }
 
-  private get commandCache(): CommandCache {
+  get commandCache(): CommandCache {
     if (!this.#commandCache) {
       this.#commandCache = new CommandCache(this._channel_id, this.auth);
     }
