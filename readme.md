@@ -19,9 +19,9 @@ Midjourney bot using your web development tools.
 | `/describe` | ✅     | `/relax`     | ✅     |
 | `/fast`     | ✅     | `/settings`  | ✅     |
 | `/imagine`  | ✅     | `Variations` | ✅     |
-| `Upscale`   | ✅     | `/stealth`   | ❌ N/A |
+| `Upscale`   | ✅     | `concurent calls`| ✅ |
 | `/private`  | ❌ N/A | `/public`    | ❌ N/A |
-| `/show`      | ❌ N/A |
+| `/show`      | ❌ N/A |`/stealth`   | ❌ N/A |
 
 ## Installation
 
