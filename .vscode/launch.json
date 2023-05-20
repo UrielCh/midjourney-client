@@ -7,6 +7,39 @@
 
     {
       "request": "launch",
+      "name": "parseOne",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/parseOne.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+    
+    {
+      "request": "launch",
+      "name": "saveAll",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/saveAll.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+
+
+    {
+      "request": "launch",
       "name": "describeRegen",
       "type": "node",
       "program": "${workspaceFolder}/samples/describeRegen.ts",

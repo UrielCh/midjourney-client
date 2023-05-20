@@ -16,7 +16,7 @@ import { ButtonStyle, logger, MessageType, path, pc } from "../deps.ts";
 
 import Midjourney from "./Midjourney.ts";
 import type { InteractionName, UserReference } from "./models.ts";
-import { download, REROLL } from "./utils.ts";
+import { downloadFileCached, REROLL } from "./utils.ts";
 
 export interface ComponentsSummary {
   parentId: Snowflake;
@@ -29,7 +29,7 @@ export interface SplitedPrompt {
   source: string;
   prompt: string;
   id?: string;
-  mode?: "fast" | "relaxed";
+  mode?: "fast" | "relaxed" | 'fast, stealth';
   name: string;
   completion?: number; // 0..1
 }
@@ -61,6 +61,9 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
   } else if (extra.endsWith(" (relaxed)")) {
     result.mode = "relaxed";
     extra = extra.substring(0, extra.length - 10);
+  } else if (extra.endsWith(" (fast, stealth)")) {
+    result.mode = "fast, stealth";
+    extra = extra.substring(0, extra.length - 16);
   }
 
   /**
@@ -114,6 +117,11 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
     }
+  } else if (extra.endsWith(" Remix by")) {
+    extra = extra.substring(0, extra.length - 9);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
   } else if (extra.endsWith("** -")) {
     if (result.completion === undefined) {
       result.completion = 1; // imagen on blend
@@ -124,7 +132,8 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
     const tailImage = extra.match(/ Image #(\d)$/);
     if (tailImage) {
       extra = extra.substring(0, extra.length - tailImage[0].length);
-      result.source = tailImage[0];
+      result.source = tailImage[0].trim();
+      result.completion = 1; // upscall have no progress
     }
   }
 
@@ -139,124 +148,6 @@ export function extractPrompt(content: string): SplitedPrompt | undefined {
 
   logger.warn("Failed to extract prompt data from:", pc.yellow(content));
   logger.warn(`Extra data:"${pc.yellow(extra)}"`);
-
-  // if (content.startsWith("Making variations for image #")) {
-  //   const m = content.match(
-  //     /^Making variations for image #(\d) with prompt \*\*(.+)\*\* - <@(\d+)> \(Waiting to start\)$/,
-  //   );
-  //   if (!m) {
-  //     logger.warn("Failed to extract prompt data from:", content);
-  //     return undefined;
-  //   }
-  //   const prompt: SplitedPrompt = {
-  //     prompt: m[2],
-  //     source: content,
-  //     name: `Image #${m[1]}`,
-  //     id: m[3],
-  //     completion: -1,
-  //   };
-  //   return prompt;
-  // }
-  //
-  // let m = content.match(/^\*\*(.+)\*\* - (.+)$/); // (.+) <@(\d+)>
-  // if (!m) {
-  //   logger.warn("Failed to extract prompt data from:", content);
-  //   return undefined;
-  // }
-  //
-  // const prompt: SplitedPrompt = {
-  //   prompt: m[1],
-  //   source: content,
-  //   name: "",
-  // };
-  // extra = m[2];
-  // if (extra.endsWith(" (fast)")) {
-  //   prompt.mode = "fast";
-  //   extra = extra.substring(0, extra.length - 7);
-  // } else if (extra.endsWith(" (relaxed)")) {
-  //   prompt.mode = "relaxed";
-  //   extra = extra.substring(0, extra.length - 10);
-  // }
-  //
-  //
-  // m = extra.match(/^<@(\d+)>$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   // prompt.type = "grid";
-  //   return prompt;
-  // }
-  //
-  // m = extra.match(/^Variations by <@(\d+)>$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   prompt.completion = 1;
-  //   // prompt.type = "variations";
-  //   return prompt;
-  // }
-  //
-  // m = extra.match(/^Upscaled by <@(\d+)>$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   prompt.completion = 1;
-  //   // prompt.type = "upscale";
-  //   return prompt;
-  // }
-  //
-  // m = extra.match(
-  //   /^Variations by <@(\d+)>$/,
-  // );
-  // if (m) {
-  //   prompt.id = m[1];
-  //   // prompt.type = "variations";
-  //   return prompt;
-  // }
-
-  // m = extra.match(/^Image #(\d) <@(\d+)>$/);
-  // if (m) {
-  //   prompt.id = m[2];
-  //   prompt.completion = 1;
-  //   // prompt.type = "upscale"; // or variations
-  //   prompt.name = `Image #${m[1]}`;
-  //   return prompt;
-  // }
-  //
-  // m = extra.match(/^<@(\d+)> \((\d+)%\)$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   prompt.completion = parseInt(m[2]) / 100;
-  //   // prompt.type = "grid";
-  //   return prompt;
-  // }
-  //
-  // m = extra.match(/^<@(\d+)> \(Waiting to start\)$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   prompt.completion = -1;
-  //   // prompt.type = "grid";
-  //   return prompt;
-  // }
-  // m = extra.match(/^<@(\d+)>$/);
-  // if (m) {
-  //   prompt.id = m[1];
-  //   prompt.completion = 1;
-  //   // prompt.type = "grid";
-  //   return prompt;
-  // }
-  //
-  // if (!extra.length) {
-  //   return prompt;
-  // }
-  // logger.warn("Failed to extract prompt data from:", pc.yellow(content));
-
-  // // dual () is note, mode
-  // m = content.match(/^\*\*(.+)\*\* - <@(\d+)> \(([^)])\) \(([^)])\)$/);
-  // if (m)
-  //     return { prompt: m[1], name: "", id: m[2], note: m[3], mode: m[4] };
-  // // single () is mode
-  // m = content.match(/^\*\*(.+)\*\* - <@(\d+)> \(([^)]+)\)$/);
-  // if (m)
-  //     return { prompt: m[1], name: "", id: m[2], note: "", mode: m[3] };
-  // return prompt;
 }
 
 export class DiscordMessage implements APIMessage {
@@ -455,19 +346,50 @@ export class DiscordMessage implements APIMessage {
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
+  get componentsNames(): string[] {
+    const out: string[] = [];
+    if (!this.components)
+      return out;
+    for (const component of this.components) {
+      const line = component.components.map((a) => (a as { label: string }).label).filter(a=>a);
+      out.push(...line);
+    }
+    return out;
+  }
+
   get parentInteraction(): InteractionName | "" {
     if (this.interaction && this.interaction.name) {
       return this.interaction.name as InteractionName;
     }
     if (this.components && this.components.length) {
-      const sig1 = this.components[0].components.map((a) => (a as { label: string }).label).join("");
-      if (sig1.includes("U1U2U3U4")) {
+      const sig1 = this.componentsNames.join("");
+      // [0].components.map((a) => (a as { label: string }).label).join("");
+      if (sig1 === "U1V1" || sig1.includes("U1U2")) { // U3U4
         if (this.referenced_message && this.referenced_message.parentInteraction === "imagine") {
           return "variations";
         }
+        if (this.prompt) {
+          // "<https://s.mj.run/abcd> <https://s.mj.run/abcd> --ar 2:3 --v 5.1"
+          let prompt = this.prompt.prompt;
+          prompt = prompt.replace(/ --s [0-9]+$/, '');
+          prompt = prompt.replace(/ --(v|niji) [0-9.]+$/, '');
+          prompt = prompt.replace(/ --ar [:0-9]+$/, '');
+          const urls = prompt.split(' ');
+          const u2 = urls.map(a => !a.match(/<https:\/\/s\.mj\.run\/[\w\d]+>/)).filter(a=>a);
+          if (u2.length === 0 && urls.length > 1) {
+            return "blend";
+          }
+        }
         return "imagine";
       }
-      if (sig1.includes("Make VariationsWeb")) {
+      // Make VariationsDetailed Upscale RedoBeta Upscale RedoRemasterWeb
+      if (sig1.includes("Make VariationsWeb") || sig1.includes("Make VariationsLight Upscale") || sig1.includes("Make VariationsDetailed Upscale")) {
+        return "upscale";
+      }
+      // if (sig1 === 'Make VariationsRemasterWeb') {
+      //   return "upscale";
+      // }
+      if (this.prompt && this.prompt.source.startsWith('Image #')) {
         return "upscale";
       }
       if (sig1.includes("Cancel Job")) {
@@ -475,7 +397,7 @@ export class DiscordMessage implements APIMessage {
         return "";
         //return "imagine";
       }
-      console.error("FIXME: can not Identify signature", sig1);
+      console.error(`FIXME: can not Identify signature ${pc.green(sig1)} in message: ${pc.green(this.id)}`);
     }
     return "";
   }
@@ -601,30 +523,28 @@ export class DiscordMessage implements APIMessage {
   //   }
   // }
 
-  async download(attachementId: number, dest: string): Promise<boolean> {
+  async download(attachementId: number, dest: string): Promise<{data: ArrayBufferLike, file: string, cached: boolean} | null> {
     // await this.waitForattachements();
     const att = (this.attachments || [])[attachementId];
     if (!att) {
-      return false;
+      return null;
     }
     try {
       const stats = await Deno.stat(dest);
       if (stats.isDirectory) {
         const destFile = path.join(dest, att.filename);
         logger.info(`downloading ${att.url} to ${destFile}`);
-        await download(att.url, destFile);
-        return true;
+        return await downloadFileCached(att.url, destFile);
       }
       throw Error(`download abort, ${dest} is an existing file`);
     } catch (_) {
       if (path.basename(dest).includes(".")) {
-        await download(att.url, dest);
+        return await downloadFileCached(att.url, dest);
       } else {
         await Deno.mkdir(dest, { recursive: true });
         return this.download(attachementId, dest);
       }
     }
-    return true;
   }
   // getComponents(processed: boolean, name?: string): ComponentsSummary[] {
   //   let list = this.componentsSummery.filter((a) => a.processed === processed);

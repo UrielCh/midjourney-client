@@ -1,5 +1,16 @@
 # Changelog
 
+## V1.0.0
+
+- add saveAll sample
+- add parseOne sample
+- add `MIDJOURNEY_CHANNELS` constant
+- add `DiscordMessage.componentsNames`
+- improve `DiscordMessage.parentInteraction`
+- update `DiscordMessage.download()` return type
+- add `Midjourney.setDiscordChannelUrl()` to change channel
+- update `SnowflakeObj.toString()`
+
 ## V0.2.1
 
 - improve dnt script

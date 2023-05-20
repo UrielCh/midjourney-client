@@ -35,6 +35,26 @@ Deno.test(function ParseMidJourneyDoneRelaxed2() {
   assertEquals(p1.mode, "relaxed");
 });
 
+Deno.test(function ParseMidJourneyDoneRemix() {
+  const p = "**ice creams, pinkcore, organic shapes --v 5** - Remix by <@1097074882203303911> (fast)";
+  const p1 = extractPrompt(p);
+  assertExists(p1);
+  assertEquals(p1.prompt, "ice creams, pinkcore, organic shapes --v 5");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+  assertEquals(p1.mode, "relaxed");
+});
+
+Deno.test(function randomUpscale() {
+  const p = "**ice creams, pinkcore, organic shapes --v 5 --ar 3:2** - Image #1 <@1097074882203303911>";
+  const p1 = extractPrompt(p);
+  assertExists(p1);
+  assertEquals(p1.prompt, "ice creams, pinkcore, organic shapes --v 5 --ar 3:2");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+});
+
+
 Deno.test(function ParseMidJourneyDoneRelaxed2() {
   const p = "**ice creams, pinkcore, organic shapes --v 5** - <@1097074882203303911> (paused) (relaxed)";
   const p1 = extractPrompt(p);
@@ -107,6 +127,20 @@ Deno.test(function ParseMidJourneyUpscaled() {
     p1.prompt,
     "a view of Paris drawn by Kanagawa --v 5 --seed 6894",
   );
+  assertEquals(p1.mode, "fast");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+});
+
+Deno.test(function ParseMidJourneyUpscaledFastStealth() {
+  const p = "**a view of Paris drawn by Kanagawa --v 5 --seed 6894** - Upscaled by <@1097074882203303911> (fast, stealth)";
+  const p1 = extractPrompt(p);
+  assertExists(p1);
+  assertEquals(
+    p1.prompt,
+    "a view of Paris drawn by Kanagawa --v 5 --seed 6894",
+  );
+  assertEquals(p1.mode, "fast, stealth");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
 });

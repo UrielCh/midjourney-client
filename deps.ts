@@ -29,5 +29,6 @@ export const logger = new Logger();
 
 export * as pc from "https://deno.land/std@0.188.0/fmt/colors.ts";
 export * as path from "https://deno.land/std@0.188.0/path/mod.ts";
+export { exists } from "https://deno.land/std@0.188.0/fs/exists.ts"
 
 export { EventEmitter } from "https://deno.land/std@0.177.0/node/events.ts";

@@ -44,8 +44,14 @@ export interface WaitOptionsProgress extends WaitOptions {
 export class Midjourney {
   readonly auth: string;
   readonly application_id: string;
-  readonly guild_id: string;
-  readonly channel_id: string;
+  /**
+   * server id
+   */
+  private _guild_id: string;
+  /**
+   * channel id
+   */
+  private _channel_id: string;
   readonly session_id: string;
   readonly commandCache: CommandCache;
   public properties = { ...properties };
@@ -79,13 +85,13 @@ export class Midjourney {
       "",
       /"application_id":\s?"(\d+)"/,
     );
-    this.guild_id = getExistinggroup(
+    this._guild_id = getExistinggroup(
       sample,
       "SERVER_ID",
       /"guild_id":\s?"(\d+)"/,
       /SERVER_ID\s*=\s*"?([0-9]+)"?/,
     );
-    this.channel_id = getExistinggroup(
+    this._channel_id = getExistinggroup(
       sample,
       "CHANNEL_ID",
       /"channel_id":\s?"(\d+)"/,
@@ -94,8 +100,27 @@ export class Midjourney {
     this.session_id = generateRandomString(32);
     // this.DISCORD_TOKEN = getExistinggroup(sample, /DISCORD_TOKEN=\s?([^\s]+)/);
     // this.DISCORD_BOTID = getExistinggroup(sample, /DISCORD_BOTID=\s?([\d]+)/);
-    this.commandCache = new CommandCache(this.channel_id, this.auth);
+    this.commandCache = new CommandCache(this._channel_id, this.auth);
   }
+
+  get guild_id(): string {
+    return this._guild_id;
+  }
+  /**
+   * channel id
+   */
+  get channel_id(): string {
+    return this._channel_id;
+  }
+
+  setDiscordChannelUrl(url: `https://discord.com/channels/${number}/${number}`) {
+    const ids = url.split('/').filter(a=> a.match(/^\d+$/));
+    if (ids.length != 2)
+      throw Error("invalid url discord channels urls looks like https://discord.com/channels/1234567890/1234567890")
+    this._guild_id = ids[0];
+    this._channel_id = ids[1];
+  }
+
 
   // public async connectDiscordBot(): Promise<void> {
   //   if (!this.DISCORD_TOKEN) {
@@ -272,8 +297,8 @@ export class Midjourney {
     const payload: Payload = {
       type: 2,
       application_id: this.application_id,
-      guild_id: this.guild_id,
-      channel_id: this.channel_id,
+      guild_id: this._guild_id,
+      channel_id: this._channel_id,
       session_id: this.session_id,
       data: {
         version: cmd.version,
@@ -438,8 +463,8 @@ export class Midjourney {
     const payload: Payload = {
       type: ApplicationCommandType.Message, // 3
       application_id: this.application_id,
-      guild_id: this.guild_id,
-      channel_id: this.channel_id,
+      guild_id: this._guild_id,
+      channel_id: this._channel_id,
       session_id: this.session_id,
       message_flags,
       message_id: messageId,
@@ -778,7 +803,7 @@ export class Midjourney {
     params: RESTGetAPIChannelMessagesQuery = {},
   ): Promise<DiscordMessage[]> {
     const url = new URL(
-      `https://discord.com/api/v10/channels/${this.channel_id}/messages`,
+      `https://discord.com/api/v10/channels/${this._channel_id}/messages`,
     );
     const searchParams = new URLSearchParams(url.search); // generic import prev params
     for (const [key, value] of Object.entries(params)) {
@@ -839,7 +864,7 @@ export class Midjourney {
   ): Promise<{ attachments: UploadSlot[] }> {
     const headers = { ...this.headers, "content-type": "application/json" };
     const url = new URL(
-      `https://discord.com/api/v9/channels/${this.channel_id}/attachments`,
+      `https://discord.com/api/v9/channels/${this._channel_id}/attachments`,
     );
     const body = { files }; //  [{ filename, file_size, id }]
     // filename: "aaaa.jpeg", file_size: 66618, id: "16"
@@ -888,7 +913,9 @@ export class Midjourney {
     const url = new URL(imageUrl);
     const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
-    return this.describeImage(filename, imageData, undefined, progress);
+    if (!imageData)
+      throw Error('download failed');
+    return this.describeImage(filename, imageData.data, undefined, progress);
   }
   /**
    * invoke /describe on an image provided as a buffer
@@ -947,12 +974,16 @@ export class Midjourney {
         const url = new URL(imageUrl);
         const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
         const imageData = await download(imageUrl, filename);
+        if (!imageData)
+          throw Error('download failed');
         return {
           filename,
-          imageData,
+          imageData: imageData.data,
         };
       }),
     );
+    if (!images)
+      throw Error('download failed');
     return this.blend(images, dimensions, progress);
   }
 

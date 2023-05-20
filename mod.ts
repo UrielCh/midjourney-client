@@ -13,3 +13,4 @@ export {
   DiscordMessage,
   type SplitedPrompt,
 } from "./src/DiscordMessage.ts";
+export { MIDJOURNEY_CHANNELS } from "./src/Constants.ts";

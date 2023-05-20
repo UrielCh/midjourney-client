@@ -60,7 +60,7 @@ export class SnowflakeObj {
     return snowflakeInt.toString();
   }
 
-  public toString(): Snowflake {
-    return `date:${this.date} worker:${this.workerId} process:${this.processId} increment:${this.increment}`;
+  public toString(): string {
+    return `date:${this.date.toISOString()} worker:${this.workerId} process:${this.processId} increment:${this.increment}`;
   }
 }
