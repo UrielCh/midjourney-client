@@ -7,6 +7,22 @@
 
     {
       "request": "launch",
+      "name": "ImagineSet",
+      "type": "node",
+      "program": "${workspaceFolder}/samples/ImagineSet.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+
+    {
+      "request": "launch",
       "name": "parseOne",
       "type": "node",
       "program": "${workspaceFolder}/samples/parseOne.ts",

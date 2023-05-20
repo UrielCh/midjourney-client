@@ -63,6 +63,41 @@ import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 - Save this request in a file, that you will provide to the `Midjourney`
   constructor. (for my Test I name this file `interaction.txt`)
 
+### Midjourney client initializartion
+
+the Midjourney client can be initilized in 4 different ways:
+
+filename can also be replace by it's content.
+
+#### new Midjourney(filename) /* fetch command */
+
+in this case the provided file should contains a valid NodeJS fetch command as described in the previous section.
+
+filename can also be replace by it's content.
+
+#### new Midjourney(filename) /* environement file */
+
+in this case the provided file should contains somthink like:
+```ini
+SALAI_TOKEN = your 72 char long authorization token
+SERVER_ID = the serverId
+CHANNEL_ID = the channelId
+```
+`SERVER_ID` and `CHANNEL_ID` can be omit, if you provide those data using `Midjourney.setDiscordChannelUrl("https://discord.com/channels/1234567890/1234567890")`
+
+#### environement variable
+
+in this case `SALAI_TOKEN` should contains you 72 char long authorization token.
+`SERVER_ID` and `CHANNEL_ID`  should contains the serverId and channelId
+
+`SERVER_ID` and `CHANNEL_ID` can be omit, if you provide those data using `Midjourney.setDiscordChannelUrl("https://discord.com/channels/1234567890/1234567890")`
+
+#### new Midjourney(SALAI_TOKEN) /* directly provide SALAI_TOKEN */
+
+in this case a 72 char long `SALAI_TOKEN` token should be pass to the `Midjourney` constructor like: `new Midjourney(SALAI_TOKEN)`
+
+then you will have to provide serverId and channelId using `Midjourney.setDiscordChannelUrl("https://discord.com/channels/1234567890/1234567890")`
+
 ## Usage
 
 Here are some examples of how to use the `Midjourney` class:

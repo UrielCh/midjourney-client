@@ -6,7 +6,7 @@ export function progressLogger(text: string): (percent: number) => void {
   text = `${pc.brightWhite("Progress> ")} ${text}`;
   return (percent: number) => {
     if (percent < 0) {
-      console.log(`${text} ${pc.red("Not Started yet")}`);
+      console.log(`${text} ${pc.red("Waiting to start")}`);
       return;
     }
     if (!started) {

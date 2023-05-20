@@ -8,8 +8,11 @@
 - add `DiscordMessage.componentsNames`
 - improve `DiscordMessage.parentInteraction`
 - update `DiscordMessage.download()` return type
-- add `Midjourney.setDiscordChannelUrl()` to change channel
+- add `Midjourney.setDiscordChannelUrl("https://discord.com/channels/......./.......")` to change channel
 - update `SnowflakeObj.toString()`
+- no more needs for application_id value
+- support multiple jobs in parallel
+- 'guild_id' and 'channel_id' are now optional at startup, and can be defined using `Midjourney.setDiscordChannelUrl("https://discord.com/channels/......./.......")`
 
 ## V0.2.1
 
