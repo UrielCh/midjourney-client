@@ -10,7 +10,7 @@ export async function buildDnt() {
 
   if (!version) {
     if (PKG_VERSION) {
-      console.log(`NPM_VERSION values is ${pc.green(PKG_VERSION)}`);
+      console.log(`NPM_VERSION values is "${pc.green(PKG_VERSION)}"`);
       version = PKG_VERSION;
     } else if (GITHUB_REF) {
       // drop the ref/tag/ and the v prefix
@@ -18,7 +18,7 @@ export async function buildDnt() {
       console.log(
         `GITHUB_REF values is ${pc.green(
           GITHUB_REF
-        )} will be used as version: ${pc.green(version)}`
+        )} will be used as version: "${pc.green(version)}"`
       );
     }
   }
