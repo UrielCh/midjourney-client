@@ -2,7 +2,7 @@
 
 ## V1.0.1
 
-- fix wrong application_id
+- fix a wrong application_id
 
 ## V1.0.0
 
