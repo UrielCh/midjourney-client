@@ -333,7 +333,7 @@ export class DiscordMessage implements APIMessage {
     Object.assign(this, source);
     this.#client = client;
     // this.id = source.id;
-    this.prompt = extractPrompt(source.content, source.author.id);
+    this.prompt = extractPrompt(source.content, source.author?.id);
     this.content = source.content;
     if (source.referenced_message) {
       this.referenced_message = new DiscordMessage(

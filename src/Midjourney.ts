@@ -78,7 +78,7 @@ export class Midjourney {
       sample = Deno.readTextFileSync(sample);
     }
     sample = sample.replace(/\\"/g, '"');
-    this.application_id = "1109546680392351744";
+    this.application_id = "936929561302675456";
     try {
       this._guild_id = getExistinggroup(
         sample,
