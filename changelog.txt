@@ -1,5 +1,9 @@
 # Changelog
 
+## V1.0.1
+
+- fix wrong application_id
+
 ## V1.0.0
 
 - add `saveAll` sample
