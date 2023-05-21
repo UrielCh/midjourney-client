@@ -15,14 +15,14 @@ export type {
   APIUser,
   RESTGetAPIChannelMessagesQuery,
   Snowflake,
-} from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+} from "https://deno.land/x/discord_api_types@0.37.42/v9.ts";
 
 export {
   ApplicationCommandType,
   ButtonStyle,
   MessageFlags,
   MessageType,
-} from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
+} from "https://deno.land/x/discord_api_types@0.37.42/v9.ts";
 
 import Logger from "https://deno.land/x/logger@v1.1.0/logger.ts";
 export const logger = new Logger();
