@@ -15,6 +15,7 @@ export type {
   APIUser,
   RESTGetAPIChannelMessagesQuery,
   Snowflake,
+  APIMessageInteraction,
 } from "https://deno.land/x/discord_api_types@0.37.42/v9.ts";
 
 export {

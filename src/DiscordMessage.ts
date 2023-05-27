@@ -1,5 +1,4 @@
 //TYPES IMPORTS
-import { APIMessageInteraction } from "https://deno.land/x/discord_api_types@0.37.40/v9.ts";
 import type {
   APIActionRowComponent,
   APIAttachment,
@@ -10,6 +9,7 @@ import type {
   APIMessageActionRowComponent,
   APIRole,
   Snowflake,
+  APIMessageInteraction
 } from "../deps.ts";
 // CODE imports
 import { ButtonStyle, logger, MessageType, path, pc } from "../deps.ts";
