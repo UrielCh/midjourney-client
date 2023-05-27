@@ -1,7 +1,6 @@
 // dnt deps can not be moved to dev_deps.ts
-import { build, emptyDir } from "https://deno.land/x/dnt@0.35.0/mod.ts";
+import { build, emptyDir, type PackageJson } from "https://deno.land/x/dnt@0.36.0/mod.ts";
 import * as pc from "https://deno.land/std@0.188.0/fmt/colors.ts";
-import { PackageJsonObject } from "https://deno.land/x/dnt@0.35.0/lib/types.ts";
 
 export async function buildDnt() {
   let version = Deno.args[0];
@@ -24,7 +23,7 @@ export async function buildDnt() {
   }
 
   if (!version) {
-    console.error("Missing version number");
+    console.error("Missing version number");      
     console.error("usage: deno run -A _build_npm.ts 0.0.0");
     Deno.exit(-1);
   }
@@ -40,7 +39,7 @@ export async function buildDnt() {
     Deno.exit(-1);
   }
 
-  const packageJson: PackageJsonObject = {
+  const packageJson: PackageJson = {
     // package.json properties
     name: "midjourney-discord-api",
     author: "Uriel Chemouni <uchemouni@gmail.com> (https://uriel.deno.dev/)",
@@ -100,7 +99,7 @@ export async function buildDnt() {
       ],
     },
     compilerOptions: {
-      lib: ["dom", "esnext"],
+      lib: ["DOM", "ESNext"],
     },
     package: packageJson,
     mappings: {
