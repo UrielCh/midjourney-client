@@ -61,7 +61,7 @@ export async function buildDnt() {
       "prompt2img",
     ],
     homepage: "https://github.com/UrielCh/midjourney-client",
-    version: Deno.args[0],
+    version,
     repository: {
       type: "git",
       url: "git+https://github.com/UrielCh/midjourney-client.git",

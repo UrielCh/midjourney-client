@@ -52,8 +52,6 @@ jobs:
           npm-check-updates -u
           npm install
           npm run test
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish to npmjs.com
         run: |
