@@ -44,7 +44,7 @@ export async function buildDnt() {
     name: "midjourney-discord-api",
     author: "Uriel Chemouni <uchemouni@gmail.com> (https://uriel.deno.dev/)",
     license: "MIT",
-    funding: "https://github.com/sponsors/urielch",
+    funding: "https://github.com/UrielCh/midjourney-client?sponsor=1",
     contributors: [],
     description: "Midjourney client using Discord.",
     keywords: [
