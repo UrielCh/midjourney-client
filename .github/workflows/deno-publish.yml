@@ -45,6 +45,16 @@ jobs:
         env:
           PKG_VERSION: ${{inputs.npm_version}}
 
+      - name: refresh the project
+        run: |
+          npm install -g npm-check-updates
+          cd npm
+          npm-check-updates -u
+          npm install
+          npm run test
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
       - name: Publish to npmjs.com
         run: |
           cd npm

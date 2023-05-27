@@ -78,6 +78,7 @@ export async function buildDnt() {
   await build({
     entryPoints: ["./mod.ts"],
     outDir: "./npm",
+    test: "no-run" as unknown as  true,
     shims: {
       // see JS docs for overview and more options
       deno: true,
@@ -109,11 +110,11 @@ export async function buildDnt() {
         peerDependency: false,
         subPath: "v9",
       },
-      "https://deno.land/x/logger@v1.1.0/logger.ts": {
-        name: "@denodnt/logger",
-        version: "1.1.0",
-        peerDependency: false,
-      },
+      // "https://deno.land/x/logger@v1.1.0/logger.ts": {
+      //   name: "@denodnt/logger",
+      //   version: "1.1.0",
+      //   peerDependency: false,
+      // },
       "https://deno.land/x/logger@v1.1.1/logger.ts": {
         name: "@denodnt/logger",
         version: "1.1.1",
