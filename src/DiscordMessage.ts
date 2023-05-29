@@ -7,9 +7,9 @@ import type {
   APIEmbed,
   APIMessage,
   APIMessageActionRowComponent,
+  APIMessageInteraction,
   APIRole,
   Snowflake,
-  APIMessageInteraction
 } from "../deps.ts";
 // CODE imports
 import { ButtonStyle, logger, MessageType, path, pc } from "../deps.ts";

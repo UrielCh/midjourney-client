@@ -15,26 +15,32 @@ export async function buildDnt() {
       // drop the ref/tag/ and the v prefix
       version = GITHUB_REF.replace(/^.+\/[vV]?/g, "");
       console.log(
-        `GITHUB_REF values is ${pc.green(
-          GITHUB_REF
-        )} will be used as version: "${pc.green(version)}"`
+        `GITHUB_REF values is ${
+          pc.green(
+            GITHUB_REF,
+          )
+        } will be used as version: "${pc.green(version)}"`,
       );
     }
   }
 
   if (!version) {
-    console.error("Missing version number");      
+    console.error("Missing version number");
     console.error("usage: deno run -A _build_npm.ts 0.0.0");
     Deno.exit(-1);
   }
   // allow only semver string
   if (!version.match(/[\d]+\.[\d]+\.[\d]+/)) {
     console.error(
-      `version number ${pc.green(
-        version
-      )} do not match Semantic Versioning syntax ${pc.green(
-        "major.minor.path"
-      )}`
+      `version number ${
+        pc.green(
+          version,
+        )
+      } do not match Semantic Versioning syntax ${
+        pc.green(
+          "major.minor.path",
+        )
+      }`,
     );
     Deno.exit(-1);
   }
@@ -72,13 +78,13 @@ export async function buildDnt() {
     "engine-strict": {
       node: ">=18",
     },
-  }
+  };
   await emptyDir("./npm");
 
   await build({
     entryPoints: ["./mod.ts"],
     outDir: "./npm",
-    test: "no-run" as unknown as  true,
+    test: "no-run" as unknown as true,
     shims: {
       // see JS docs for overview and more options
       deno: true,
@@ -130,7 +136,7 @@ export async function buildDnt() {
   let readme = Deno.readTextFileSync("readme.md");
   readme = readme.replaceAll(
     "https://deno.land/x/midjourney_discord_api/mod.ts",
-    "midjourney-discord-api"
+    "midjourney-discord-api",
   );
   Deno.writeTextFileSync("npm/README.md", readme);
   //Deno.copyFileSync("README.md", "npm/README.md");
