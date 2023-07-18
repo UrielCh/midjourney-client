@@ -50,11 +50,11 @@ import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 ## Token / ids extraction.
 
 - Open your webbrowser
-- Go to your discord channel
+- Go to your discord channel `https://discord.com/channels/@me`
 - Open the developent bar
 - Go to network
 - Send a request to discordBot, like /settings
-- Left click on the `https://discord.com/api/v9/interactions` request.
+- Left click on the `https://discord.com/api/v9/interactions` request or `https://discord.com/api/v9/science`.
 - Click `Copy`
 - Click `Copy as fetch`
 - Save this request in a file, that you will provide to the `Midjourney`

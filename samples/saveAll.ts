@@ -2,8 +2,15 @@ import { Midjourney, MIDJOURNEY_CHANNELS, SnowflakeObj } from "../mod.ts";
 import { pc } from "../deps.ts";
 import nativebird from "npm:nativebird";
 
+/**
+ * This sample will download all generated image from some general with 4 parallel download threads
+ */
 // logger.disable("info");
 
+/**
+ * @param url a channel URL
+ * @param toDownload max image to download
+ */
 async function downloadChannnel(url: `https://discord.com/channels/${number}/${number}`, toDownload = 2000) {
   const client = new Midjourney("interaction.txt");
   let dateEnd = new SnowflakeObj();
