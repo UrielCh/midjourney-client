@@ -49,8 +49,8 @@ import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 
 ## Token / ids extraction.
 
-- Open your web browser
-- Go to your discord channel `https://discord.com/channels/@me`
+- Open your web browser to [https://discord.com/channels/@me](https://discord.com/channels/@me)
+- Click in the discord channel you want to work into like [https://discord.com/channels/662267976984297473/933565701162168371](https://discord.com/channels/662267976984297473/933565701162168371)
 - Open the developent bar (on chrome: `F12` on windows `Command ⌘` + `Option ⌥` + `I` on mac)
 - Go to network
 
@@ -64,7 +64,7 @@ import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 - Save this request in a file, that you will provide to the `Midjourney`
   constructor. (for my Test I name this file `interaction.txt`)
 
-## Midjourney client initializartion
+## Midjourney client initialization
 
 the Midjourney client can be initilized in 4 different ways:
 
