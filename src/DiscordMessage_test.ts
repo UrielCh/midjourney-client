@@ -209,7 +209,6 @@ Deno.test(function ParseVariantVariationSubtleDone() {
   assertEquals(p1.completion, 1);
 });
 
-
 Deno.test(function ParseVariantVariationSubtleDoneTurbo() {
   const p = "**a view of Paris drawn by Kanagawa** - Variations (Subtle) by <@1097074882203303911> (turbo)";
   const p1 = extractPrompt(p, midjourneyBotId);
