@@ -614,7 +614,7 @@ export class Midjourney {
         }
       }
       matches = matches.filter((item) => {
-        const {name, source} = item.prompt!;
+        const { name, source } = item.prompt!;
         const inc = `#${imgId}`;
         return name.includes(inc) || source.includes(inc);
       });
