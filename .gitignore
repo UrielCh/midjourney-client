@@ -6,3 +6,4 @@ cmdCache/
 npm/
 images/
 regen.png
+.DS_Store

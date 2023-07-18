@@ -49,14 +49,18 @@ import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 
 ## Token / ids extraction.
 
-- Open your webbrowser
+- Open your web browser
 - Go to your discord channel `https://discord.com/channels/@me`
-- Open the developent bar
+- Open the developent bar (on chrome: `F12` on windows `Command ⌘` + `Option ⌥` + `I` on mac)
 - Go to network
+
+![Go to network](https://github.com/UrielCh/midjourney-client/blob/main/doc/chrome-network.png?raw=true "Go to network")
 - Send a request to discordBot, like /settings
 - Left click on the `https://discord.com/api/v9/interactions` request or `https://discord.com/api/v9/science`.
 - Click `Copy`
 - Click `Copy as fetch`
+
+![Copy as fetch](https://github.com/UrielCh/midjourney-client/blob/main/doc/copy-as-fetch.png?raw=true "Copy as fetch")
 - Save this request in a file, that you will provide to the `Midjourney`
   constructor. (for my Test I name this file `interaction.txt`)
 
