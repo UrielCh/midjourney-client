@@ -1,5 +1,11 @@
 # Changelog
 
+## V1.0.2
+
+- update doc
+- update deps
+- fix upscall progress detection
+
 ## V1.0.1
 
 - fix a wrong application_id
