@@ -613,7 +613,11 @@ export class Midjourney {
           imgId = Number(opts.imgId.replace(/[^0-9]+/g, "")) as 1 | 2 | 3 | 4;
         }
       }
-      matches = matches.filter((item) => item.prompt!.name.includes(`#${imgId}`));
+      matches = matches.filter((item) => {
+        const {name, source} = item.prompt!;
+        const inc = `#${imgId}`;
+        return name.includes(inc) || source.includes(inc);
+      });
     }
     if (matches.length > 1) {
       logger.error(

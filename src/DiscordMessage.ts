@@ -113,6 +113,16 @@ export function extractPrompt(
     }
   }
 
+  if (extra.startsWith("Upscaling image #")) {
+    const prefix = extra.match(
+      /^Upscaling image #(\d) with /,
+    );
+    if (prefix) {
+      result.name = prefix[1];
+      extra = extra.substring(prefix[0].length);
+    }
+  }
+
   const extractId = extra.match(/ <@(\d+)>$/);
   if (extractId) {
     extra = extra.substring(0, extra.length - extractId[0].length);
@@ -126,6 +136,16 @@ export function extractPrompt(
     }
   } else if (extra.endsWith(" Variations by")) {
     extra = extra.substring(0, extra.length - 14);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
+  } else if (extra.endsWith(" Variations (Strong) by")) {
+    extra = extra.substring(0, extra.length - 23);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
+  } else if (extra.endsWith(" Variations (Subtle) by")) {
+    extra = extra.substring(0, extra.length - 23);
     if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
     }

@@ -1,5 +1,8 @@
 import { Queue } from "./Queue.ts";
 
+/**
+ * Rate limiter for the API
+ */
 export class PWall {
   #intervalMs: number;
   #next: ReturnType<typeof setTimeout> | undefined;
