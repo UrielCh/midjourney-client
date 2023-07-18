@@ -29,7 +29,7 @@ export interface SplitedPrompt {
   source: string;
   prompt: string;
   id?: string;
-  mode?: "fast" | "relaxed" | "fast, stealth" | "relaxed, stealth";
+  mode?: "turbo" | "fast" | "relaxed" | "fast, stealth" | "relaxed, stealth";
   name: string;
   completion?: number; // 0..1
 }
@@ -64,6 +64,9 @@ export function extractPrompt(
   if (extra.endsWith(" (fast)")) {
     result.mode = "fast";
     extra = extra.substring(0, extra.length - 7);
+  } else if (extra.endsWith(" (turbo)")) {
+    result.mode = "turbo";
+    extra = extra.substring(0, extra.length - 8);
   } else if (extra.endsWith(" (relaxed)")) {
     result.mode = "relaxed";
     extra = extra.substring(0, extra.length - 10);
