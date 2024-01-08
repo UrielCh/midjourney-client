@@ -1,6 +1,7 @@
 // dnt deps can not be moved to dev_deps.ts
-import { build, emptyDir, type PackageJson } from "https://deno.land/x/dnt@0.37.0/mod.ts";
-import * as pc from "https://deno.land/std@0.194.0/fmt/colors.ts";
+import { build, emptyDir, type PackageJson } from "https://deno.land/x/dnt@0.39.0/mod.ts";
+// import * as pc from "https://deno.land/std@0.211.0/fmt/colors.ts";
+import { pc } from "./deps.ts";
 
 export async function buildDnt() {
   let version = Deno.args[0];
@@ -110,9 +111,9 @@ export async function buildDnt() {
     },
     package: packageJson,
     mappings: {
-      "https://deno.land/x/discord_api_types@0.37.49/v9.ts": {
+      "https://deno.land/x/discord_api_types@0.37.67/v9.ts": {
         name: "discord-api-types",
-        version: "0.37.49",
+        version: "0.37.67",
         peerDependency: false,
         subPath: "v9",
       },
@@ -121,9 +122,9 @@ export async function buildDnt() {
       //   version: "1.1.0",
       //   peerDependency: false,
       // },
-      "https://deno.land/x/logger@v1.1.1/logger.ts": {
+      "https://deno.land/x/logger@v1.1.3/logger.ts": {
         name: "@denodnt/logger",
-        version: "1.1.1",
+        version: "1.1.3",
         peerDependency: false,
       },
     },
@@ -139,7 +140,7 @@ export async function buildDnt() {
     "midjourney-discord-api",
   );
   Deno.writeTextFileSync("npm/README.md", readme);
-  //Deno.copyFileSync("README.md", "npm/README.md");
+  // Deno.copyFileSync("README.md", "npm/README.md");
   // Deno.mkdirSync("npm/types/types");
   // const files = Deno.readDirSync("types");
   // for (const file of files) {
