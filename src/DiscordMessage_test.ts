@@ -228,8 +228,7 @@ Deno.test(function ParseVariantVariationSubtleDone() {
 });
 
 Deno.test(function ParseVariant202401() {
-  const p =
-    "**Simple, vector, colors to be used are black and white --s 250 --v 6.0** - Remix (Subtle) by <@1097074882203303911> (fast)";
+  const p = "**Simple, vector, colors to be used are black and white --s 250 --v 6.0** - Remix (Subtle) by <@1097074882203303911> (fast)";
   const p1 = extractPrompt(p, midjourneyBotId);
   assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.mode, "fast");
@@ -241,7 +240,6 @@ Deno.test(function ParseVariant202401() {
   assertEquals(p1.completion, 1);
 });
 
-
 Deno.test(function ParseVariant1715870086617() {
   const p = "**<https://s.mj.run/Xg2Gq1TXMgc> 4k, masterpiece, on white background --v 6.0** - Upscaled (Subtle) by <@1097074882203303911> (fast)";
   const p1 = extractPrompt(p, midjourneyBotId);
@@ -252,7 +250,8 @@ Deno.test(function ParseVariant1715870086617() {
 });
 
 Deno.test(function ParseVariant1715870200212() {
-  const p = "**neon genesis evangelion rey ayanami in her pilot suit, hyper realistic and futuristic style, bright image** - Zoom Out by <@1097074882203303911> (fast)";
+  const p =
+    "**neon genesis evangelion rey ayanami in her pilot suit, hyper realistic and futuristic style, bright image** - Zoom Out by <@1097074882203303911> (fast)";
   const p1 = extractPrompt(p, midjourneyBotId);
   assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.prompt, "neon genesis evangelion rey ayanami in her pilot suit, hyper realistic and futuristic style, bright image");
@@ -260,9 +259,9 @@ Deno.test(function ParseVariant1715870200212() {
   assertEquals(p1.completion, 1);
 });
 
-
 Deno.test(function ParseVariant1715872653295() {
-  const p = "**steampunk, dieselpunk, steampunk style art, highly detailed, intricate details, cinematic light, --ar 9:16 --c 10 --v 5.2** - <@1097074882203303911> (turbo, stealth)";
+  const p =
+    "**steampunk, dieselpunk, steampunk style art, highly detailed, intricate details, cinematic light, --ar 9:16 --c 10 --v 5.2** - <@1097074882203303911> (turbo, stealth)";
   const p1 = extractPrompt(p, midjourneyBotId);
   assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.prompt, "steampunk, dieselpunk, steampunk style art, highly detailed, intricate details, cinematic light, --ar 9:16 --c 10 --v 5.2");

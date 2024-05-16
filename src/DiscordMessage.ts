@@ -232,7 +232,7 @@ Deno.test(function ParseVariant${Date.now()}() {
 });
 
 // Left over Extra data:"${pc.yellow(extra)}"\n`);
-  // logger.warn(`Failed to extract prompt data from: ${pc.yellow(content)}`);
+    // logger.warn(`Failed to extract prompt data from: ${pc.yellow(content)}`);
   }
 }
 

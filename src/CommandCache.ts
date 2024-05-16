@@ -39,7 +39,7 @@ export class CommandCache {
     const response = await fetch(url, {
       headers: { authorization: this.authorization },
     });
-    
+
     const data = (await response.json()) as {
       application_commands: Command[];
     };
@@ -50,7 +50,6 @@ export class CommandCache {
     return [];
   }
 
-
   async #fetchCommand(name: string): Promise<Command[]> {
     logger.info(
       `CommandCache: ${name} not in cache, requesting Discord server.`,
@@ -59,14 +58,15 @@ export class CommandCache {
     const response = await fetch(url, {
       headers: { authorization: this.authorization },
     });
-    
+
     const data = (await response.json()) as {
       application_commands: Command[];
     };
     if ("application_commands" in data) {
       const application_commands = data.application_commands;
-      if (name)
-        return application_commands.filter(cmd => cmd.name === name);
+      if (name) {
+        return application_commands.filter((cmd) => cmd.name === name);
+      }
       return application_commands;
     }
     return [];
@@ -102,7 +102,7 @@ export class CommandCache {
         // command not found ??
         const commands = await this.#fetchCommand("");
         logger.info(
-          `CommandCache: ${name} not found, available cmds: ${commands.map(cmd => cmd.name).join(', ')}`,
+          `CommandCache: ${name} not found, available cmds: ${commands.map((cmd) => cmd.name).join(", ")}`,
         );
       }
     }
