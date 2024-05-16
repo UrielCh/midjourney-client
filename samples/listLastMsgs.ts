@@ -5,7 +5,7 @@ const client = new Midjourney("interaction.txt");
 const limit = 10;
 const msgs = await client.getMessages({ limit });
 
-console.log(`last ${pc.green("" + limit)} messages:`);
+console.log(`last ${pc.yellow("" + limit)} messages:`);
 for (const msg of msgs) {
   console.log("");
   console.log(`${pc.green("content:")} ${msg.content}`);
