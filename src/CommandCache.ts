@@ -1,5 +1,6 @@
 import { Command } from "./models.ts";
 import { logger, path } from "../deps.ts";
+import { CommandsData } from "./CommandsData.ts";
 
 export const KNOWN_METHODS = [
   "ask",
@@ -60,19 +61,37 @@ export class CommandCache {
     });
 
     const data = (await response.json()) as {
-      application_commands: Command[];
+      code?: number;
+      message?: string;
+      application_commands?: Command[];
     };
-    if ("application_commands" in data) {
+    if (data.application_commands) {
       const application_commands = data.application_commands;
       if (name) {
-        return application_commands.filter((cmd) => cmd.name === name);
+        const command = application_commands.filter((cmd) => cmd.name === name);
+        if (!command.length) {
+          logger.error(
+            `CommandCache: ${name} not found, available cmds: ${application_commands.map((cmd) => cmd.name).join(", ")}`,
+          );
+        }
+        return command;
       }
       return application_commands;
+    }
+    if (data.code && data.message) {
+      logger.error(
+        `fetchCommand from ${url} failed With error: ${data.message} code: ${data.code}`,
+      );
     }
     return [];
   }
 
   async getCommand(name: KnownMethods): Promise<Command> {
+    const fromCode = CommandsData.application_commands.find((cmd) => cmd.name === name);
+    if (fromCode) {
+      return fromCode as Command;
+    }
+
     // try from memory cache
     if (this.cache[name]) {
       return this.cache[name] as Command;
@@ -98,12 +117,6 @@ export class CommandCache {
             JSON.stringify(command, undefined, 2),
           );
         }
-      } else {
-        // command not found ??
-        const commands = await this.#fetchCommand("");
-        logger.info(
-          `CommandCache: ${name} not found, available cmds: ${commands.map((cmd) => cmd.name).join(", ")}`,
-        );
       }
     }
     // save in memory

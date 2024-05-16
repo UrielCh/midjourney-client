@@ -122,9 +122,9 @@ export async function buildDnt() {
       //   version: "1.1.0",
       //   peerDependency: false,
       // },
-      "https://deno.land/x/logger@v1.1.3/logger.ts": {
+      "https://deno.land/x/logger@v1.1.5/logger.ts": {
         name: "@denodnt/logger",
-        version: "1.1.3",
+        version: "1.1.5",
         peerDependency: false,
       },
     },

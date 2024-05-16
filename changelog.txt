@@ -1,5 +1,9 @@
 # Changelog
 
+## V1.0.8
+- mode midjourney command data to code
+- fix dnt code convertion errors
+
 ## V1.0.7
 - update discord protocol
 

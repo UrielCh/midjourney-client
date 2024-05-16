@@ -10,7 +10,7 @@ Deno.test(async function LoadAllCmds() {
   }
   const { commandCache } = client;
   for (const mtd of ["describe"] as const) { // KNOWN_METHODS
-    await wait(1000);
+    // await wait(1000);
     const cmd = await commandCache.getCommand(mtd);
     assertEquals(cmd.name, mtd);
   }

@@ -17,5 +17,7 @@
     "exclude": ["npm/"]
   },
   "lock": false,
-  "imports": { "@deno/dnt": "jsr:@deno/dnt@^0.41.1", "@std/assert": "jsr:@std/assert@^0.225.2" }
+  "imports": {
+    "@deno/dnt": "jsr:@deno/dnt@^0.41.1"
+  }
 }
