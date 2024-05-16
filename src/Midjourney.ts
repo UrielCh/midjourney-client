@@ -414,7 +414,7 @@ export class Midjourney {
       return msg;
     }
     throw new Error(
-      `imagine return ${response.status} ${response.statusText} ${await response.text()}`,
+      `Imagine sent to interactions Return ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 

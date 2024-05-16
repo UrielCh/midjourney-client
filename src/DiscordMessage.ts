@@ -657,7 +657,7 @@ export class DiscordMessage implements APIMessage {
       const stats = await Deno.stat(dest);
       if (stats.isDirectory) {
         const destFile = path.join(dest, att.filename);
-        logger.info(`downloading ${att.url} to ${destFile}`);
+        logger.info(`downloading ${pc.green(att.url)} to ${pc.green(destFile)}`);
         return await downloadFileCached(att.url, destFile);
       }
       throw Error(`download abort, ${dest} is an existing file`);
