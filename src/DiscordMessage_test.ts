@@ -203,7 +203,7 @@ Deno.test(function ParseVariantVariationStrongDone() {
 Deno.test(function ParseVariantVariationSubtleDone() {
   const p = "**a view of Paris drawn by Kanagawa** - Variations (Subtle) by <@1097074882203303911> (fast)";
   const p1 = extractPrompt(p, midjourneyBotId);
-  assertExists(p1);
+  assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
@@ -212,7 +212,7 @@ Deno.test(function ParseVariantVariationSubtleDone() {
 Deno.test(function ParseVariantVariationSubtleDoneTurbo() {
   const p = "**a view of Paris drawn by Kanagawa** - Variations (Subtle) by <@1097074882203303911> (turbo)";
   const p1 = extractPrompt(p, midjourneyBotId);
-  assertExists(p1);
+  assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, 1);
@@ -221,8 +221,51 @@ Deno.test(function ParseVariantVariationSubtleDoneTurbo() {
 Deno.test(function ParseVariantVariationSubtleDone() {
   const p = "Upscaling image #2 with **a view of Paris drawn by Kanagawa** - <@1097074882203303911> (Waiting to start)";
   const p1 = extractPrompt(p, midjourneyBotId);
-  assertExists(p1);
+  assertExists(p1, "extractPrompt should return a prompt object");
   assertEquals(p1.prompt, "a view of Paris drawn by Kanagawa");
   assertEquals(p1.id, "1097074882203303911");
   assertEquals(p1.completion, -1);
+});
+
+Deno.test(function ParseVariant202401() {
+  const p =
+    "**Simple, vector, colors to be used are black and white --s 250 --v 6.0** - Remix (Subtle) by <@1097074882203303911> (fast)";
+  const p1 = extractPrompt(p, midjourneyBotId);
+  assertExists(p1, "extractPrompt should return a prompt object");
+  assertEquals(p1.mode, "fast");
+  assertEquals(
+    p1.prompt,
+    "Simple, vector, colors to be used are black and white --s 250 --v 6.0",
+  );
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+});
+
+
+Deno.test(function ParseVariant1715870086617() {
+  const p = "**<https://s.mj.run/Xg2Gq1TXMgc> 4k, masterpiece, on white background --v 6.0** - Upscaled (Subtle) by <@1097074882203303911> (fast)";
+  const p1 = extractPrompt(p, midjourneyBotId);
+  assertExists(p1, "extractPrompt should return a prompt object");
+  assertEquals(p1.prompt, "<https://s.mj.run/Xg2Gq1TXMgc> 4k, masterpiece, on white background --v 6.0");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+});
+
+Deno.test(function ParseVariant1715870200212() {
+  const p = "**neon genesis evangelion rey ayanami in her pilot suit, hyper realistic and futuristic style, bright image** - Zoom Out by <@1097074882203303911> (fast)";
+  const p1 = extractPrompt(p, midjourneyBotId);
+  assertExists(p1, "extractPrompt should return a prompt object");
+  assertEquals(p1.prompt, "neon genesis evangelion rey ayanami in her pilot suit, hyper realistic and futuristic style, bright image");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
+});
+
+
+Deno.test(function ParseVariant1715872653295() {
+  const p = "**steampunk, dieselpunk, steampunk style art, highly detailed, intricate details, cinematic light, --ar 9:16 --c 10 --v 5.2** - <@1097074882203303911> (turbo, stealth)";
+  const p1 = extractPrompt(p, midjourneyBotId);
+  assertExists(p1, "extractPrompt should return a prompt object");
+  assertEquals(p1.prompt, "steampunk, dieselpunk, steampunk style art, highly detailed, intricate details, cinematic light, --ar 9:16 --c 10 --v 5.2");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, 1);
 });

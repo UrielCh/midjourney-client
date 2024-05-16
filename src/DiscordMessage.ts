@@ -29,7 +29,7 @@ export interface SplitedPrompt {
   source: string;
   prompt: string;
   id?: string;
-  mode?: "turbo" | "fast" | "relaxed" | "fast, stealth" | "relaxed, stealth";
+  mode?: "turbo" | "fast" | "relaxed" | "fast, stealth" | "relaxed, stealth" | "turbo, stealth";
   name: string;
   completion?: number; // 0..1
 }
@@ -58,7 +58,7 @@ export function extractPrompt(
   let extra = content;
 
   /**
-   * speed first
+   * digest speed first from the end of the message
    */
 
   if (extra.endsWith(" (fast)")) {
@@ -76,10 +76,13 @@ export function extractPrompt(
   } else if (extra.endsWith(" (relaxed, stealth)")) {
     result.mode = "relaxed, stealth";
     extra = extra.substring(0, extra.length - 19);
+  } else if (extra.endsWith(" (turbo, stealth)")) {
+    result.mode = "turbo, stealth";
+    extra = extra.substring(0, extra.length - 17);
   }
 
   /**
-   * progression
+   * digest progression from the end of the message
    */
 
   if (extra.endsWith(" (paused)")) {
@@ -162,13 +165,28 @@ export function extractPrompt(
     if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
     }
+  } else if (extra.endsWith(" Upscaled (Subtle) by")) {
+    extra = extra.substring(0, extra.length - 21);
+    if (result.completion === undefined) {
+      result.completion = 1; // Variations are only display at completion
+    }
   } else if (extra.endsWith(" Upscaled (Light) by")) {
     extra = extra.substring(0, extra.length - 20);
     if (result.completion === undefined) {
       result.completion = 1; // Variations are only display at completion
     }
+  } else if (extra.endsWith(" Zoom Out by")) {
+    extra = extra.substring(0, extra.length - 12);
+    if (result.completion === undefined) {
+      result.completion = 1;
+    }
   } else if (extra.endsWith(" Remix by")) {
     extra = extra.substring(0, extra.length - 9);
+    if (result.completion === undefined) {
+      result.completion = 1;
+    }
+  } else if (extra.endsWith(" Remix (Subtle) by")) {
+    extra = extra.substring(0, extra.length - 18);
     if (result.completion === undefined) {
       result.completion = 1;
     }
@@ -201,8 +219,20 @@ export function extractPrompt(
     return result;
   }
   if (id === "936929561302675456") {
-    logger.warn(`Failed to extract prompt data from: ${pc.yellow(content)}`);
-    logger.warn(`Extra data:"${pc.yellow(extra)}"`);
+    logger.warn(`You may open an issue at https://github.com/UrielCh/midjourney-client/issues`);
+    logger.warn(`TODO Add a new test case in "${pc.green("DiscordMessage_test.ts")}"
+
+Deno.test(function ParseVariant${Date.now()}() {
+  const p = "${pc.yellow(content)}";
+  const p1 = extractPrompt(p, midjourneyBotId);
+  assertExists(p1, "extractPrompt should return a prompt object");
+  assertEquals(p1.prompt, "The expected prompt");
+  assertEquals(p1.id, "1097074882203303911");
+  assertEquals(p1.completion, -1);
+});
+
+// Left over Extra data:"${pc.yellow(extra)}"\n`);
+  // logger.warn(`Failed to extract prompt data from: ${pc.yellow(content)}`);
   }
 }
 
