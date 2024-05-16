@@ -22,9 +22,9 @@ jobs:
 
       - name: Setup Deno
         # uses: denoland/setup-deno@v1
-        uses: denoland/setup-deno@1.1.4
+        uses: denoland/setup-deno@1
         with:
-          deno-version: v1.x
+          deno-version: v1.42.4
 
       - name: Verify formatting
         run: deno fmt --check
