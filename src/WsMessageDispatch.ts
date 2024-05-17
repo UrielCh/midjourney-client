@@ -1,4 +1,4 @@
-import { APIMessage, type Snowflake } from "../deps.ts";
+import type { APIMessage, Snowflake } from "../deps.ts";
 
 type UserDetail = {
   user_id: Snowflake;

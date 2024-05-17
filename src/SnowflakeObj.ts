@@ -1,4 +1,4 @@
-import { type Snowflake } from "../deps.ts";
+import type { Snowflake } from "../deps.ts";
 
 let prevTimestamp = 0;
 let prevIncrement = 0;

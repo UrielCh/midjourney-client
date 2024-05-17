@@ -175,10 +175,10 @@ export class Midjourney {
   private wsActivated = false;
   private wsHeartbeat: ReturnType<typeof setTimeout> | null = null;
 
-  messageCache = new Map<string, DiscordMessage>();
-  MessageCacheByPrompt = new Map<string, DiscordMessage[]>();
-  MessageCacheByParent = new Map<string, DiscordMessage[]>();
-  messageEmmiter = new EventEmitter();
+  messageCache: Map<string, DiscordMessage> = new Map<string, DiscordMessage>();
+  MessageCacheByPrompt: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
+  MessageCacheByParent: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
+  messageEmmiter: EventEmitter = new EventEmitter();
 
   public disconnectWs(): void {
     if (this.wsHeartbeat) {
