@@ -3,12 +3,14 @@ import { SnowflakeObj } from "./SnowflakeObj.ts";
 // import * as cmd from "./applicationCommand.ts";
 import { CommandCache } from "./CommandCache.ts";
 import type { Command, InteractionName, Payload } from "./models.ts";
-import { APIButtonComponentWithCustomId, APIMessage, ApplicationCommandType, ButtonStyle, EventEmitter } from "../deps.ts";
+import type { APIButtonComponentWithCustomId, APIMessage } from "../deps.ts";
+import { ApplicationCommandType, ButtonStyle, EventEmitter } from "../deps.ts";
 import type { RESTGetAPIChannelMessagesQuery, Snowflake } from "../deps.ts";
 // import MsgsCache from "./MsgsCache.ts";
 import { logger } from "../deps.ts";
 import { download, filename2Mime, generateRandomString, getExistinggroup, REROLL, wait } from "./utils.ts";
-import { properties, WsMessage, WsOpcode } from "./wsMessages.ts";
+import type { WsMessage } from "./wsMessages.ts";
+import { properties, WsOpcode } from "./wsMessages.ts";
 import { PWall } from "./PWall.ts";
 
 const interactions = "https://discord.com/api/v9/interactions";

@@ -1,4 +1,4 @@
-import { Command } from "./models.ts";
+import type { Command } from "./models.ts";
 import { logger, path } from "../deps.ts";
 import { CommandsData } from "./CommandsData.ts";
 

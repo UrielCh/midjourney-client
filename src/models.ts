@@ -1,5 +1,5 @@
 import type { APIApplicationCommand, APIMessageReference, APIUser, Snowflake } from "../deps.ts";
-import { ApplicationCommandType } from "../deps.ts";
+import type { ApplicationCommandType } from "../deps.ts";
 
 export type InteractionName = "variations" | "grid" | "upscale" | "describe" | "imagine" | "blend";
 

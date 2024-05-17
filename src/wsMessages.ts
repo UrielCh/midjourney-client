@@ -1,6 +1,6 @@
-import { WsMsg0Dispatch } from "./WsMessageDispatch.ts";
-const browser_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+import type { WsMsg0Dispatch } from "./WsMessageDispatch.ts";
 const browser_version = "113.0.0.0";
+const browser_user_agent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser_version} Safari/537.36`;
 
 export interface WsProperties {
   os: string;

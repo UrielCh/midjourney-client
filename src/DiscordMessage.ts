@@ -12,9 +12,9 @@ import type {
   Snowflake,
 } from "../deps.ts";
 // CODE imports
-import { ButtonStyle, logger, MessageType, path, pc } from "../deps.ts";
+import { ButtonStyle, logger, type MessageType, path, pc } from "../deps.ts";
 
-import Midjourney from "./Midjourney.ts";
+import type Midjourney from "./Midjourney.ts";
 import type { InteractionName, UserReference } from "./models.ts";
 import { downloadFileCached, REROLL } from "./utils.ts";
 
