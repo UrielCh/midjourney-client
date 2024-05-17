@@ -236,6 +236,9 @@ Deno.test(function ParseVariant${Date.now()}() {
   }
 }
 
+/**
+ * DiscordMessage is a wrapper around the APIMessage object
+ */
 export class DiscordMessage implements APIMessage {
   /**
    * ID of the message
