@@ -111,9 +111,9 @@ export async function buildDnt() {
     },
     package: packageJson,
     mappings: {
-      "https://deno.land/x/discord_api_types@0.37.67/v9.ts": {
+      "https://deno.land/x/discord_api_types@0.37.84/v9.ts": {
         name: "discord-api-types",
-        version: "0.37.67",
+        version: "0.37.84",
         peerDependency: false,
         subPath: "v9",
       },
