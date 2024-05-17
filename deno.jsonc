@@ -1,4 +1,7 @@
 {
+  "name": "@u4/midjourney",
+  "version": "1.0.8",
+  "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
     "dnt": "deno run -A _build_npm.ts",
