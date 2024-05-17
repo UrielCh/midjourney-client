@@ -22,5 +22,8 @@
   "lock": false,
   "imports": {
     "@deno/dnt": "jsr:@deno/dnt@^0.41.1"
+  },
+  "publish": {
+    "exclude": [".github/", "npm/", ".vscode/", "doc/", "samples/", "_build_npm.ts"]
   }
 }
