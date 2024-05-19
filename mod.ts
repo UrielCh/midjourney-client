@@ -149,7 +149,7 @@ import Midjourney from "midjourney-discord-api";
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msg = await client.imagine(
-  "A photo of an astronaut riding a horse", 
+  "A photo of an astronaut riding a horse",
   // add optional progress function (percent) => void
 );
 console.log("you find your result here: ", msg.attachments[0].url);
