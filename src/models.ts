@@ -5,7 +5,7 @@ export type InteractionName = "variations" | "grid" | "upscale" | "describe" | "
 
 export interface Command extends APIApplicationCommand {
   name: "imagine" | "settings" | string;
-  contexts?: unknown;
+  // contexts?: unknown;
   // options?: CommandOpt[]
 }
 

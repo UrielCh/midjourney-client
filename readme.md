@@ -1,7 +1,7 @@
 # midjourney-discord-api
 
 [![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
-_midjourney-discord-api_
+[![JSR](https://jsr.io/badges/@u4/midjourney)](https://jsr.io/@u4/midjourney)
 
 [Deno doc](https://deno.land/x/midjourney_discord_api)
 
@@ -15,13 +15,13 @@ Midjourney bot using your web development tools.
 
 | feature     | Status | feature      | Status |
 | ----------- | ------ | ------------ | ------ |
-| `/blend`    | ✅     | `Reroll`    | ✅     |
+| `/blend`    | ✅     | `Reroll`     | ✅     |
 | `/describe` | ✅     | `/relax`     | ✅     |
 | `/fast`     | ✅     | `/settings`  | ✅     |
 | `/imagine`  | ✅     | `Variations` | ✅     |
 | `Upscale`   | ✅     | `concurent calls`| ✅ |
 | `/private`  | ❌ N/A | `/public`    | ❌ N/A |
-| `/show`      | ❌ N/A |`/stealth`   | ❌ N/A |
+| `/show`     | ❌ N/A |`/stealth`    | ❌ N/A |
 
 ## Installation
 
@@ -31,10 +31,26 @@ Midjourney bot using your web development tools.
 npm install midjourney-discord-api
 ```
 
+### Deno
+
+```sh
+deno add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+```
+
+### NodeJS (ESM) + JSR
+
+```
+npx jsr add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+```
+
 ### ESM nodeJS
 
 ```js
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const cli = new Midjourney("interaction.txt");
 const msgs = await cli.getMessages();
@@ -44,7 +60,10 @@ console.log(msgs.length + " messages visibles"); // by default get 50 messages
 ### Deno
 
 ```ts
-import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
+// deno add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+// using x
+// import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 ```
 
 ## Token / ids extraction.
@@ -105,12 +124,14 @@ Here are some examples of how to use the `Midjourney` class:
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const prompts: string[] = await client.describeUrl(
   "https://cdn.midjourney.com/95e2c8fd-255c-4982-9065-83051143570c/0_0_640_N.webp",
-  /* add optional progress function (percent) => void*/
+  // add optional progress function (percent) => void
 );
 console.log("reversed prompt: ", prompts);
 ```
@@ -119,12 +140,14 @@ console.log("reversed prompt: ", prompts);
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msg = await client.imagine(
-  "A photo of an astronaut riding a horse", 
-  /* add optional progress function (percent) => void */
+  "A photo of an astronaut riding a horse",
+  // add optional progress function (percent) => void
 );
 console.log("you find your result here: ", msg.attachments[0].url);
 ```
@@ -132,14 +155,12 @@ console.log("you find your result here: ", msg.attachments[0].url);
 ### Upscale
 
 ```ts
-/**
- * Upscale the first none upscaled images in chat, searching from the newest to the oldest images
- */
+// Upscale the first none upscaled images in chat, searching from the newest to the oldest images
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
-/**
- * Variant the last image available in chat
- */
+// Variant the last image available in chat
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msgs = await client.getMessages();
@@ -152,7 +173,7 @@ for (const msg of msgs) {
     const v = msg.canVariant(i)
     if (v) {
       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
-      const result = await msg.variant(i /* , add optional progress function (percent) => void */);
+      const result = await msg.variant(i);
       await result.download(0, "images");
       break main;
     }
@@ -163,9 +184,7 @@ for (const msg of msgs) {
 ### Variant
 
 ```ts
-/**
- * Variant the last image available in chat
- */
+// Variant the last image available in chat
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msgs = await client.getMessages();
@@ -178,7 +197,7 @@ for (const msg of msgs) {
     const v = msg.canVariant(i)
     if (v) {
       console.log(`Variant image ${v.custom_id} from ${msg.id}: ${msg.prompt?.prompt}`);
-      const result = await msg.variant(i/* , add optional progress function (percent) => void */);
+      const result = await msg.variant(i);
       await result.download(0, "images");
       break main;
     }
@@ -190,15 +209,17 @@ for (const msg of msgs) {
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
 const msg = await client.imagine(
   "A photo of an astronaut riding a horse",
-  /* add optional progress function (percent) => void */
+  // add optional progress function (percent) => void
 );
 if (msg.canReroll()) {
-  const result = msg.reroll(/* add optional progress function (percent) => void */);
+  const result = msg.reroll();
   console.log(`upscale V2 Ready from`, result.attachments[0].url);
 }
 ```

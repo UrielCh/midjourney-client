@@ -1,3 +1,6 @@
+/**
+ * List of the default general midjourney channels.
+ */
 export const MIDJOURNEY_CHANNELS = {
   general1: "https://discord.com/channels/662267976984297473/933565701162168371",
   general2: "https://discord.com/channels/662267976984297473/941971306004504638",
