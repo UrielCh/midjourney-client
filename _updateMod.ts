@@ -3,12 +3,12 @@ const jsonStr = Deno.readTextFileSync("deno.jsonc");
 const jsonConf = JSON.parse(jsonStr) as { version: string };
 
 let readmeContent = readmeContentOriginal.replaceAll(
-    /https:\/\/deno.land\/x\/midjourney_discord_api@v[\d.]+\/mod.ts/g,
-    `https://deno.land/x/midjourney_discord_api@v${jsonConf.version}/mod.ts`,
-  ).replaceAll(
-    /version: "[\d.]+"/g,
-    `version: "${jsonConf.version}"`,
-  );
+  /https:\/\/deno.land\/x\/midjourney_discord_api@v[\d.]+\/mod.ts/g,
+  `https://deno.land/x/midjourney_discord_api@v${jsonConf.version}/mod.ts`,
+).replaceAll(
+  /version: "[\d.]+"/g,
+  `version: "${jsonConf.version}"`,
+);
 
 // update current version in readme
 if (readmeContent !== readmeContentOriginal) {

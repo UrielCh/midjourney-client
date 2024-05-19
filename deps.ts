@@ -18,7 +18,6 @@ export type {
 } from "npm:discord-api-types@0.37.84/v9";
 // "https://deno.land/x/discord_api_types@0.37.84/v9.ts";
 
-
 export { ApplicationCommandType, ButtonStyle, MessageFlags, MessageType } from "npm:discord-api-types@0.37.84/v9";
 // "https://deno.land/x/discord_api_types@0.37.84/v9.ts";
 

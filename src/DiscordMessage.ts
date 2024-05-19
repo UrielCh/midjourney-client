@@ -620,7 +620,7 @@ export class DiscordMessage implements APIMessage {
   /**
    * Start a REROLL.
    * @param progress optional callback to track the progression of the action
-   * @returns 
+   * @returns
    */
   reroll(progress?: (percent: number) => void): Promise<DiscordMessage> {
     const comp = this.getComponents(REROLL);
