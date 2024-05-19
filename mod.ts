@@ -1,10 +1,8 @@
 /**
-* # midjourney-discord-api
+* # @u4/midjourney
 
 [![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
 [![JSR](https://jsr.io/badges/@u4/midjourney)](https://jsr.io/@u4/midjourney)
-
-_midjourney-discord-api_
 
 [Deno doc](https://deno.land/x/midjourney_discord_api)
 

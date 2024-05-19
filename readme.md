@@ -3,8 +3,6 @@
 [![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
 [![JSR](https://jsr.io/badges/@u4/midjourney)](https://jsr.io/@u4/midjourney)
 
-_midjourney-discord-api_
-
 [Deno doc](https://deno.land/x/midjourney_discord_api)
 
 `midjourney-discord-api` is a library designed to connect to a Discord channel

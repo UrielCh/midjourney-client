@@ -15,9 +15,16 @@ if (readmeContent !== readmeContentOriginal) {
   Deno.writeTextFileSync("README.md", readmeContent);
 }
 
+// only for JSR
+
 readmeContent = readmeContent.replaceAll(
   /https:\/\/deno.land\/x\/midjourney_discord_api@v[\d.]+\/mod.ts/g,
   `jsr:@u4/midjourney@${jsonConf.version}/mod`,
+);
+
+readmeContent = readmeContent.replaceAll(
+  /# midjourney-discord-api/g,
+  `# @u4/midjourney`,
 );
 
 // Write the updated content back to the mod.ts file
