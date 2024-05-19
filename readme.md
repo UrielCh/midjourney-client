@@ -1,6 +1,8 @@
 # midjourney-discord-api
 
 [![NPM Version](https://img.shields.io/npm/v/midjourney-discord-api.svg?style=flat)](https://www.npmjs.org/package/midjourney-discord-api)
+[![JSR](https://jsr.io/badges/@u4/midjourney)](https://jsr.io/@u4/midjourney)
+
 _midjourney-discord-api_
 
 [Deno doc](https://deno.land/x/midjourney_discord_api)
@@ -31,10 +33,26 @@ Midjourney bot using your web development tools.
 npm install midjourney-discord-api
 ```
 
+### Deno
+
+```sh
+deno add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+```
+
+### NodeJS (ESM) + JSR
+
+```
+npx jsr add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+```
+
 ### ESM nodeJS
 
 ```js
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const cli = new Midjourney("interaction.txt");
 const msgs = await cli.getMessages();
@@ -44,7 +62,10 @@ console.log(msgs.length + " messages visibles"); // by default get 50 messages
 ### Deno
 
 ```ts
-import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
+// deno add @u4/midjourney
+import Midjourney from "@u4/midjourney";
+// using x
+// import Midjourney from "https://deno.land/x/midjourney_discord_api/mod.ts";
 ```
 
 ## Token / ids extraction.
@@ -105,6 +126,8 @@ Here are some examples of how to use the `Midjourney` class:
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
@@ -119,6 +142,8 @@ console.log("reversed prompt: ", prompts);
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
@@ -134,6 +159,8 @@ console.log("you find your result here: ", msg.attachments[0].url);
 ```ts
 // Upscale the first none upscaled images in chat, searching from the newest to the oldest images
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 // Variant the last image available in chat
 const client = new Midjourney("interaction.txt");
@@ -184,6 +211,8 @@ for (const msg of msgs) {
 
 ```ts
 import Midjourney from "midjourney-discord-api";
+// or
+// import Midjourney from "@u4/midjourney";
 
 const client = new Midjourney("interaction.txt");
 await client.connectWs(); // Used Websocket to boost detection. (experiental)
