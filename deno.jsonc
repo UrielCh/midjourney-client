@@ -1,11 +1,13 @@
 {
   "name": "@u4/midjourney",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
     "dnt": "deno run -A _build_npm.ts",
-    "test": "deno test --allow-write=cmdCache --allow-read=interaction.txt --allow-net=discord.com"
+    "regen": "deno run -A _updateMod.ts",
+    "test": "deno test --allow-write=cmdCache --allow-read=interaction.txt --allow-net=discord.com",
+    "publish": "deno publish --dry-run --allow-dirty"
   },
   "fmt": {
     "lineWidth": 160,
@@ -24,6 +26,6 @@
     "@deno/dnt": "jsr:@deno/dnt@^0.41.1"
   },
   "publish": {
-    "exclude": [".github/", "npm/", ".vscode/", "doc/", "samples/", "_build_npm.ts"]
+    "exclude": [".github/", "npm/", ".vscode/", "doc/", "samples/", "_*.ts", "*_test.ts", "dev_deps.ts", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
   }
 }

@@ -22,6 +22,9 @@ export const KNOWN_METHODS = [
 ] as const;
 export type KnownMethods = typeof KNOWN_METHODS[number];
 
+/**
+ * get command from Midjourney discord bot and cache it in memory and disk.
+ */
 export class CommandCache {
   cacheDirectory?: string;
   cache: Partial<Record<KnownMethods, Command>> = {};

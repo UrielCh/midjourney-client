@@ -25,6 +25,9 @@ export interface ComponentsSummary {
   custom_id: string;
 }
 
+/**
+ * Structured Midjourney bot response
+ */
 export interface SplitedPrompt {
   source: string;
   prompt: string;
@@ -37,6 +40,12 @@ export interface SplitedPrompt {
 const progressionQueue = -1;
 const progressionStoped = -1;
 
+/**
+ * parse a Midjourney bot message to extract the prompt
+ * @param content text content of the message
+ * @param id Snowflake of the message
+ * @returns structured prompt
+ */
 export function extractPrompt(
   content: string,
   id: Snowflake,
@@ -385,6 +394,11 @@ export class DiscordMessage implements APIMessage {
    */
   #client: Midjourney;
 
+  /**
+   * Create a new DiscordMessage
+   * @param client Midjourney client implementation
+   * @param source source message
+   */
   constructor(client: Midjourney, source: APIMessage) {
     Object.assign(this, source);
     this.#client = client;
@@ -603,6 +617,11 @@ export class DiscordMessage implements APIMessage {
     }
   }
 
+  /**
+   * Start a REROLL.
+   * @param progress optional callback to track the progression of the action
+   * @returns 
+   */
   reroll(progress?: (percent: number) => void): Promise<DiscordMessage> {
     const comp = this.getComponents(REROLL);
     logger.info(`${comp.custom_id} Reroll will be generated`);
@@ -647,6 +666,12 @@ export class DiscordMessage implements APIMessage {
   //   }
   // }
 
+  /**
+   * Download an attachement from the message
+   * @param attachementId zero based attachement index
+   * @param dest destination file or directory
+   * @returns the saved attachement as a Buffer
+   */
   async download(
     attachementId: number,
     dest: string,

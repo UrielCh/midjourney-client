@@ -50,4 +50,4 @@ jobs:
       # deno.lock make build dirty so we need to allow dirty
 
       - name: Publish package ${{inputs.npm_version}}
-        run: deno publish --dry-run  --allow-dirty
+        run: deno publish --allow-dirty
