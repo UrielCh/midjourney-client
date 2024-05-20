@@ -13,3 +13,4 @@ console.log(`${pc.green("Partent Type:")} ${msg.parentInteraction}`);
 console.log(`${pc.green("componentsNames:")} ${msg.componentsNames}`);
 
 console.log(JSON.stringify(msg.attachments[0], undefined, 2));
+client.close();

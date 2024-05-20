@@ -14,3 +14,4 @@ for (const msg of msgs) {
   }
   console.log(`${pc.green("Partent Type:")} ${msg.parentInteraction}`);
 }
+client.close();

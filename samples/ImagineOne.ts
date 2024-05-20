@@ -8,3 +8,4 @@ const basePrompt = "einstein mathematician studying at school";
 
 const msg = await client.imagine(basePrompt, progressLogger(`seed #random`));
 await msg.download(0, "images");
+client.close();

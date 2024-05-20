@@ -18,3 +18,4 @@ await nativebird.map(prompts, async ({ prompt, seed }) => {
   const msg = await client.imagine(prompt, progressLogger(`seed #${seed}`));
   await msg.download(0, "images");
 }, { concurrency: 3 });
+client.close();

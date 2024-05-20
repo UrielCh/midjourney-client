@@ -26,12 +26,11 @@ export type KnownMethods = typeof KNOWN_METHODS[number];
  * get command from Midjourney discord bot and cache it in memory and disk.
  */
 export class CommandCache {
-  cacheDirectory?: string;
+  cacheDirectory: string;
   cache: Partial<Record<KnownMethods, Command>> = {};
 
   constructor(private channel_id: string, private authorization: string) {
     this.cacheDirectory = "cmdCache";
-    Deno.mkdirSync(this.cacheDirectory, { recursive: true });
   }
 
   // Old code
@@ -101,6 +100,8 @@ export class CommandCache {
     }
     let command: Command | undefined;
     // try from disk cache
+    Deno.mkdirSync(this.cacheDirectory, { recursive: true });
+
     const cacheFile = this.getcacheFile(name);
     if (cacheFile) {
       try {

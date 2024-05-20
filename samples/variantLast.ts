@@ -21,3 +21,4 @@ for (const msg of msgs) {
     }
   }
 }
+client.close();

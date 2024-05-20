@@ -387,6 +387,9 @@ export class DiscordMessage implements APIMessage {
    */
   public referenced_message?: DiscordMessage | null;
 
+  /**
+   * Splited prompt
+   */
   public prompt?: SplitedPrompt;
 
   /**
@@ -449,6 +452,9 @@ export class DiscordMessage implements APIMessage {
     //if (custom_ids.includes("MJ::Job::PicReader::")) {
   }
 
+  /**
+   * get the list of components names
+   */
   get componentsNames(): string[] {
     const out: string[] = [];
     if (!this.components) {
@@ -463,6 +469,9 @@ export class DiscordMessage implements APIMessage {
     return out;
   }
 
+  /**
+   * get the parent interaction name
+   */
   get parentInteraction(): InteractionName | "" {
     if (this.interaction && this.interaction.name) {
       return this.interaction.name as InteractionName;
@@ -524,6 +533,12 @@ export class DiscordMessage implements APIMessage {
     return "";
   }
 
+  /**
+   * Get the first component with the given label
+   * @param label 
+   * @param label2 optional second label
+   * @returns a reference to the component
+   */
   public getComponents(
     label: string,
     label2?: string,
@@ -628,6 +643,12 @@ export class DiscordMessage implements APIMessage {
     return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
+  /**
+   * Start a Upscale.
+   * @param id number of the image to upscale 1,2,3 or 4
+   * @param progress optional callback to track the progression of the action
+   * @returns 
+   */
   upscale(
     id: number,
     progress?: (percent: number) => void,
@@ -637,6 +658,12 @@ export class DiscordMessage implements APIMessage {
     return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
+  /**
+   * Renerate a variant from the current message
+   * @param id number of the image to generate a variant from 1,2,3 or 4
+   * @param progress 
+   * @returns 
+   */
   variant(
     id: number,
     progress?: (percent: number) => void,
@@ -646,6 +673,10 @@ export class DiscordMessage implements APIMessage {
     return this.#client.callCustomComponents(this.id, comp, progress);
   }
 
+  /**
+   * Refresh the message from the discord API, Message will be updated with the new data.
+   * @returns updated message
+   */
   async refresh(): Promise<this> {
     const m2 = await this.#client.getMessageById(this.id);
     if (m2) {

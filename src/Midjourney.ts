@@ -180,6 +180,17 @@ export class Midjourney {
   MessageCacheByParent: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
   messageEmmiter: EventEmitter = new EventEmitter();
 
+  /**
+   * disconnect the websocket
+   * alias for disconnectWs();
+   */
+  public close(): void {
+    this.disconnectWs();
+  }
+
+  /**
+   * disconnect the websocket
+   */
   public disconnectWs(): void {
     if (this.wsHeartbeat) {
       clearTimeout(this.wsHeartbeat);
@@ -192,6 +203,11 @@ export class Midjourney {
     this.wsActivated = false;
   }
 
+  /**
+   * connect the websocket
+   * 
+   * you do not need to call this function, it will be called automatically when needed.
+   */
   public async connectWs(): Promise<void> {
     if (this.ws && this.wsActivated) {
       return;
@@ -344,7 +360,6 @@ export class Midjourney {
    * invoke /settings in discord bot..
    * @param params
    */
-
   async settings(): Promise<number> {
     await this.pWall.waitForAccess();
     const cmd = await this.commandCache.getCommand("settings");
@@ -394,6 +409,10 @@ export class Midjourney {
     );
   }
 
+  /**
+   * Call the /imagine command in the discord bot
+   * the returned promise will resolve when the bot had finished processing the request.
+   */
   async imagine(
     prompt: string,
     progress?: (percent: number) => void,
@@ -420,6 +439,10 @@ export class Midjourney {
     );
   }
 
+  /**
+   * call the /describe command in the discord bot
+   * @param attachment image to describe
+   */
   private async describe(attachment: UploadSlot): Promise<number> {
     await this.pWall.waitForAccess();
     const cmd = await this.commandCache.getCommand("describe");
@@ -473,6 +496,13 @@ export class Midjourney {
     );
   }
 
+  /**
+   * call a custom command in the discord bot from a previous interaction.
+   * @param parentId the parent message Snowflake id
+   * @param button button to call / press
+   * @param progress optional progress callback
+   * @returns the message that had been processed, resolved when the bot had finished processing the request.
+   */
   public async callCustomComponents(
     parentId: Snowflake,
     button: APIButtonComponentWithCustomId,
@@ -773,7 +803,17 @@ export class Midjourney {
     return this.waitMessageInternal(opts as WaitOptionsProgress);
   }
 
-  public async waitMessageInternal(
+  /**
+   * Wait for a message in the channel using a multiple cryteria, critera can be:
+   * - prompt: requested prompt
+   * - name: used as filename for /describe
+   * - maxWait: max wait iteration
+   * - type: what kind of resond are you waiting for, can be "variations" | "grid" | "upscale" | "describe"
+   * - imgId: use for upscale, can be 1 2 3 or 4
+   * - startId: do not look for message older than the initial request.
+   * - parent: filter by parent request
+   */
+  private async waitMessageInternal(
     opts: WaitOptionsProgress,
   ): Promise<DiscordMessage> {
     if (this.wsActivated) {
@@ -849,7 +889,7 @@ export class Midjourney {
   }
 
   /**
-   * get message from the chanel
+   * get message from the channel
    * @param params
    */
   public async getMessages(
@@ -958,7 +998,7 @@ export class Midjourney {
     }
   }
   /**
-   * invoke /describe on an image from an URL.
+   * invoke /describe on an image from an URL, the image will be downloaded and uploaded to the discord bot.
    * @param imageUrl url of the image
    * @return a list of 4 prompt suggested by Midjourney
    */
@@ -981,7 +1021,6 @@ export class Midjourney {
    * @param contentType the content type (can be autodetect from extention)
    * @return a list of 4 prompt suggested by Midjourney
    */
-
   public async describeImage(
     filename: string,
     imageData: ArrayBufferLike,
@@ -1022,6 +1061,13 @@ export class Midjourney {
     }
   }
 
+  /**
+   * Blend multiple images from URL, the Image will be downloaded and uploaded to the discord bot.
+   * @param imageUrls image sources
+   * @param dimensions optional image ratio
+   * @param progress optional progress callback
+   * @returns Promise<DiscordMessage> resolved on completion
+   */
   public async blendUrl(
     imageUrls: string[],
     dimensions?: "1:1" | "2:3" | "3:2",
@@ -1047,6 +1093,13 @@ export class Midjourney {
     return this.blend(images, dimensions, progress);
   }
 
+  /**
+   * Blend multiple images from a buffer, the image will be uploaded to the discord bot.
+   * @param images image buffers
+   * @param dimensions optional image ratio
+   * @param progress optional progress callback
+   * @returns Promise<DiscordMessage> resolved on completion
+   */
   public async blend(
     images: {
       filename: string;
