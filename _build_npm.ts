@@ -111,12 +111,13 @@ export async function buildDnt() {
     },
     package: packageJson,
     mappings: {
-      "https://deno.land/x/discord_api_types@0.37.84/v9.ts": {
-        name: "discord-api-types",
-        version: "0.37.84",
-        peerDependency: false,
-        subPath: "v9",
-      },
+      // no more mappings needed using npm: prefix
+      // "https://deno.land/x/discord_api_types@0.37.84/v9.ts": {
+      //   name: "discord-api-types",
+      //   version: "0.37.84",
+      //   peerDependency: false,
+      //   subPath: "v9",
+      // },
       // "https://deno.land/x/logger@v1.1.0/logger.ts": {
       //   name: "@denodnt/logger",
       //   version: "1.1.0",

@@ -1,3 +1,3 @@
-export { assert, assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
+export { assert, assertEquals, assertExists } from "jsr:@std/assert@0.225.2";
 
-export { join } from "https://deno.land/std@0.211.0/path/mod.ts";
+export { join } from "jsr:@std/path@0.225.1";
