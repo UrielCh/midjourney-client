@@ -205,7 +205,7 @@ export class Midjourney {
 
   /**
    * connect the websocket
-   * 
+   *
    * you do not need to call this function, it will be called automatically when needed.
    */
   public async connectWs(): Promise<void> {

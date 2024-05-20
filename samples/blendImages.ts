@@ -14,4 +14,3 @@ await client.connectWs();
 const msg = await client.blendUrl([sourceImg1, sourceImg2], "2:3", progressLogger("Blend 2 images"));
 await msg.download(0, "blend.png");
 client.close();
-

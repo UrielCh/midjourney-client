@@ -535,7 +535,7 @@ export class DiscordMessage implements APIMessage {
 
   /**
    * Get the first component with the given label
-   * @param label 
+   * @param label
    * @param label2 optional second label
    * @returns a reference to the component
    */
@@ -647,7 +647,7 @@ export class DiscordMessage implements APIMessage {
    * Start a Upscale.
    * @param id number of the image to upscale 1,2,3 or 4
    * @param progress optional callback to track the progression of the action
-   * @returns 
+   * @returns
    */
   upscale(
     id: number,
@@ -661,8 +661,8 @@ export class DiscordMessage implements APIMessage {
   /**
    * Renerate a variant from the current message
    * @param id number of the image to generate a variant from 1,2,3 or 4
-   * @param progress 
-   * @returns 
+   * @param progress
+   * @returns
    */
   variant(
     id: number,
