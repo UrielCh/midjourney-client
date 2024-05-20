@@ -45,6 +45,15 @@ export async function buildDnt() {
     Deno.exit(-1);
   }
 
+  const depsts = Deno.readTextFileSync("deps.ts");
+  const depstsPatch = depsts.replaceAll(
+    "jsr:@deno-lib/logger@1.1.5",
+    "https://deno.land/x/logger@v1.1.5/logger.ts",
+  );
+
+
+  Deno.writeTextFileSync("deps.ts", depstsPatch);
+
   const packageJson: PackageJson = {
     // package.json properties
     name: "midjourney-discord-api",
@@ -143,6 +152,8 @@ export async function buildDnt() {
     "midjourney-discord-api",
   );
   Deno.writeTextFileSync("npm/README.md", readme);
+  Deno.writeTextFileSync("deps.ts", depsts);
+
   // Deno.copyFileSync("README.md", "npm/README.md");
   // Deno.mkdirSync("npm/types/types");
   // const files = Deno.readDirSync("types");
