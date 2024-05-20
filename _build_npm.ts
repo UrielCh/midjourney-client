@@ -51,7 +51,6 @@ export async function buildDnt() {
     "https://deno.land/x/logger@v1.1.5/logger.ts",
   );
 
-
   Deno.writeTextFileSync("deps.ts", depstsPatch);
 
   const packageJson: PackageJson = {
