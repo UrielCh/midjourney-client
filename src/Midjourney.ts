@@ -1007,7 +1007,7 @@ export class Midjourney {
     progress?: (percent: number) => void,
   ): Promise<string[]> {
     const url = new URL(imageUrl);
-    const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
+    const filename = url.pathname.replace(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
     const imageData = await download(imageUrl, filename);
     if (!imageData) {
       throw Error("download failed");
@@ -1076,7 +1076,7 @@ export class Midjourney {
     const images = await Promise.all(
       imageUrls.map(async (imageUrl) => {
         const url = new URL(imageUrl);
-        const filename = url.pathname.replaceAll(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
+        const filename = url.pathname.replace(/\//g, "_").replace(/^_/, ""); // "pixelSample.webp";
         const imageData = await download(imageUrl, filename);
         if (!imageData) {
           throw Error("download failed");
