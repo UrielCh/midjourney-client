@@ -3,12 +3,18 @@ import type { ApplicationCommandType } from "../deps.ts";
 
 export type InteractionName = "variations" | "grid" | "upscale" | "describe" | "imagine" | "blend";
 
+/**
+ * extention from APIApplicationCommand
+ */
 export interface Command extends APIApplicationCommand {
   name: "imagine" | "settings" | string;
   // contexts?: unknown;
   // options?: CommandOpt[]
 }
 
+/**
+ * extention from APIMessageReference
+ */
 export interface Payload extends APIMessageReference {
   type: ApplicationCommandType;
   application_id: string;

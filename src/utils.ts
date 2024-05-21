@@ -1,9 +1,20 @@
 import { logger } from "../deps.ts";
 
+/**
+ * emoji for the reroll button
+ */
 export const REROLL = "🔄";
 
+/**
+ * wait for a given amount of time
+ * @param ms time to wait in milliseconds
+ * @returns a promise that resolves after the given time
+ */
 export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * download a file from the internet
+ */
 export async function download(
   url: string,
   filename: string,
@@ -48,6 +59,11 @@ export function getExistinggroup(text: string, fallback_env: string, ...regs: Re
   );
 }
 
+/**
+ * get the mime type from a filename
+ * @param filename filename to get the mime type from
+ * @returns the mime type
+ */
 export function filename2Mime(filename: string): string {
   filename = filename.toLowerCase();
   if (filename.endsWith(".webp")) {
@@ -60,6 +76,12 @@ export function filename2Mime(filename: string): string {
     throw Error(`unknown extention in ${filename}`);
   }
 }
+
+/**
+ * generate a random string of a given length
+ * @param length length of the string to generate
+ * @returns the generated string
+ */
 export function generateRandomString(length: number) {
   let result = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

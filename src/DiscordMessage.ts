@@ -18,12 +18,12 @@ import type Midjourney from "./Midjourney.ts";
 import type { InteractionName, UserReference } from "./models.ts";
 import { downloadFileCached, REROLL } from "./utils.ts";
 
-export interface ComponentsSummary {
-  parentId: Snowflake;
-  processed: boolean;
-  label: string;
-  custom_id: string;
-}
+// export interface ComponentsSummary {
+//   parentId: Snowflake;
+//   processed: boolean;
+//   label: string;
+//   custom_id: string;
+// }
 
 /**
  * Structured Midjourney bot response
@@ -37,7 +37,13 @@ export interface SplitedPrompt {
   completion?: number; // 0..1
 }
 
+/**
+ * Progression value for queueed state
+ */
 const progressionQueue = -1;
+/**
+ * Progression value for stoped state
+ */
 const progressionStoped = -1;
 
 /**

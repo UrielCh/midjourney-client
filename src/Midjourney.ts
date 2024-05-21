@@ -44,6 +44,9 @@ export interface WaitOptionsProgress extends WaitOptions {
 }
 // export type WaitOptions = Exclude<WaitOptionsProgress, 'progress'> & Partial<Pick<WaitOptionsProgress, 'progress'>>;
 
+/**
+ * Midjourney client
+ */
 export class Midjourney {
   readonly auth: string;
   readonly application_id: string;
@@ -131,6 +134,10 @@ export class Midjourney {
     return this._channel_id;
   }
 
+  /**
+   * change the channel id
+   * @param url url of the channel
+   */
   setDiscordChannelUrl(
     url: `https://discord.com/channels/${number}/${number}`,
   ) {
@@ -175,10 +182,10 @@ export class Midjourney {
   private wsActivated = false;
   private wsHeartbeat: ReturnType<typeof setTimeout> | null = null;
 
-  messageCache: Map<string, DiscordMessage> = new Map<string, DiscordMessage>();
-  MessageCacheByPrompt: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
-  MessageCacheByParent: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
-  messageEmmiter: EventEmitter = new EventEmitter();
+  private messageCache: Map<string, DiscordMessage> = new Map<string, DiscordMessage>();
+  // private MessageCacheByPrompt: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
+  // private MessageCacheByParent: Map<string, DiscordMessage[]> = new Map<string, DiscordMessage[]>();
+  private messageEmmiter: EventEmitter = new EventEmitter();
 
   /**
    * disconnect the websocket

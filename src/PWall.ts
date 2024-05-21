@@ -13,6 +13,10 @@ export class PWall {
     this.#queue = new Queue<(value: void | PromiseLike<void>) => void>();
   }
 
+  /**
+   * lock the access to the API until the cooldown interval is over
+   * @returns promise that resolves when the cooldown interval is over
+   */
   waitForAccess(): Promise<void> {
     if (!this.#next) {
       this.#next = setTimeout(this.releaseNext, this.#intervalMs);
@@ -36,6 +40,9 @@ export class PWall {
     }
   };
 
+  /**
+   * cooldown interval in milliseconds
+   */
   get intervalMs(): number {
     return this.#intervalMs;
   }

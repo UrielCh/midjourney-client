@@ -2,6 +2,9 @@ import type { Snowflake } from "../deps.ts";
 
 let prevTimestamp = 0;
 let prevIncrement = 0;
+/**
+ * SnowflakeObj is a class that represents a snowflake.
+ */
 export class SnowflakeObj {
   timestamp: number;
   workerId: number;
@@ -45,10 +48,17 @@ export class SnowflakeObj {
     }
   }
 
+  /**
+   * get the date of the snowflake.
+   */
   get date(): Date {
     return new Date(this.timestamp);
   }
 
+  /**
+   * encode the snowflake as a string.
+   * @returns the snowflake as a string
+   */
   public encode(): Snowflake {
     const timestampPart = BigInt(this.timestamp - 1420070400000) << 22n;
     const workerIdPart = BigInt(this.workerId) << 17n;
@@ -60,6 +70,10 @@ export class SnowflakeObj {
     return snowflakeInt.toString();
   }
 
+  /**
+   * return a string representation of the snowflake.
+   * @returns string
+   */
   public toString(): string {
     return `date:${this.date.toISOString()} worker:${this.workerId} process:${this.processId} increment:${this.increment}`;
   }
