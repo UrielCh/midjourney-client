@@ -15,6 +15,9 @@ import { PWall } from "./PWall.ts";
 
 const interactions = "https://discord.com/api/v9/interactions";
 
+/**
+ * UploadSlot used by uploadFile()
+ */
 export type UploadSlot = {
   id: number;
   upload_filename: string;
@@ -28,6 +31,9 @@ interface WaitCounter {
   hitRefresh: number;
 }
 
+/**
+ * WaitOptions used by waitMessage()
+ */
 export interface WaitOptions {
   prompt?: string | string[];
   name?: string;
@@ -39,6 +45,9 @@ export interface WaitOptions {
   parentId?: Snowflake;
   progress?: (percent: number) => void;
 }
+/**
+ * WaitOptions with madatory progress callback
+ */
 export interface WaitOptionsProgress extends WaitOptions {
   progress: (percent: number) => void;
 }
@@ -419,6 +428,29 @@ export class Midjourney {
   /**
    * Call the /imagine command in the discord bot
    * the returned promise will resolve when the bot had finished processing the request.
+   *
+   * Available options:
+   * --tile : enable tiling mode
+   * --repeat [number] : set the number of iteration from 0 to 30 (alias -r)
+   * --chaos [number] : set the chaos level from 1 to 100 (alias -c)
+   * --weird [number] : set the weird level from 1 to 3000
+   * --stylize [number] : set the stylize level from 1 to 1000 (alias -s)
+   * --ar [1:1|3:2|16:9|4:5|2:3|4:5] : set the aspect ratio
+   * --video : generate a video from the generations steps
+   *
+   * --relax : use relax mode (slower mode)
+   * --fast : use fast mode (faster mode)
+   * --turbo : use turbo mode (fastest mode)
+   *
+   * --v [1|2|3|4|5|5A|5.1|5.2]: choose the generation model
+   * --niji 5 : enable niji mode
+   * --niji 4 : enable niji 4 mode
+   * --style [style] : set the style, value depends on the style
+   * --stop [number] : set the stop level from 10 to 100
+   * --quality [number] : set the quality level from .0 to 1.0 (alias -q)
+   * --no [term] : add negative pompt
+   * --seed [number] : set the seed from 0 to 2^32
+   * --iw [numer] : set the image weight from .0 to 2
    */
   async imagine(
     prompt: string,

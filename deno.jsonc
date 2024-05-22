@@ -1,6 +1,6 @@
 {
   "name": "@u4/midjourney",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "exports": "./mod.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
@@ -12,20 +12,40 @@
   "fmt": {
     "lineWidth": 160,
     "indentWidth": 2,
-    "include": ["src/", "samples/", "*.ts"],
-    "exclude": ["npm/"]
+    "include": [
+      "src/",
+      "samples/",
+      "*.ts"
+    ],
+    "exclude": [
+      "npm/"
+    ]
   },
   "lint": {
-    "exclude": ["npm/"]
+    "exclude": [
+      "npm/"
+    ]
   },
   "test": {
-    "exclude": ["npm/"]
+    "exclude": [
+      "npm/"
+    ]
   },
   "lock": false,
   "imports": {
     "@deno/dnt": "jsr:@deno/dnt@^0.41.1"
   },
   "publish": {
-    "exclude": [".github/", "npm/", ".vscode/", "doc/", "samples/", "_*.ts", "*_test.ts", "dev_deps.ts", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+    "exclude": [
+      ".*/",
+      "_*",
+      "*_test.ts",
+      "npm/",
+      "doc/",
+      "samples/",
+      "dev_deps.ts",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md"
+    ]
   }
 }

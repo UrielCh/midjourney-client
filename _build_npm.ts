@@ -1,29 +1,10 @@
 // dnt deps can not be moved to dev_deps.ts
 import { build, emptyDir, type PackageJson } from "@deno/dnt";
 import { pc } from "./deps.ts";
+import { getVersion } from "./_tools.ts";
 
 export async function buildDnt() {
-  let version = Deno.args[0];
-  const GITHUB_REF = Deno.env.get("GITHUB_REF");
-  const PKG_VERSION = Deno.env.get("PKG_VERSION");
-
-  if (!version) {
-    if (PKG_VERSION) {
-      console.log(`NPM_VERSION values is "${pc.green(PKG_VERSION)}"`);
-      version = PKG_VERSION;
-    } else if (GITHUB_REF) {
-      // drop the ref/tag/ and the v prefix
-      version = GITHUB_REF.replace(/^.+\/[vV]?/g, "");
-      console.log(
-        `GITHUB_REF values is ${
-          pc.green(
-            GITHUB_REF,
-          )
-        } will be used as version: "${pc.green(version)}"`,
-      );
-    }
-  }
-
+  const version = getVersion();
   if (!version) {
     console.error("Missing version number");
     console.error("usage: deno run -A _build_npm.ts 0.0.0");
