@@ -19,14 +19,14 @@ export type {
 
 export { ApplicationCommandType, ButtonStyle, MessageFlags, MessageType } from "npm:discord-api-types@0.37.84/v9";
 
-import Logger from "jsr:@deno-lib/logger@1.1.5";
+import Logger from "jsr:@deno-lib/logger@1.1.6";
 // "https://deno.land/x/logger@v1.1.5/logger.ts";
 export const logger = new Logger();
 
-export * as pc from "jsr:@std/fmt@0.225.1/colors";
+export * as pc from "jsr:@std/fmt@1.0.2/colors";
 
-export * as path from "jsr:@std/path@0.225.1";
+export { basename, join } from "jsr:@std/path@1.0.4";
 
-export { exists } from "jsr:@std/fs@0.229.1";
+export { exists } from "jsr:@std/fs@1.0.3";
 
 export { EventEmitter } from "node:events";

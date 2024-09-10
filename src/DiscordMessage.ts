@@ -12,7 +12,7 @@ import type {
   Snowflake,
 } from "../deps.ts";
 // CODE imports
-import { ButtonStyle, logger, type MessageType, path, pc } from "../deps.ts";
+import { basename, ButtonStyle, join, logger, type MessageType, pc } from "../deps.ts";
 
 import type Midjourney from "./Midjourney.ts";
 import type { InteractionName, UserReference } from "./models.ts";
@@ -721,13 +721,13 @@ export class DiscordMessage implements APIMessage {
     try {
       const stats = await Deno.stat(dest);
       if (stats.isDirectory) {
-        const destFile = path.join(dest, att.filename);
+        const destFile = join(dest, att.filename);
         logger.info(`downloading ${pc.green(att.url)} to ${pc.green(destFile)}`);
         return await downloadFileCached(att.url, destFile);
       }
       throw Error(`download abort, ${dest} is an existing file`);
     } catch (_) {
-      if (path.basename(dest).includes(".")) {
+      if (basename(dest).includes(".")) {
         return await downloadFileCached(att.url, dest);
       } else {
         await Deno.mkdir(dest, { recursive: true });

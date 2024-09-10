@@ -1,5 +1,5 @@
 import type { Command } from "./models.ts";
-import { logger, path } from "../deps.ts";
+import { join, logger } from "../deps.ts";
 import { CommandsData } from "./CommandsData.ts";
 
 export const KNOWN_METHODS = [
@@ -133,6 +133,6 @@ export class CommandCache {
 
   getcacheFile(name: KnownMethods): string {
     if (!this.cacheDirectory) return "";
-    return path.join(this.cacheDirectory, `${name}.json`);
+    return join(this.cacheDirectory, `${name}.json`);
   }
 }
