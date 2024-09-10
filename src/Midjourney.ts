@@ -846,7 +846,7 @@ export class Midjourney {
    * Wait for a message in the channel using a multiple cryteria, critera can be:
    * - prompt: requested prompt
    * - name: used as filename for /describe
-   * - maxWait: max wait iteration
+   * - maxWait: max wait iteration, around one iteration per second (default 1000)
    * - type: what kind of resond are you waiting for, can be "variations" | "grid" | "upscale" | "describe"
    * - imgId: use for upscale, can be 1 2 3 or 4
    * - startId: do not look for message older than the initial request.
@@ -859,7 +859,7 @@ export class Midjourney {
       return this.waitMessageWs(opts);
       // use websocket
     }
-
+    let debugDisplayed = false;
     const counters: WaitCounter = {
       request: 0,
       message: 0,
@@ -902,6 +902,12 @@ export class Midjourney {
           logger.info(
             `waitMessage ${i}th request gets ${msgs.length} messages`,
           );
+          // the first message my contains a badly parsed prompt
+          // debug it to simplify fix implemention
+          if (!debugDisplayed && i > 200) {
+            logger.info("CheckMe", `interaction: ${opts.interaction} msgs[0].content: "${msgs[0].content}"`);
+            debugDisplayed = true;
+          }
         }
       }
       // debugging get back in time and get the previous msg
