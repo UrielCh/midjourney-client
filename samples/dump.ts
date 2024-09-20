@@ -6,6 +6,6 @@ import { Midjourney } from "../mod.ts";
  */
 const client = new Midjourney("interaction.txt");
 
-console.log(`export SALAI_TOKEN = "${client.auth}";`);
-console.log(`export SERVER_ID = "${client.guild_id}";`);
-console.log(`export CHANNEL_ID = "${client.channel_id}";`);
+console.log(`export SALAI_TOKEN="${client.auth}";`);
+console.log(`export SERVER_ID="${client.guild_id}";`);
+console.log(`export CHANNEL_ID="${client.channel_id}";`);
